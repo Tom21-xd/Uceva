@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "241727084489",
+    "project_id": "uceva-dengue",
+    "storage_bucket": "uceva-dengue.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241727084489:android:e2bc0c25bd7b8c956d7a18",
+        "android_client_info": {
+          "package_name": "com.Tom.uceva_dengue"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCky3A5-eKpruM3Yye3PTFCHHdWFwJFJsk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
