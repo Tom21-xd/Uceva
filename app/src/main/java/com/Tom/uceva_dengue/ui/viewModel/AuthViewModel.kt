@@ -127,8 +127,33 @@ class AuthViewModel : ViewModel(){
     val confirmacionContra: MutableLiveData<String>
         get() = _confirmacionContra
 
+    private val _profesion = MutableLiveData<String>()
+    val profesion: MutableLiveData<String>
+        get() = _profesion
 
-    fun OnRegisterChange(correo: String, contra: String, confirmacionContra: String, nombres: String, apellidos: String, departamento: String, ciudad: String, direccion: String, personalMedico: Boolean) {
+    private val _especialidadMedica = MutableLiveData<String>()
+    val especialidadMedica: MutableLiveData<String>
+        get() = _especialidadMedica
+
+    private val _registroMedico = MutableLiveData<String>()
+    val registroMedico: MutableLiveData<String>
+        get() = _registroMedico
+
+    // Actualización del método OnRegisterChange para incluir los nuevos campos
+    fun OnRegisterChange(
+        correo: String,
+        contra: String,
+        confirmacionContra: String,
+        nombres: String,
+        apellidos: String,
+        departamento: String,
+        ciudad: String,
+        direccion: String,
+        personalMedico: Boolean,
+        profesion: String = "",
+        especialidadMedica: String = "",
+        registroMedico: String = ""
+    ) {
         _correo.value = correo
         _contra.value = contra
         _confirmacionContra.value = confirmacionContra
@@ -138,21 +163,48 @@ class AuthViewModel : ViewModel(){
         _ciudad.value = ciudad
         _direccion.value = direccion
         _personalMedico.value = personalMedico
+        _profesion.value = profesion
+        _especialidadMedica.value = especialidadMedica
+        _registroMedico.value = registroMedico
     }
 
-    fun registroUsuario(correo:String,contrasenia:String,HomeScreen:() ->Unit){
-        if(_loading.value== false){
-            _loading.value =true
-            auth.createUserWithEmailAndPassword(correo,contrasenia)
-                .addOnCompleteListener{
-                        task->
-                    if (task.isSuccessful){
-                        HomeScreen()
-                    }else{
-                        Log.d("AppDengue","Error al registrar")
+    // Modificación del método registroUsuario para guardar los datos adicionales en Firestore
+    fun registroUsuario(correo: String, contrasenia: String, HomeScreen: () -> Unit) {
+        if (_loading.value == false) {
+            _loading.value = true
+            auth.createUserWithEmailAndPassword(correo, contrasenia)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        // Guardar datos adicionales en Firestore
+                        val uid = auth.currentUser?.uid
+                        val usuarioData = hashMapOf(
+                            "nombres" to _nombres.value,
+                            "apellidos" to _apellidos.value,
+                            "correo" to correo,
+                            "departamento" to _departamento.value,
+                            "ciudad" to _ciudad.value,
+                            "direccion" to _direccion.value,
+                            "personalMedico" to _personalMedico.value,
+                            "profesion" to _profesion.value,
+                            "especialidadMedica" to _especialidadMedica.value,
+                            "registroMedico" to _registroMedico.value
+                        )
+
+                        uid?.let {
+                            db.collection("usuarios").document(it).set(usuarioData)
+                                .addOnSuccessListener {
+                                    Log.d("AppDengue", "Usuario registrado exitosamente en Firestore")
+                                    HomeScreen()
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.w("AppDengue", "Error al registrar en Firestore", e)
+                                }
+                        }
+                    } else {
+                        Log.d("AppDengue", "Error al registrar")
                     }
                 }
-            _loading.value =false
+            _loading.value = false
         }
     }
 

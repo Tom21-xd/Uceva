@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -19,6 +20,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -40,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.R
-import com.Tom.uceva_dengue.ui.Navigation.Rout
+import com.Tom.uceva_dengue.ui.Navigation.Rutas
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 
@@ -113,6 +115,8 @@ fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
     }
 }
 
+
+
 @Composable
 fun Login(modifier: Modifier, viewModel: AuthViewModel, navController: NavController) {
 
@@ -140,7 +144,7 @@ fun Login(modifier: Modifier, viewModel: AuthViewModel, navController: NavContro
 @Composable
 fun BotonInicio(modifier: Modifier, loginEneable: Boolean, viewModel: AuthViewModel, correo:String, contra:String, navController: NavController) {
     Button(
-        onClick = { viewModel.iniciosesioncorreo(correo,contra){navController.navigate(Rout.HomeScreen.name)}},
+        onClick = { viewModel.iniciosesioncorreo(correo,contra){navController.navigate(Rutas.MainScreen.name)}},
         modifier = modifier
             .width(200.dp)
             .height(48.dp),
@@ -151,6 +155,8 @@ fun BotonInicio(modifier: Modifier, loginEneable: Boolean, viewModel: AuthViewMo
 
     }
 }
+
+
 
 @Composable
 fun OlvContra(modifier: Modifier) {
@@ -214,8 +220,6 @@ fun HeaderImage(modifier: Modifier) {
     Image(painter = painterResource(id = R.drawable.salud ), contentDescription = "Header" ,modifier=modifier)
 }
 /*-----------------------------------------------Registro---------------------------------------------------------*/
-
-
 @Composable
 fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavController) {
 

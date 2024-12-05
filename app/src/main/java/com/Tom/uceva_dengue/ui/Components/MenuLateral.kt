@@ -7,24 +7,26 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import com.Tom.uceva_dengue.ui.Menus.Items_Menu_lateral.*
+//import com.Tom.uceva_dengue.ui.Menus.Items_Menu_lateral.*
 import androidx.navigation.NavHostController
+import com.Tom.uceva_dengue.ui.Menus.Items_Menu_lateral
+import com.Tom.uceva_dengue.ui.Navigation.currentRoute
 
 @Composable
-fun MenuLateral(navController: NavHostController,drawerState: DrawerState,contenido: @Composable () -> Unit){
+fun MenuLateral(navController: NavHostController,drawerState: DrawerState){
     val menu_items =  listOf(
-        Item_Menu_Lateral1,
-        Item_Menu_Lateral2,
-        Item_Menu_Lateral3
+        Items_Menu_lateral.Item_Menu_Lateral1,
+        Items_Menu_lateral.Item_Menu_Lateral2,
+        Items_Menu_lateral.Item_Menu_Lateral3
     )
-    /*ModalNavigationDrawer(
+    ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
                 menu_items.forEach{ item ->
                     NavigationDrawerItem(
                         label = { Text(text = item.title) },
-                        selected = ,
+                        selected = currentRoute(navController) == item.route,
                         onClick = { /*TODO*/ }
                     )
                 }
@@ -32,5 +34,5 @@ fun MenuLateral(navController: NavHostController,drawerState: DrawerState,conten
         }
     ) {
 
-    }*/
+    }
 }

@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -45,41 +46,23 @@ import com.Tom.uceva_dengue.ui.theme.fondo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Publicaciones") },
-                navigationIcon = {
-                    IconButton(onClick = { /* TODO: Handle navigation drawer */ }) {
-                        Icon(Icons.Filled.Menu, contentDescription = "Menu")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = fondo)
-            )
-        },
-        bottomBar = { BottomNavigationBar(navController) },
+fun HomeScreen() {
+    Column(
         modifier = Modifier
-            .background(Color.LightGray) // Fondo gris para toda la pantalla
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            SearchField()
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        SearchField()
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            PostCard()
+        PostCard()
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            PostCard()
+        PostCard()
 
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -155,4 +138,10 @@ fun PostCard() {
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewSearchField() {
+    HomeScreen()
 }

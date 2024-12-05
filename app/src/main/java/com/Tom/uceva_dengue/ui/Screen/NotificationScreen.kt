@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -34,35 +35,19 @@ import com.Tom.uceva_dengue.ui.Components.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationScreen (navController: NavController){
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Notificaciones") },
-                navigationIcon = {
-                    IconButton(onClick = { /* TODO: Handle navigation drawer */ }) {
-                        Icon(Icons.Filled.Menu, contentDescription = "Menu")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFADD8E6))
-            )
-        },
-        bottomBar = {
-            BottomNavigationBar(navController)
-        },
-        content = { contentPadding ->
-            // Aplicar el padding proporcionado por Scaffold a la lista de notificaciones
-            NotificationList(
-                notifications = listOf(
-                    NotificationItem("Notificación 1", "Este es el contenido de la notificación 1.", "04/04/2024"),
-                    NotificationItem("Notificación 2", "Este es el contenido de la notificación 2.", "04/04/2024"),
-                    NotificationItem("Notificación 3", "Este es el contenido de la notificación 3.", "04/04/2024"),
-                    NotificationItem("Notificación 4", "Este es el contenido de la notificación 4.", "04/04/2024")
-                ),
-                contentPadding = contentPadding // Pasar el padding a la lista
-            )
-        }
-    )
+fun NotificationScreen (){
+    Column {
+        NotificationList(
+            notifications = listOf(
+                NotificationItem("Notificación 1", "Este es el contenido de la notificación 1.", "04/04/2024"),
+                NotificationItem("Notificación 2", "Este es el contenido de la notificación 2.", "04/04/2024"),
+                NotificationItem("Notificación 3", "Este es el contenido de la notificación 3.", "04/04/2024"),
+                NotificationItem("Notificación 4", "Este es el contenido de la notificación 4.", "04/04/2024")
+            ),
+            contentPadding = PaddingValues(10.dp) // Pasar el padding a la lista
+        )
+    }
+
 }
 data class NotificationItem(
     val title: String,
@@ -109,4 +94,10 @@ fun NotificationCard(notification: NotificationItem) {
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewNotificationScreen() {
+    NotificationScreen()
 }
