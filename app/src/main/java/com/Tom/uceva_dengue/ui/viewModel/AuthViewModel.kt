@@ -61,14 +61,9 @@ class AuthViewModel : ViewModel(){
         _loginEnabled.value = correovalido(correo) && contravalida(contra)
     }
 
-    fun iniciosesioncorreo(correo:String,contrasenia:String,HomeScreen:() ->Unit)
-
-            = viewModelScope.launch {
+    fun iniciosesioncorreo(correo:String,contrasenia:String,HomeScreen:() ->Unit) = viewModelScope.launch {
         try {
-
-            auth.signInWithEmailAndPassword(correo,contrasenia)
-                .addOnCompleteListener{
-                        task->
+            auth.signInWithEmailAndPassword(correo,contrasenia).addOnCompleteListener{task->
                     if (task.isSuccessful){
                         HomeScreen()
                     }else{

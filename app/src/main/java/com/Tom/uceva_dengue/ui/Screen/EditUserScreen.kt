@@ -27,23 +27,10 @@ fun EditUserScreen() {
     var username by remember { mutableStateOf("tom21xd") }
     var role by remember { mutableStateOf("Admin") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Editar usuario") },
-                navigationIcon = {
-                    IconButton(onClick = { /* Handle back action */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFADD8E6))
-            )
-        },
-        content = { paddingValues ->
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),  // Espacio entre los elementos
             ) {
@@ -162,8 +149,8 @@ fun EditUserScreen() {
                     Text("Guardar")
                 }
             }
-        }
-    )
+
+
 }
 
 @Composable

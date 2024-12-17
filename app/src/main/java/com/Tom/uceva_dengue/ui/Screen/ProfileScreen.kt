@@ -36,25 +36,10 @@ fun ProfileScreen() {
     var username by remember { mutableStateOf(TextFieldValue("tom21xd")) }
     var role by remember { mutableStateOf("Admin") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mi perfil") },
-                navigationIcon = {
-                    IconButton(onClick = { /* Handle back action */ }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFADD8E6))
-            )
-        },
-        bottomBar = {
-        },
-        content = { paddingValues ->
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -211,8 +196,8 @@ fun ProfileScreen() {
                     }
                 }
             }
-        }
-    )
+
+
 }
 @Composable
 fun DropdownSelector(

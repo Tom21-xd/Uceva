@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.Tom.uceva_dengue"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.Tom.uceva_dengue"
@@ -74,11 +74,16 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore)
-
-
+    implementation(libs.google.firebase.firestore.ktx)
     implementation (libs.maps.compose)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.datastore.core.android)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore.core)
+    implementation(libs.androidx.room.ktx)
+    implementation (libs.android.maps.utils)
+    implementation (libs.maps.utils.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -5,9 +5,9 @@ enum class Rout {
     HomeScreen,
     MapScreen,
     NotificationScreen,
-    MainScreen,
     ProfileScreen,
     OptionScreen,
     InfoScreen
+
 
 }

@@ -18,12 +18,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.CameraPositionState
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.*
+import com.google.maps.android.heatmaps.HeatmapTileProvider
 
 @Composable
 fun MapScreen() {
@@ -31,10 +27,9 @@ fun MapScreen() {
     var searchText by remember { mutableStateOf("") }
     var searchLocation by remember { mutableStateOf<LatLng?>(null) }
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(4.60971, -74.08175), 10f) // Ubicación inicial, Bogotá
+        position = CameraPosition.fromLatLngZoom(LatLng(4.60971, -74.08175), 10f) // Bogotá
     }
 
-    // Configurar el cliente de ubicación
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -45,36 +40,50 @@ fun MapScreen() {
         }
     )
 
-    // Verificar si el permiso de ubicación está otorgado
     val hasLocationPermission = ContextCompat.checkSelfPermission(
         context, Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 
+    // **NUEVO: Datos estáticos para el mapa de calor**
+    val heatmapPoints = listOf(
+        LatLng(4.60971, -74.08175), // Bogotá centro
+        LatLng(4.617, -74.090),     // Punto cercano 1
+        LatLng(4.601, -74.072),     // Punto cercano 2
+        LatLng(4.630, -74.087),     // Punto cercano 3
+        LatLng(4.640, -74.120),     // Punto cercano 4
+        LatLng(4.650, -74.070),     // Punto adicional 1
+        LatLng(4.655, -74.100)      // Punto adicional 2
+    )
+
+    val heatmapProvider = remember {
+        HeatmapTileProvider.Builder()
+            .data(heatmapPoints)
+            .build()
+    }
+    val tileOverlayState = rememberTileOverlayState()
+
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
-            // TextField para ingresar la dirección
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // TextField para ingresar la dirección
                 TextField(
                     value = searchText,
                     onValueChange = { searchText = it },
                     label = { Text("Buscar dirección") },
                     modifier = Modifier
-                        .weight(1f) // Ocupa el máximo ancho disponible
-                        .padding(end = 8.dp) // Espacio entre el TextField y el botón
+                        .weight(1f)
+                        .padding(end = 8.dp)
                 )
 
-                // Botón para buscar la dirección
                 Button(
                     onClick = {
                         val location = geocodeAddress(context, searchText)
                         if (location != null) {
-                            searchLocation = location // Almacena la ubicación buscada
+                            searchLocation = location
                             cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
                         }
                     }
@@ -82,7 +91,7 @@ fun MapScreen() {
                     Text("Buscar")
                 }
             }
-            // Solicitar permiso de ubicación si no está otorgado
+
             if (!hasLocationPermission) {
                 Button(
                     onClick = { locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
@@ -94,28 +103,31 @@ fun MapScreen() {
                 }
             }
 
-            // Mapa de Google con el marcador de la ubicación buscada
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
                 uiSettings = MapUiSettings(
-                    zoomControlsEnabled = false,    // Habilita los controles de zoom (aparecen en la esquina inferior derecha)
-                    compassEnabled = true,         // Habilita la brújula (aparece al rotar el mapa)
-                    tiltGesturesEnabled = true     // Habilita el gesto de inclinación
+                    zoomControlsEnabled = true,
+                    compassEnabled = true,
+                    tiltGesturesEnabled = true
+                )
+            ) {
+                // **NUEVO: Mostrar el mapa de calor**
+                TileOverlay(
+                    state = tileOverlayState,
+                    tileProvider = heatmapProvider
                 )
 
-            ) {
-                // Marcador temporal para la ubicación buscada
+                // **Ubicación buscada con marcador**
                 searchLocation?.let {
                     Marker(
-                        state = MarkerState(position = it), // Estado del marcador con la posición
+                        state = MarkerState(position = it),
                         title = "Ubicación buscada"
                     )
                 }
             }
         }
 
-        // Botón flotante para centrar en la ubicación actual del usuario
         FloatingActionButton(
             onClick = {
                 if (hasLocationPermission) {
@@ -128,12 +140,11 @@ fun MapScreen() {
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
         ) {
-            Text("📍") // Puedes usar un ícono aquí en lugar de texto
+            Text("📍")
         }
     }
 }
 
-// Función para geocodificar la dirección ingresada
 fun geocodeAddress(context: android.content.Context, address: String): LatLng? {
     val geocoder = Geocoder(context)
     return try {
@@ -148,30 +159,20 @@ fun geocodeAddress(context: android.content.Context, address: String): LatLng? {
     }
 }
 
-// Función para mover la cámara a la ubicación actual del usuario
 fun moveToUserLocation(
     context: android.content.Context,
     fusedLocationClient: FusedLocationProviderClient,
     cameraPositionState: CameraPositionState
 ) {
-    // Verificar permisos de ubicación
     if (ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     ) {
-        return
-    }
-
-    // Obtener la última ubicación conocida del usuario
-    fusedLocationClient.lastLocation.addOnSuccessListener { location: android.location.Location? ->
-        location?.let {
-            val userLatLng = LatLng(it.latitude, it.longitude)
-            // Mover la cámara a la ubicación del usuario
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(userLatLng, 15f)
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            location?.let {
+                val userLatLng = LatLng(it.latitude, it.longitude)
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(userLatLng, 15f)
+            }
         }
     }
 }

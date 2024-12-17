@@ -31,50 +31,28 @@ import com.Tom.uceva_dengue.ui.Components.BottomNavigationBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CasosDengueScreen() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Casos dengue") },
-                navigationIcon = {
-                    IconButton(onClick = { /* Acción de menú */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menú")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFADD8E6))
-            )
-        },
-        bottomBar = {
-            BottomNavigationBar(navController = rememberNavController())
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { /* Acción para agregar caso */ }) {
-                Icon(Icons.Default.Add, contentDescription = "Agregar caso")
+    Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            // Filtros de búsqueda
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Campo de búsqueda por nombre o ID
+                SearchFieldUsuario()
+
+                // Filtro de estado
+                EstadoDropdown()
             }
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                // Filtros de búsqueda
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Campo de búsqueda por nombre o ID
-                    SearchFieldUsuario()
 
-                    // Filtro de estado
-                    EstadoDropdown()
-                }
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Lista de casos de dengue
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(4) { index ->
-                        CasoDengueCard("Usuario ${index + 1}", "Detectado: Hospital ${index + 1}")
-                    }
+            // Lista de casos de dengue
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(4) { index ->
+                    CasoDengueCard("Usuario ${index + 1}", "Detectado: Hospital ${index + 1}")
                 }
             }
         }
