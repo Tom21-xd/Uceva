@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Uceva_dengue"
+rootProject.name = "App Dengue"
 include(":app")
  

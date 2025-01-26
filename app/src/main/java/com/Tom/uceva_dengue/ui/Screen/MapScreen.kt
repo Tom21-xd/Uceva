@@ -16,10 +16,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.google.maps.android.heatmaps.HeatmapTileProvider
+
+
 
 @Composable
 fun MapScreen() {
@@ -27,7 +30,7 @@ fun MapScreen() {
     var searchText by remember { mutableStateOf("") }
     var searchLocation by remember { mutableStateOf<LatLng?>(null) }
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(4.60971, -74.08175), 10f) // Bogotá
+        position = CameraPosition.fromLatLngZoom(LatLng(1.61438, -75.60623), 12f)
     }
 
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
@@ -44,16 +47,19 @@ fun MapScreen() {
         context, Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 
-    // **NUEVO: Datos estáticos para el mapa de calor**
     val heatmapPoints = listOf(
-        LatLng(4.60971, -74.08175), // Bogotá centro
-        LatLng(4.617, -74.090),     // Punto cercano 1
-        LatLng(4.601, -74.072),     // Punto cercano 2
-        LatLng(4.630, -74.087),     // Punto cercano 3
-        LatLng(4.640, -74.120),     // Punto cercano 4
-        LatLng(4.650, -74.070),     // Punto adicional 1
-        LatLng(4.655, -74.100)      // Punto adicional 2
+        LatLng(1.61438, -75.60623),
+        LatLng(1.61000, -75.60500),
+        LatLng(1.61250, -75.60400),
+        LatLng(1.61500, -75.60750),
+        LatLng(1.61700, -75.60800),
+        LatLng(1.62000, -75.61000),
+        LatLng(1.62200, -75.61150),
+        LatLng(1.61800, -75.60900),
+        LatLng(1.61300, -75.60300),
+        LatLng(1.61900, -75.60850)
     )
+
 
     val heatmapProvider = remember {
         HeatmapTileProvider.Builder()
@@ -107,18 +113,17 @@ fun MapScreen() {
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
                 uiSettings = MapUiSettings(
-                    zoomControlsEnabled = true,
+                    zoomControlsEnabled = false,
                     compassEnabled = true,
-                    tiltGesturesEnabled = true
+                    tiltGesturesEnabled = true,
+                    zoomGesturesEnabled = true
                 )
             ) {
-                // **NUEVO: Mostrar el mapa de calor**
                 TileOverlay(
                     state = tileOverlayState,
                     tileProvider = heatmapProvider
                 )
 
-                // **Ubicación buscada con marcador**
                 searchLocation?.let {
                     Marker(
                         state = MarkerState(position = it),
@@ -168,11 +173,17 @@ fun moveToUserLocation(
             context, Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     ) {
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+        val locationRequest = fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY, null
+        )
+
+        locationRequest.addOnSuccessListener { location ->
             location?.let {
                 val userLatLng = LatLng(it.latitude, it.longitude)
                 cameraPositionState.position = CameraPosition.fromLatLngZoom(userLatLng, 15f)
             }
+        }.addOnFailureListener { e ->
+            e.printStackTrace()
         }
     }
 }

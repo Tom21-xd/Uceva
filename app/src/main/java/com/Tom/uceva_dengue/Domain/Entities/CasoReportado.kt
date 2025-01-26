@@ -1,4 +1,4 @@
-package com.Tom.uceva_dengue.model
+package com.Tom.uceva_dengue.Domain.Entities
 
 import java.util.Date
 

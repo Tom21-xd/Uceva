@@ -1,4 +1,4 @@
-package com.Tom.uceva_dengue.ui.Screen
+package  com.Tom.uceva_dengue.ui.Screen
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -16,21 +16,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -48,28 +52,34 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.R
+import com.Tom.uceva_dengue.ui.Components.Campo
+import com.Tom.uceva_dengue.ui.Components.ComboBox
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
+import java.time.Instant
+import java.time.ZoneId
+import java.util.Calendar
 
 
 @Composable
 fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
-    Box(Modifier.background(color=fondo)){
-        Box(
-            Modifier
+    Box(Modifier.background(color = fondo)) {
+        Column(
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp)){
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.Center, // Esto centra los elementos en la fila
+                horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally // Esto alinea el contenido dentro de la columna
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Iniciar sesión",
                         fontSize = 15.sp,
@@ -86,11 +96,9 @@ fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
                     )
                 }
 
-                Spacer(modifier = Modifier.width(25.dp)) // Añadir espacio entre los elementos
+                Spacer(modifier = Modifier.width(25.dp))
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally // Alineación centrada en esta columna
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Crear cuenta",
                         fontSize = 15.sp,
@@ -108,15 +116,25 @@ fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
                 }
             }
 
-            val logRegis : Boolean by viewModel.log_regis.observeAsState(initial = false)
-            AnimatedVisibility(visible = !logRegis) {
-                Login(Modifier.align(Alignment.Center), viewModel, navController)
-            }
-            AnimatedVisibility(visible = logRegis) {
-                Registro(Modifier.align(Alignment.Center), viewModel, navController)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f) // Permite distribuir el espacio y evitar solapamiento
+            ) {
+                val logRegis: Boolean by viewModel.log_regis.observeAsState(initial = false)
+
+                this@Column.AnimatedVisibility(visible = !logRegis) {
+                    Login(Modifier.align(Alignment.Center), viewModel, navController)
+                }
+                this@Column.AnimatedVisibility(visible = logRegis) {
+                    Registro(Modifier.align(Alignment.Center), viewModel, navController)
+                }
             }
         }
     }
+
 }
 
 
@@ -159,8 +177,6 @@ fun BotonInicio(modifier: Modifier, loginEneable: Boolean, viewModel: AuthViewMo
 
     }
 }
-
-
 
 @Composable
 fun OlvContra(modifier: Modifier) {
@@ -224,12 +240,24 @@ fun HeaderImage(modifier: Modifier) {
     Image(painter = painterResource(id = R.drawable.salud ), contentDescription = "Header" ,modifier=modifier)
 }
 /*-----------------------------------------------Registro---------------------------------------------------------*/
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavController) {
 
+    val state = rememberDatePickerState()
+    var mostrarDate by remember {
+        mutableStateOf(false)
+    }
+
+    val departamentos by viewModel.departamentos.collectAsState()
+    val ciudades by viewModel.municipios.collectAsState()
+    val generos by viewModel.generos.collectAsState()
+
 
     val nombres : String by viewModel.nombres.observeAsState(initial = "")
-    val correo : String by viewModel.correo.observeAsState(initial = "")
+    val correo : String by viewModel.CorreoR.observeAsState(initial = "")
     val contra : String by viewModel.contra.observeAsState(initial = "")
     val confirmacionContra : String by viewModel.confirmacionContra.observeAsState(initial = "")
     val apellidos : String by viewModel.apellidos.observeAsState(initial = "")
@@ -237,92 +265,172 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
     val ciudad : String by viewModel.ciudad.observeAsState(initial = "Seleccione")
     val direccion : String by viewModel.direccion.observeAsState(initial = "")
     val personalMedico : Boolean by viewModel.personalMedico.observeAsState(initial = false)
+    val profesion : String by viewModel.profesion.observeAsState(initial = "")
+    val especialidadMedica : String by viewModel.especialidadMedica.observeAsState(initial = "")
+    val registroMedico : String by viewModel.registroMedico.observeAsState(initial = "")
+    val genero : String by viewModel.genero.observeAsState(initial = "")
+    val fechaNacimiento : String by viewModel.fechaNacimiento.observeAsState(initial = "")
 
 
-    Box(modifier = modifier.fillMaxSize()){
-        Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "¿Como te llamas?", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color(0xFF000000), modifier = Modifier
-                .clickable { viewModel.log_regis.value = true })
-
-            Spacer(modifier = Modifier.padding(10.dp))
-
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Campo(nombres,"Nombres") { viewModel.OnRegisterChange(correo, contra, confirmacionContra, it, apellidos, departamento, ciudad, direccion, personalMedico) }
-                }
-                Spacer(modifier = Modifier.padding(5.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Campo(apellidos,"Apellidos") { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, it, departamento, ciudad, direccion, personalMedico) }
-                }
-            }
-            Spacer(modifier = Modifier.padding(10.dp))
-            Row (modifier){
-                Column(modifier=Modifier.weight(1f)) {
-                    DynamicSelectTextField(departamento,fruits,"Departamento"){viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, it, ciudad, direccion, personalMedico) }
-                }
-                Spacer(modifier = Modifier.padding(5.dp))
-                Column(modifier=Modifier.weight(1f)) {
-                    DynamicSelectTextField(ciudad,fruits,"Ciudad"){viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, it, direccion, personalMedico) }
-                }
-
-            }
-        }
-    }
-
-}
-
-@Composable
-fun Campo(dato: String,nombre:String, onTextFieldChanged: (String) -> Unit) {
-    OutlinedTextField(value = dato,
-        onValueChange = { onTextFieldChanged(it)},
-        Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions(keyboardType =  KeyboardType.Text),
-        singleLine = true,
-        label = { Text(nombre) },
-        maxLines = 1)
-}
-
-
-val fruits: List<String> = listOf("Apple", "Banana", "Strawberry")
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DynamicSelectTextField(
-    selectedValue: String,
-    options: List<String>,
-    label: String,
-    onValueChangedEvent: (String) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-    ) {
-        OutlinedTextField(
-            readOnly = true,
-            value = selectedValue,
-            onValueChange = {},
-            label = { Text(text = label) },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
-            colors = OutlinedTextFieldDefaults.colors(),
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-        )
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = "Acerca de ti",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
 
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { option: String ->
-                DropdownMenuItem(
-                    text = { Text(text = option) },
-                    onClick = {
-                        expanded = false
-                        onValueChangedEvent(option)
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Campo(nombres, "Nombres") { viewModel.OnRegisterChange(correo, contra, confirmacionContra, it, apellidos, departamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
                     }
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Campo(apellidos, "Apellidos") { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, it, departamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
+                    }
+                }
+
+                Campo(correo, "Correo") { viewModel.OnRegisterChange(it, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ComboBox(selectedValue = genero, options = generos.map { it.Nombre }, label = "Género") {}
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = fechaNacimiento,
+                            onValueChange = {},
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text(text = "Seleccionar fecha") },
+                            readOnly = true,
+                            singleLine = true,
+                            trailingIcon = {
+                                IconButton(onClick = { mostrarDate = true }) {
+                                    Icon(imageVector = Icons.Default.CalendarToday, contentDescription = "Seleccionar fecha")
+                                }
+                            }
+                        )
+                    }
+                }
+                if (mostrarDate) {
+                    SeleccionarFecha(
+                        onDismiss = { mostrarDate = false },
+                        onConfirm = {
+                            val nuevaFecha = state.selectedDateMillis
+                            nuevaFecha?.let {
+                                val instance = Instant.ofEpochMilli(it).atZone(ZoneId.of("UTC"))
+                                val fecha= "${instance.year}/${instance.monthValue}/${instance.dayOfMonth}"
+                                viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero,fecha) // Actualiza la fecha en el ViewModel
+                            }
+                            mostrarDate = false
+                        },
+                        state = state
+                    )
+                }
+
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                Text(
+                    text = "¿Dónde vives?",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ComboBox(
+                            selectedValue = departamento,
+                            options = if (departamentos.isNotEmpty()) departamentos.map { it.Nombre } else listOf("Cargando..."),
+                            label = "Departamento",
+                            enabled = departamentos.isNotEmpty()
+                        ) { nuevoDepartamento ->
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, nuevoDepartamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento)
+                            val departamentoSeleccionado = departamentos.firstOrNull { it.Nombre == nuevoDepartamento }
+                            departamentoSeleccionado?.Id?.let { viewModel.fetchMunicipios(it) }
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        ComboBox(
+                            selectedValue = ciudad,
+                            options = if (ciudades.isNotEmpty()) ciudades.map { it.Nombre ?: "" } else emptyList(),
+                            label = "Municipio",
+                            enabled = departamento.isNotEmpty() && ciudades.isNotEmpty()
+                        ) { nuevaCiudad ->
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, nuevaCiudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento)
+                        }
+                    }
+                }
+
+                Campo(direccion, "Dirección") { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, it, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
+
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = personalMedico,
+                        onCheckedChange = { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, it,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Personal médico", fontSize = 14.sp, color = Color.Black)
+                }
+            }
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { /* Acción del botón */ },
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE1E3DA))
+                ) {
+                    Text(text = "Registrarme", color = Color(0xFF000000))
+                }
+
+                Text(
+                    text = "¿Ya tienes cuenta?",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF000000),
+                    modifier = Modifier.clickable { /* Acción para ir al login */ }
                 )
             }
         }
     }
+
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SeleccionarFecha(onDismiss: () -> Unit, onConfirm: () -> Unit, state: DatePickerState) {
+    DatePickerDialog(
+        onDismissRequest = { onDismiss() },
+        confirmButton = {
+            TextButton(onClick = { onConfirm() }) {
+                Text("Aceptar")
+            }
+        }
+    ) {
+        DatePicker(state = state)
+    }
+}
+
+

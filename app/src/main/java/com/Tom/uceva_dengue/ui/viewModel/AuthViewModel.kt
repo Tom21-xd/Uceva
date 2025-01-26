@@ -1,25 +1,23 @@
 package com.Tom.uceva_dengue.ui.viewModel
 
-import android.content.ContentValues.TAG
 import android.util.Log
 import android.util.Patterns
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.Tom.uceva_dengue.model.Departamento
-import com.Tom.uceva_dengue.utils.RepositoryDepartamento
+import com.Tom.uceva_dengue.Domain.Entities.Departamento
+import com.Tom.uceva_dengue.Domain.Entities.Genero
+import com.Tom.uceva_dengue.Domain.Entities.Municipio
+import com.Tom.uceva_dengue.Domain.UseCases.Departamento.GetDepartamentosUseCase
+import com.Tom.uceva_dengue.Domain.UseCases.Genero.GetGenerosUseCase
+import com.Tom.uceva_dengue.Domain.UseCases.Municipio.GetMunicipiosUseCase
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Date
 
 class AuthViewModel : ViewModel(){
 
@@ -76,21 +74,47 @@ class AuthViewModel : ViewModel(){
     }
 
     //---------------------------Registro----------------------------------------
+    private val getDepartmentsUseCase: GetDepartamentosUseCase = GetDepartamentosUseCase()
+    private val getMunicipiosUseCase: GetMunicipiosUseCase = GetMunicipiosUseCase()
+    private val getGenerosUseCase: GetGenerosUseCase = GetGenerosUseCase()
 
-    val db = Firebase.firestore
+    private val _departamentos = MutableStateFlow<List<Departamento>>(emptyList())
+    val departamentos = _departamentos.asStateFlow()
 
-    val depart = mutableListOf<Departamento>()
+    private val _municipios = MutableStateFlow<List<Municipio>>(emptyList())
+    val municipios = _municipios.asStateFlow()
 
-    fun llenar(){
-        db.collection("Departamento").get().addOnSuccessListener { result ->
-            for (document in result) {
-                val departamento = document.toObject<Departamento>()
-                depart.add(departamento)
-                Log.d(TAG, "${departamento} aaaaaaaaaaaaaaaaaaa")
+    private val _generos = MutableStateFlow<List<Genero>>(emptyList())
+    val generos = _generos.asStateFlow()
+
+    init {
+        fetchDepartamentos()
+        fetchGeneros()
+    }
+
+    private fun fetchDepartamentos() {
+        viewModelScope.launch {
+            getDepartmentsUseCase.execute().collect { listaDepartamentos ->
+                _departamentos.value = listaDepartamentos
             }
         }
     }
 
+    fun fetchGeneros() {
+        viewModelScope.launch {
+            getGenerosUseCase.execute().collect {
+                _generos.value = it
+            }
+        }
+    }
+
+    fun fetchMunicipios(departamentoId: String) {
+        viewModelScope.launch {
+            getMunicipiosUseCase.execute(departamentoId).collect {
+                _municipios.value = it
+            }
+        }
+    }
 
 
 
@@ -101,6 +125,14 @@ class AuthViewModel : ViewModel(){
     private val _apellidos = MutableLiveData<String>()
     val apellidos: MutableLiveData<String>
         get() = _apellidos
+
+    private val _correoR = MutableLiveData<String>()
+    val CorreoR: MutableLiveData<String>
+        get()= _correoR
+
+    private val _genero = MutableLiveData<String>()
+    val genero: MutableLiveData<String>
+        get() = _genero
 
     private val _departamento = MutableLiveData<String>()
     val departamento: MutableLiveData<String>
@@ -134,9 +166,13 @@ class AuthViewModel : ViewModel(){
     val registroMedico: MutableLiveData<String>
         get() = _registroMedico
 
-    // Actualización del método OnRegisterChange para incluir los nuevos campos
+    private val _fechaNacimiento = MutableLiveData<String>()
+    val fechaNacimiento: MutableLiveData<String>
+        get() = _fechaNacimiento
+
+
     fun OnRegisterChange(
-        correo: String,
+        correoR: String,
         contra: String,
         confirmacionContra: String,
         nombres: String,
@@ -147,9 +183,12 @@ class AuthViewModel : ViewModel(){
         personalMedico: Boolean,
         profesion: String = "",
         especialidadMedica: String = "",
-        registroMedico: String = ""
+        registroMedico: String = "",
+        genero: String = "",
+        fechaNacimiento: String=""
+
     ) {
-        _correo.value = correo
+        _correoR.value = correoR
         _contra.value = contra
         _confirmacionContra.value = confirmacionContra
         _nombres.value = nombres
@@ -161,46 +200,7 @@ class AuthViewModel : ViewModel(){
         _profesion.value = profesion
         _especialidadMedica.value = especialidadMedica
         _registroMedico.value = registroMedico
+        _genero.value = genero
+        _fechaNacimiento.value = fechaNacimiento
     }
-
-    // Modificación del método registroUsuario para guardar los datos adicionales en Firestore
-    fun registroUsuario(correo: String, contrasenia: String, HomeScreen: () -> Unit) {
-        if (_loading.value == false) {
-            _loading.value = true
-            auth.createUserWithEmailAndPassword(correo, contrasenia)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        // Guardar datos adicionales en Firestore
-                        val uid = auth.currentUser?.uid
-                        val usuarioData = hashMapOf(
-                            "nombres" to _nombres.value,
-                            "apellidos" to _apellidos.value,
-                            "correo" to correo,
-                            "departamento" to _departamento.value,
-                            "ciudad" to _ciudad.value,
-                            "direccion" to _direccion.value,
-                            "personalMedico" to _personalMedico.value,
-                            "profesion" to _profesion.value,
-                            "especialidadMedica" to _especialidadMedica.value,
-                            "registroMedico" to _registroMedico.value
-                        )
-
-                        uid?.let {
-                            db.collection("usuarios").document(it).set(usuarioData)
-                                .addOnSuccessListener {
-                                    Log.d("AppDengue", "Usuario registrado exitosamente en Firestore")
-                                    HomeScreen()
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.w("AppDengue", "Error al registrar en Firestore", e)
-                                }
-                        }
-                    } else {
-                        Log.d("AppDengue", "Error al registrar")
-                    }
-                }
-            _loading.value = false
-        }
-    }
-
 }
