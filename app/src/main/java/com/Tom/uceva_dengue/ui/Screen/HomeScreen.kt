@@ -63,7 +63,7 @@ fun SearchField() {
             .fillMaxWidth()
             .padding(8.dp)
             .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-            .background(Color.White),  // Fondo blanco solo para el TextField
+            .background(Color.White),
         placeholder = { Text("Título") },
         leadingIcon = {
             Icon(imageVector = Icons.Filled.Search, contentDescription = "Buscar")
@@ -76,7 +76,7 @@ fun PostCard() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White) // Fondo blanco solo para la tarjeta
+            .background(Color.White)
             .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -85,7 +85,6 @@ fun PostCard() {
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            // Título alineado a la izquierda
             Text(
                 "Publicación",
                 fontSize = 20.sp
@@ -96,25 +95,22 @@ fun PostCard() {
             // Contenido del texto centrado
             Text(
                 "Este es el contenido de la publicación. Se verá como texto simulado en esta área.",
-                modifier = Modifier.align(Alignment.CenterHorizontally) // Centrar solo este texto
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Imagen centrada
             Box(
                 modifier = Modifier
                     .size(100.dp)
                     .border(1.dp, Color.Black)
-                    .align(Alignment.CenterHorizontally), // Centrar la imagen
+                    .align(Alignment.CenterHorizontally),
                 contentAlignment = Alignment.Center
             ) {
-                // Imagen ficticia
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Información del pie de la tarjeta (publicado por, fecha)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -124,10 +120,4 @@ fun PostCard() {
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewSearchField() {
-    HomeScreen()
 }

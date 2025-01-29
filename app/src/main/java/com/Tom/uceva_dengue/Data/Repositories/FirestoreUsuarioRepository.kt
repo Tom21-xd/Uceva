@@ -11,7 +11,7 @@ class FirestoreUsuarioRepository : IUsuarioRepository {
         return try {
             val snapshot = db.collection("Usuario").get().await()
             val nuevoNumero = snapshot.documents.size + 1
-            val nuevoId = "usuario_$nuevoNumero"
+            val nuevoId = usuario.Id
 
             val usuarioFirestore = usuario.copy(Id = nuevoId)
 

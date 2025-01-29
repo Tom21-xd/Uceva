@@ -42,7 +42,7 @@ fun ComboBox(
             modifier = Modifier
                 .fillMaxWidth()
                 .menuAnchor(),
-            enabled = enabled // Desactiva el campo si no está habilitado
+            enabled = enabled
         )
 
         ExposedDropdownMenu(

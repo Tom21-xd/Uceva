@@ -1,5 +1,7 @@
 package  com.Tom.uceva_dengue.ui.Screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,8 +15,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Visibility
@@ -22,6 +27,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerState
@@ -59,9 +65,11 @@ import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import java.time.Instant
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
     Box(Modifier.background(color = fondo)) {
@@ -164,19 +172,32 @@ fun Login(modifier: Modifier, viewModel: AuthViewModel, navController: NavContro
 }
 
 @Composable
-fun BotonInicio(modifier: Modifier, loginEneable: Boolean, viewModel: AuthViewModel, correo:String, contra:String, navController: NavController) {
+fun BotonInicio(
+    modifier: Modifier,
+    loginEnabled: Boolean,
+    viewModel: AuthViewModel,
+    correo: String,
+    contra: String,
+    navController: NavController
+) {
+    val loading by viewModel.loading.observeAsState(initial = false)
+
     Button(
-        onClick = { viewModel.iniciosesioncorreo(correo,contra){navController.navigate(Rout.HomeScreen.name)}},
+        onClick = { viewModel.iniciosesioncorreo(correo, contra) { navController.navigate(Rout.HomeScreen.name) } },
         modifier = modifier
             .width(200.dp)
             .height(48.dp),
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE1E3DA)),
-        enabled = loginEneable
+        enabled = loginEnabled && !loading
     ) {
-        Text(text = "Iniciar sesión", color = Color(0xFF000000))
-
+        if (loading) {
+            CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(24.dp))
+        } else {
+            Text(text = "Iniciar sesión", color = Color(0xFF000000))
+        }
     }
 }
+
 
 @Composable
 fun OlvContra(modifier: Modifier) {
@@ -242,37 +263,39 @@ fun HeaderImage(modifier: Modifier) {
 /*-----------------------------------------------Registro---------------------------------------------------------*/
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavController) {
 
     val state = rememberDatePickerState()
-    var mostrarDate by remember {
-        mutableStateOf(false)
-    }
+    var mostrarDate by remember { mutableStateOf(false) }
 
     val departamentos by viewModel.departamentos.collectAsState()
     val ciudades by viewModel.municipios.collectAsState()
     val generos by viewModel.generos.collectAsState()
 
+    val nombres: String by viewModel.nombres.observeAsState(initial = "")
+    val correo: String by viewModel.CorreoR.observeAsState(initial = "")
+    val contra: String by viewModel.contra.observeAsState(initial = "")
+    val confirmacionContra: String by viewModel.confirmacionContra.observeAsState(initial = "")
+    val apellidos: String by viewModel.apellidos.observeAsState(initial = "")
+    val departamento: String by viewModel.departamento.observeAsState(initial = "Seleccione")
+    val ciudad: String by viewModel.ciudad.observeAsState(initial = "Seleccione")
+    val direccion: String by viewModel.direccion.observeAsState(initial = "")
+    val personalMedico: Boolean by viewModel.personalMedico.observeAsState(initial = false)
+    val profesion: String by viewModel.profesion.observeAsState(initial = "")
+    val especialidadMedica: String by viewModel.especialidadMedica.observeAsState(initial = "")
+    val registroMedico: String by viewModel.registroMedico.observeAsState(initial = "")
+    val genero: String by viewModel.genero.observeAsState(initial = "")
+    val fechaNacimiento: String by viewModel.fechaNacimiento.observeAsState(initial = "")
 
-    val nombres : String by viewModel.nombres.observeAsState(initial = "")
-    val correo : String by viewModel.CorreoR.observeAsState(initial = "")
-    val contra : String by viewModel.contra.observeAsState(initial = "")
-    val confirmacionContra : String by viewModel.confirmacionContra.observeAsState(initial = "")
-    val apellidos : String by viewModel.apellidos.observeAsState(initial = "")
-    val departamento : String by viewModel.departamento.observeAsState(initial = "Seleccione")
-    val ciudad : String by viewModel.ciudad.observeAsState(initial = "Seleccione")
-    val direccion : String by viewModel.direccion.observeAsState(initial = "")
-    val personalMedico : Boolean by viewModel.personalMedico.observeAsState(initial = false)
-    val profesion : String by viewModel.profesion.observeAsState(initial = "")
-    val especialidadMedica : String by viewModel.especialidadMedica.observeAsState(initial = "")
-    val registroMedico : String by viewModel.registroMedico.observeAsState(initial = "")
-    val genero : String by viewModel.genero.observeAsState(initial = "")
-    val fechaNacimiento : String by viewModel.fechaNacimiento.observeAsState(initial = "")
+    var contrasenaVisible by remember { mutableStateOf(false) }
+    var confirmacionContrasenaVisible by remember { mutableStateOf(false) }
 
-
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier
+        .fillMaxSize()
+        .verticalScroll(rememberScrollState())) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -294,28 +317,77 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
 
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Campo(nombres, "Nombres") { viewModel.OnRegisterChange(correo, contra, confirmacionContra, it, apellidos, departamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
+                        Campo(nombres, "Nombres") {
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, it, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento)
+                        }
                     }
                     Spacer(modifier = Modifier.width(5.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Campo(apellidos, "Apellidos") { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, it, departamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
+                        Campo(apellidos, "Apellidos") {
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, it, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento)
+                        }
                     }
                 }
 
-                Campo(correo, "Correo") { viewModel.OnRegisterChange(it, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
+                Campo(correo, "Correo") {
+                    viewModel.OnRegisterChange(it, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento)
+                }
 
                 Row(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = contra,
+                            onValueChange = { viewModel.OnRegisterChange(correo, it, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento) },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Contraseña") },
+                            singleLine = true,
+                            visualTransformation = if (contrasenaVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { contrasenaVisible = !contrasenaVisible }) {
+                                    Icon(
+                                        imageVector = if (contrasenaVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                        contentDescription = "Mostrar/Ocultar contraseña"
+                                    )
+                                }
+                            }
+                        )
+
+                }
+                Row(modifier = Modifier.fillMaxWidth()){
+                    OutlinedTextField(
+                        value = confirmacionContra,
+                        onValueChange = { viewModel.OnRegisterChange(correo, contra, it, nombres, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento) },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Confirmacion") },
+                        singleLine = true,
+                        visualTransformation = if (confirmacionContrasenaVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { confirmacionContrasenaVisible = !confirmacionContrasenaVisible }) {
+                                Icon(
+                                    imageVector = if (confirmacionContrasenaVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = "Mostrar/Ocultar contraseña"
+                                )
+                            }
+                        }
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        ComboBox(selectedValue = genero, options = generos.map { it.Nombre }, label = "Género") {}
+                        ComboBox(selectedValue = genero, options = generos.map { it.Nombre }, label = "Género") {
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, it, fechaNacimiento)
+
+                        }
                     }
-                }
-                Row(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         OutlinedTextField(
                             value = fechaNacimiento,
                             onValueChange = {},
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text(text = "Seleccionar fecha") },
+                            placeholder = { Text(text = "Fecha Nac") },
                             readOnly = true,
                             singleLine = true,
                             trailingIcon = {
@@ -332,16 +404,23 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                         onConfirm = {
                             val nuevaFecha = state.selectedDateMillis
                             nuevaFecha?.let {
-                                val instance = Instant.ofEpochMilli(it).atZone(ZoneId.of("UTC"))
-                                val fecha= "${instance.year}/${instance.monthValue}/${instance.dayOfMonth}"
-                                viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero,fecha) // Actualiza la fecha en el ViewModel
+                                val fechaFormateada = Instant.ofEpochMilli(it)
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate()
+                                    .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+
+                                viewModel.OnRegisterChange(
+                                    correo, contra, confirmacionContra, nombres, apellidos,
+                                    departamento, ciudad, direccion, personalMedico,
+                                    profesion, especialidadMedica, registroMedico, genero, fechaFormateada
+                                )
                             }
+
                             mostrarDate = false
                         },
                         state = state
                     )
                 }
-
 
                 Spacer(modifier = Modifier.height(5.dp))
 
@@ -383,7 +462,7 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = personalMedico,
-                        onCheckedChange = { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, it,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
+                        onCheckedChange = { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, it, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento) }
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = "Personal médico", fontSize = 14.sp, color = Color.Black)
@@ -395,27 +474,29 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                val isLoading by viewModel.isLoading.observeAsState(initial = false)
+
                 Button(
-                    onClick = { /* Acción del botón */ },
+                    onClick = { viewModel.RegistrarUsuario(navController) },
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
                         .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE1E3DA))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE1E3DA)),
+                    enabled = !isLoading
                 ) {
-                    Text(text = "Registrarme", color = Color(0xFF000000))
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.Black,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(text = "Registrarme", color = Color(0xFF000000))
+                    }
                 }
-
-                Text(
-                    text = "¿Ya tienes cuenta?",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF000000),
-                    modifier = Modifier.clickable { /* Acción para ir al login */ }
-                )
             }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

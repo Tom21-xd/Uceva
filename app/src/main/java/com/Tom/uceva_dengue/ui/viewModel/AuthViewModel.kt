@@ -2,28 +2,32 @@ package com.Tom.uceva_dengue.ui.viewModel
 
 import android.util.Log
 import android.util.Patterns
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.Tom.uceva_dengue.Domain.Entities.Departamento
 import com.Tom.uceva_dengue.Domain.Entities.Genero
 import com.Tom.uceva_dengue.Domain.Entities.Municipio
+import com.Tom.uceva_dengue.Domain.Entities.Usuario
 import com.Tom.uceva_dengue.Domain.UseCases.Departamento.GetDepartamentosUseCase
 import com.Tom.uceva_dengue.Domain.UseCases.Genero.GetGenerosUseCase
 import com.Tom.uceva_dengue.Domain.UseCases.Municipio.GetMunicipiosUseCase
+import com.Tom.uceva_dengue.Domain.UseCases.Usuario.CrearUsuarioUseCase
+import com.Tom.uceva_dengue.Domain.UseCases.Auth.IniciarSesion
+import com.Tom.uceva_dengue.Domain.UseCases.Auth.RegistrarUsuarioAuthUseCase
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Date
 
 class AuthViewModel : ViewModel(){
 
 
     private val  auth : FirebaseAuth = Firebase.auth
-    private val _loading = MutableLiveData(false)
 
     private val _correo = MutableLiveData<String>() //Se usa para crear e iniciar sesion
     val correo: MutableLiveData<String>
@@ -59,17 +63,24 @@ class AuthViewModel : ViewModel(){
         _loginEnabled.value = correovalido(correo) && contravalida(contra)
     }
 
-    fun iniciosesioncorreo(correo:String,contrasenia:String,HomeScreen:() ->Unit) = viewModelScope.launch {
-        try {
-            auth.signInWithEmailAndPassword(correo,contrasenia).addOnCompleteListener{task->
-                    if (task.isSuccessful){
-                        HomeScreen()
-                    }else{
-                    }
+    private val signInUseCase = IniciarSesion()
 
-                }
-        }catch (e:Exception){
-            Log.d("AppDengue","Error al iniciar sesion")
+    private val _loading = MutableLiveData(false)
+    val loading: LiveData<Boolean> get() = _loading
+
+    fun iniciosesioncorreo(email: String, password: String, HomeScreen: () -> Unit) {
+        viewModelScope.launch {
+            _loading.value = true
+
+            val success = signInUseCase.execute(email, password)
+
+            _loading.value = false
+
+            if (success) {
+                HomeScreen()
+            } else {
+
+            }
         }
     }
 
@@ -77,6 +88,8 @@ class AuthViewModel : ViewModel(){
     private val getDepartmentsUseCase: GetDepartamentosUseCase = GetDepartamentosUseCase()
     private val getMunicipiosUseCase: GetMunicipiosUseCase = GetMunicipiosUseCase()
     private val getGenerosUseCase: GetGenerosUseCase = GetGenerosUseCase()
+    private val CrearUsuarioUseCase: CrearUsuarioUseCase = CrearUsuarioUseCase()
+    private val registrarUsuarioAuthUseCase: RegistrarUsuarioAuthUseCase = RegistrarUsuarioAuthUseCase()
 
     private val _departamentos = MutableStateFlow<List<Departamento>>(emptyList())
     val departamentos = _departamentos.asStateFlow()
@@ -142,6 +155,7 @@ class AuthViewModel : ViewModel(){
     val ciudad: MutableLiveData<String>
         get() = _ciudad
 
+
     private val _direccion = MutableLiveData<String>()
     val direccion: MutableLiveData<String>
         get() = _direccion
@@ -203,4 +217,53 @@ class AuthViewModel : ViewModel(){
         _genero.value = genero
         _fechaNacimiento.value = fechaNacimiento
     }
-}
+
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: MutableLiveData<Boolean> get() = _isLoading
+
+    fun RegistrarUsuario(navController: NavController) {
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            val email = _correoR.value ?: ""
+            val password = _contra.value ?: ""
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Log.e("Registro", "Correo y contraseña no pueden estar vacíos")
+                _isLoading.value = false
+                return@launch
+            }
+
+            val resultadoAuth = registrarUsuarioAuthUseCase.execute(email, password)
+            resultadoAuth.onSuccess { userId ->
+
+                val usuario = Usuario(
+                    Id = userId,
+                    Nombre = "${_nombres.value} ${_apellidos.value}",
+                    Ciudad = _ciudad.value ?: "",
+                    Departamento = _departamento.value ?: "",
+                    Correo = email,
+                    Direccion = _direccion.value ?: "",
+                    FechaNacimiento = _fechaNacimiento.value ?: "",
+                    Genero = _genero.value ?: "",
+                    personalMedico = _personalMedico.value ?: false,
+                    profesion = _profesion.value ?: "",
+                    especialidadMedica = _especialidadMedica.value ?: "",
+                    registroMedico = _registroMedico.value ?: ""
+                )
+
+                val resultadoFirestore = CrearUsuarioUseCase.execute(usuario)
+                resultadoFirestore.onSuccess {
+                    Log.d("Registro", "Usuario registrado en Firestore")
+                    _isLoading.value = false
+                    navController.navigate("HomeScreen")
+                }.onFailure { error ->
+                    Log.e("Registro", "Error al guardar en Firestore: ${error.message}")
+                    _isLoading.value = false
+                }
+            }.onFailure { error ->
+                Log.e("Registro", "Error al registrar en FirebaseAuth: ${error.message}")
+                _isLoading.value = false
+            }
+        }
+    }}

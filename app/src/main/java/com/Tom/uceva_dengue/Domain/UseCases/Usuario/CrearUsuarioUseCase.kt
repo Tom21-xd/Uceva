@@ -3,7 +3,7 @@ package com.Tom.uceva_dengue.Domain.UseCases.Usuario
 import com.Tom.uceva_dengue.Data.Repositories.FirestoreUsuarioRepository
 import com.Tom.uceva_dengue.Domain.Entities.Usuario
 
-class CrearUsuarioUseCase(private val repository: FirestoreUsuarioRepository) {
+class CrearUsuarioUseCase(private val repository: FirestoreUsuarioRepository = FirestoreUsuarioRepository()) {
     suspend fun execute(usuario: Usuario): Result<Boolean> {
         return try {
             val success = repository.crearUsuario(usuario)

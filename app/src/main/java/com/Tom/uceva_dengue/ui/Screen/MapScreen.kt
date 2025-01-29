@@ -98,17 +98,6 @@ fun MapScreen() {
                 }
             }
 
-            if (!hasLocationPermission) {
-                Button(
-                    onClick = { locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(vertical = 8.dp)
-                ) {
-                    Text("Permitir acceso a la ubicación")
-                }
-            }
-
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
