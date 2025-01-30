@@ -21,4 +21,15 @@ class FirestoreUsuarioRepository : IUsuarioRepository {
             false
         }
     }
+
+    override suspend fun obtenerUsuarioPorId(id: String): Usuario? {
+        return try {
+            val snapshot = db.collection("Usuario").document(id).get().await()
+            snapshot.toObject(Usuario::class.java)?.copy(Id = id)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+
 }

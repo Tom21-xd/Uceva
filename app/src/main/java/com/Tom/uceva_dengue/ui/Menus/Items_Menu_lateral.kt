@@ -1,6 +1,7 @@
 package com.Tom.uceva_dengue.ui.Menus
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -27,5 +28,6 @@ sealed  class Items_Menu_lateral (
         "Informacion",
         Rout.InfoScreen.name
     )
+
 
 }

@@ -1,6 +1,8 @@
 package com.Tom.uceva_dengue.ui.Navigation
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -20,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -32,8 +35,10 @@ import com.Tom.uceva_dengue.ui.Screen.NotificationScreen
 import com.Tom.uceva_dengue.ui.Screen.ProfileScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
+import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationCon(context: Context) {
@@ -58,7 +63,8 @@ fun NavigationCon(context: Context) {
                                 Text(
                                     text = getTopBarTitle(route),
                                     modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 18.sp
                                 )
                             },
                             navigationIcon = {
@@ -96,7 +102,7 @@ fun NavigationCon(context: Context) {
                     LoginScreen(viewModel = AuthViewModel(), navController = navController)
                 }
                 composable(Rout.HomeScreen.name) {
-                    HomeScreen()
+                    HomeScreen(viewModel = PublicacionViewModel())
                 }
                 composable(Rout.MapScreen.name) {
                     MapScreen()
