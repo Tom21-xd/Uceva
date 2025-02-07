@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.Tom.uceva_dengue.Data.Repositories.AuthRepository
 import com.Tom.uceva_dengue.ui.Menus.Items_Menu_lateral
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.Navigation.currentRoute
@@ -46,7 +45,6 @@ fun MenuLateral(
         Items_Menu_lateral.Item_Menu_Lateral3
     )
 
-    val authRepository = AuthRepository()
     val coroutineScope = rememberCoroutineScope()
     val isLoading = remember { mutableStateOf(false) }
 
@@ -100,7 +98,6 @@ fun MenuLateral(
                     coroutineScope.launch {
                         isLoading.value = true
                         drawerState.close()
-                        authRepository.signOut()
                         navController.navigate(Rout.LoginScreen.name) {
                             popUpTo(navController.graph.startDestinationId) { inclusive = true }
                         }

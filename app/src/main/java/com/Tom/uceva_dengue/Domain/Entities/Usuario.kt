@@ -1,18 +1,20 @@
 package com.Tom.uceva_dengue.Domain.Entities
 
-import java.util.Date
-
 data class Usuario(
-    var Id: String = "",
-    var Nombre: String = "",
-    var Ciudad: String = "",
-    var Departamento: String = "",
-    var Correo: String = "",
-    var Direccion: String = "",
-    var FechaNacimiento: String? = null,
-    var Genero: String = "",
-    var personalMedico: Boolean = false,
-    var profesion: String = "",
-    var especialidadMedica: String = "",
-    var registroMedico: String = ""
+    var ID_USUARIO: Int = 0,
+    var NOMBRE_USUARIO: String? = null,
+    var CORREO_USUARIO: String? = null,
+    var CONTRASENIA_USUARIO: String? = null,
+    var DIRECCION_USUARIO: String? = null,
+    var FK_ID_ROL: Int = 0,
+    var NOMBRE_ROL: String? = null,
+    var FK_ID_MUNICIPIO: Int = 0,
+    var NOMBRE_MUNICIPIO: String? = null,
+    var FK_ID_TIPOSANGRE: Int = 0,
+    var NOMBRE_TIPOSANGRE: String? = null,
+    var FK_ID_GENERO: Int = 0,
+    var NOMBRE_GENERO: String? = null,
+    var ID_DEPARTAMENTO: Int = 0,
+    var NOMBRE_ESTADOUSUARIO: String? = null,
+    var FK_ID_ESTADOUSUARIO: Int = 0
 )

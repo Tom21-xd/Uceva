@@ -13,27 +13,22 @@ import com.Tom.uceva_dengue.Domain.Entities.Municipio
 import com.Tom.uceva_dengue.Domain.Entities.Usuario
 import com.Tom.uceva_dengue.Domain.UseCases.Departamento.GetDepartamentosUseCase
 import com.Tom.uceva_dengue.Domain.UseCases.Genero.GetGenerosUseCase
+import com.Tom.uceva_dengue.Domain.UseCases.IniciarSesionUseCase
 import com.Tom.uceva_dengue.Domain.UseCases.Municipio.GetMunicipiosUseCase
 import com.Tom.uceva_dengue.Domain.UseCases.Usuario.CrearUsuarioUseCase
-import com.Tom.uceva_dengue.Domain.UseCases.Auth.IniciarSesion
-import com.Tom.uceva_dengue.Domain.UseCases.Auth.RegistrarUsuarioAuthUseCase
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class AuthViewModel : ViewModel(){
+class AuthViewModel : ViewModel() {
 
+    private val iniciarSesionUseCase = IniciarSesionUseCase()
 
-    private val  auth : FirebaseAuth = Firebase.auth
-
-    private val _correo = MutableLiveData<String>() //Se usa para crear e iniciar sesion
+    private val _correo = MutableLiveData<String>()
     val correo: MutableLiveData<String>
         get() = _correo
 
-    private val _contra = MutableLiveData<String>()//Se usa para crear e iniciar sesion
+    private val _contra = MutableLiveData<String>()
     val contra: MutableLiveData<String>
         get() = _contra
 
@@ -55,15 +50,14 @@ class AuthViewModel : ViewModel(){
 
     private fun contravalida(contra: String): Boolean = contra.length >= 8
 
-    private fun correovalido(correo: String): Boolean = Patterns.EMAIL_ADDRESS.matcher(correo).matches()
+    private fun correovalido(correo: String): Boolean =
+        Patterns.EMAIL_ADDRESS.matcher(correo).matches()
 
     fun onLoginChange(correo: String, contra: String) {
         _correo.value = correo
         _contra.value = contra
-        _loginEnabled.value = correovalido(correo) && contravalida(contra)
+        _loginEnabled.value = correovalido(correo)
     }
-
-    private val signInUseCase = IniciarSesion()
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> get() = _loading
@@ -72,14 +66,13 @@ class AuthViewModel : ViewModel(){
         viewModelScope.launch {
             _loading.value = true
 
-            val success = signInUseCase.execute(email, password)
+            val resultado = iniciarSesionUseCase.execute(email, password)
 
             _loading.value = false
 
-            if (success) {
+            resultado.onSuccess { usuarioEncontrado ->
                 HomeScreen()
-            } else {
-
+            }.onFailure { error ->
             }
         }
     }
@@ -89,7 +82,7 @@ class AuthViewModel : ViewModel(){
     private val getMunicipiosUseCase: GetMunicipiosUseCase = GetMunicipiosUseCase()
     private val getGenerosUseCase: GetGenerosUseCase = GetGenerosUseCase()
     private val CrearUsuarioUseCase: CrearUsuarioUseCase = CrearUsuarioUseCase()
-    private val registrarUsuarioAuthUseCase: RegistrarUsuarioAuthUseCase = RegistrarUsuarioAuthUseCase()
+
 
     private val _departamentos = MutableStateFlow<List<Departamento>>(emptyList())
     val departamentos = _departamentos.asStateFlow()
@@ -129,8 +122,6 @@ class AuthViewModel : ViewModel(){
         }
     }
 
-
-
     private val _nombres = MutableLiveData<String>()
     val nombres: MutableLiveData<String>
         get() = _nombres
@@ -141,20 +132,25 @@ class AuthViewModel : ViewModel(){
 
     private val _correoR = MutableLiveData<String>()
     val CorreoR: MutableLiveData<String>
-        get()= _correoR
+        get() = _correoR
 
-    private val _genero = MutableLiveData<String>()
-    val genero: MutableLiveData<String>
-        get() = _genero
+    private val _generoId = MutableLiveData<Int>()
+    val generoId: LiveData<Int> get() = _generoId
+
+    private val _generoNombre = MutableLiveData<String>()
+    val generoNombre: LiveData<String> get() = _generoNombre
 
     private val _departamento = MutableLiveData<String>()
     val departamento: MutableLiveData<String>
         get() = _departamento
 
-    private val _ciudad = MutableLiveData<String>()
-    val ciudad: MutableLiveData<String>
-        get() = _ciudad
+    private val _ciudadId = MutableLiveData<Int>()
+    val ciudadId: MutableLiveData<Int>
+        get() = _ciudadId
 
+    private val _ciudadNombre = MutableLiveData<String>()
+    val ciudadNombre: MutableLiveData<String>
+        get() = _ciudadNombre
 
     private val _direccion = MutableLiveData<String>()
     val direccion: MutableLiveData<String>
@@ -171,6 +167,10 @@ class AuthViewModel : ViewModel(){
     private val _profesion = MutableLiveData<String>()
     val profesion: MutableLiveData<String>
         get() = _profesion
+
+    private val _tipoSangre = MutableLiveData<Int>()
+    val tipoSangre: MutableLiveData<Int>
+        get() = _tipoSangre
 
     private val _especialidadMedica = MutableLiveData<String>()
     val especialidadMedica: MutableLiveData<String>
@@ -192,15 +192,15 @@ class AuthViewModel : ViewModel(){
         nombres: String,
         apellidos: String,
         departamento: String,
-        ciudad: String,
+        ciudadId: Int,
         direccion: String,
         personalMedico: Boolean,
         profesion: String = "",
         especialidadMedica: String = "",
         registroMedico: String = "",
-        genero: String = "",
-        fechaNacimiento: String=""
-
+        generoId: Int = 0,
+        fechaNacimiento: String="",
+        tipoSangre: Int = 0
     ) {
         _correoR.value = correoR
         _contra.value = contra
@@ -208,24 +208,25 @@ class AuthViewModel : ViewModel(){
         _nombres.value = nombres
         _apellidos.value = apellidos
         _departamento.value = departamento
-        _ciudad.value = ciudad
+        _ciudadId.value = ciudadId
         _direccion.value = direccion
         _personalMedico.value = personalMedico
         _profesion.value = profesion
         _especialidadMedica.value = especialidadMedica
         _registroMedico.value = registroMedico
-        _genero.value = genero
+        _generoId.value = generoId
         _fechaNacimiento.value = fechaNacimiento
+        _tipoSangre.value = tipoSangre
     }
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: MutableLiveData<Boolean> get() = _isLoading
 
-    fun RegistrarUsuario(navController: NavController) {
+    fun registrarUsuario(navController: NavController) {
         viewModelScope.launch {
             _isLoading.value = true
 
-            val email = _correoR.value ?: ""
+            val email = _correo.value ?: ""
             val password = _contra.value ?: ""
 
             if (email.isEmpty() || password.isEmpty()) {
@@ -234,36 +235,30 @@ class AuthViewModel : ViewModel(){
                 return@launch
             }
 
-            val resultadoAuth = registrarUsuarioAuthUseCase.execute(email, password)
-            resultadoAuth.onSuccess { userId ->
+            val usuario = Usuario(
+                ID_USUARIO = 0,
+                NOMBRE_USUARIO = "${_nombres.value} ${_apellidos.value}",
+                CORREO_USUARIO = email,
+                CONTRASENIA_USUARIO = password,
+                DIRECCION_USUARIO = _direccion.value ?: "",
+                FK_ID_ROL = 2,
+                FK_ID_TIPOSANGRE = _tipoSangre.value ?: 0,
+                FK_ID_GENERO = _generoId.value ?: 0,
+                FK_ID_ESTADOUSUARIO = 2
+            )
 
-                val usuario = Usuario(
-                    Id = userId,
-                    Nombre = "${_nombres.value} ${_apellidos.value}",
-                    Ciudad = _ciudad.value ?: "",
-                    Departamento = _departamento.value ?: "",
-                    Correo = email,
-                    Direccion = _direccion.value ?: "",
-                    FechaNacimiento = _fechaNacimiento.value ?: "",
-                    Genero = _genero.value ?: "",
-                    personalMedico = _personalMedico.value ?: false,
-                    profesion = _profesion.value ?: "",
-                    especialidadMedica = _especialidadMedica.value ?: "",
-                    registroMedico = _registroMedico.value ?: ""
-                )
+            val resultadoMySQL = CrearUsuarioUseCase.execute(usuario)
 
-                val resultadoFirestore = CrearUsuarioUseCase.execute(usuario)
-                resultadoFirestore.onSuccess {
-                    Log.d("Registro", "Usuario registrado en Firestore")
-                    _isLoading.value = false
-                    navController.navigate("HomeScreen")
-                }.onFailure { error ->
-                    Log.e("Registro", "Error al guardar en Firestore: ${error.message}")
-                    _isLoading.value = false
-                }
+            _isLoading.value = false
+
+            resultadoMySQL.onSuccess {
+                Log.d("Registro", "Usuario registrado en MySQL")
+                navController.navigate("HomeScreen")
             }.onFailure { error ->
-                Log.e("Registro", "Error al registrar en FirebaseAuth: ${error.message}")
-                _isLoading.value = false
+                Log.e("Registro", "Error al registrar en MySQL: ${error.message}")
             }
         }
-    }}
+    }
+
+
+}

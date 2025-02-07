@@ -54,12 +54,7 @@ android {
 }
 
 dependencies {
-
-    implementation(platform(libs.firebase.bom))
-
-    implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore.ktx)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -74,8 +69,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.auth.ktx)
-    implementation(libs.firebase.firestore)
-    implementation(libs.google.firebase.firestore.ktx)
     implementation (libs.maps.compose)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
@@ -85,6 +78,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation (libs.android.maps.utils)
     implementation (libs.maps.utils.ktx)
+    implementation(libs.mysql.connector.java)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

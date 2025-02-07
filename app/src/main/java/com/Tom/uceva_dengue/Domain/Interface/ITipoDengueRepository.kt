@@ -1,4 +1,4 @@
-package com.Tom.uceva_dengue.Domain.Repositories
+package com.Tom.uceva_dengue.Domain.Interface
 
 import com.Tom.uceva_dengue.Domain.Entities.Publicacion
 import com.Tom.uceva_dengue.Domain.Entities.TipoDengue

@@ -281,13 +281,17 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
     val confirmacionContra: String by viewModel.confirmacionContra.observeAsState(initial = "")
     val apellidos: String by viewModel.apellidos.observeAsState(initial = "")
     val departamento: String by viewModel.departamento.observeAsState(initial = "Seleccione")
-    val ciudad: String by viewModel.ciudad.observeAsState(initial = "Seleccione")
+    val ciudadId: Int by viewModel.ciudadId.observeAsState(initial = 0)
+    val ciudadNombre: String by viewModel.ciudadNombre.observeAsState(initial = "")
+
     val direccion: String by viewModel.direccion.observeAsState(initial = "")
     val personalMedico: Boolean by viewModel.personalMedico.observeAsState(initial = false)
     val profesion: String by viewModel.profesion.observeAsState(initial = "")
     val especialidadMedica: String by viewModel.especialidadMedica.observeAsState(initial = "")
     val registroMedico: String by viewModel.registroMedico.observeAsState(initial = "")
-    val genero: String by viewModel.genero.observeAsState(initial = "")
+    val generoId: Int by viewModel.generoId.observeAsState(initial = 0)
+    val generoNombre: String by viewModel.generoNombre.observeAsState(initial = "")
+
     val fechaNacimiento: String by viewModel.fechaNacimiento.observeAsState(initial = "")
 
     var contrasenaVisible by remember { mutableStateOf(false) }
@@ -318,25 +322,25 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.weight(1f)) {
                         Campo(nombres, "Nombres") {
-                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, it, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento)
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, it, apellidos, departamento, ciudadId, direccion, personalMedico, profesion, especialidadMedica, registroMedico, generoId, fechaNacimiento)
                         }
                     }
                     Spacer(modifier = Modifier.width(5.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Campo(apellidos, "Apellidos") {
-                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, it, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento)
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, it, departamento, ciudadId, direccion, personalMedico, profesion, especialidadMedica, registroMedico, generoId, fechaNacimiento)
                         }
                     }
                 }
 
                 Campo(correo, "Correo") {
-                    viewModel.OnRegisterChange(it, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento)
+                    viewModel.OnRegisterChange(it, contra, confirmacionContra, nombres, apellidos, departamento, ciudadId, direccion, personalMedico, profesion, especialidadMedica, registroMedico, generoId, fechaNacimiento)
                 }
 
                 Row(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = contra,
-                            onValueChange = { viewModel.OnRegisterChange(correo, it, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento) },
+                            onValueChange = { viewModel.OnRegisterChange(correo, it, confirmacionContra, nombres, apellidos, departamento, ciudadId, direccion, personalMedico, profesion, especialidadMedica, registroMedico, generoId, fechaNacimiento) },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = { Text("Contraseña") },
                             singleLine = true,
@@ -355,7 +359,7 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                 Row(modifier = Modifier.fillMaxWidth()){
                     OutlinedTextField(
                         value = confirmacionContra,
-                        onValueChange = { viewModel.OnRegisterChange(correo, contra, it, nombres, apellidos, departamento, ciudad, direccion, personalMedico, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento) },
+                        onValueChange = { viewModel.OnRegisterChange(correo, contra, it, nombres, apellidos, departamento, ciudadId, direccion, personalMedico, profesion, especialidadMedica, registroMedico, generoId, fechaNacimiento) },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("Confirmacion") },
                         singleLine = true,
@@ -376,8 +380,11 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        ComboBox(selectedValue = genero, options = generos.map { it.Nombre }, label = "Género") {
-                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, it, fechaNacimiento)
+                        ComboBox(selectedValue = generoNombre, options = generos.map { it.Nombre }, label = "Género") {
+                            val selectedGenero = generos.find { it.Nombre == generoNombre}
+                            val opc = selectedGenero?.Id ?: 0
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudadId, direccion, personalMedico,profesion,especialidadMedica,registroMedico,
+                                opc as Int, fechaNacimiento)
 
                         }
                     }
@@ -411,8 +418,8 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
 
                                 viewModel.OnRegisterChange(
                                     correo, contra, confirmacionContra, nombres, apellidos,
-                                    departamento, ciudad, direccion, personalMedico,
-                                    profesion, especialidadMedica, registroMedico, genero, fechaFormateada
+                                    departamento, ciudadId, direccion, personalMedico,
+                                    profesion, especialidadMedica, registroMedico, generoId, fechaFormateada
                                 )
                             }
 
@@ -439,7 +446,7 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                             label = "Departamento",
                             enabled = departamentos.isNotEmpty()
                         ) { nuevoDepartamento ->
-                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, nuevoDepartamento, ciudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento)
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, nuevoDepartamento, ciudadId, direccion, personalMedico,profesion,especialidadMedica,registroMedico, generoId, fechaNacimiento)
                             val departamentoSeleccionado = departamentos.firstOrNull { it.Nombre == nuevoDepartamento }
                             departamentoSeleccionado?.Id?.let { viewModel.fetchMunicipios(it) }
                         }
@@ -447,22 +454,24 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                     Spacer(modifier = Modifier.width(5.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         ComboBox(
-                            selectedValue = ciudad,
+                            selectedValue = ciudadNombre,
                             options = if (ciudades.isNotEmpty()) ciudades.map { it.Nombre ?: "" } else emptyList(),
                             label = "Municipio",
                             enabled = departamento.isNotEmpty() && ciudades.isNotEmpty()
                         ) { nuevaCiudad ->
-                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, nuevaCiudad, direccion, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento)
+                            val ciudadSeleccionada = ciudades.firstOrNull { it.Nombre == nuevaCiudad }
+                            val ciudadId = ciudadSeleccionada?.Id ?: 0
+                            viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudadId as Int, direccion, personalMedico,profesion,especialidadMedica,registroMedico, generoId, fechaNacimiento)
                         }
                     }
                 }
 
-                Campo(direccion, "Dirección") { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, it, personalMedico,profesion,especialidadMedica,registroMedico, genero, fechaNacimiento) }
+                Campo(direccion, "Dirección") { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudadId, it, personalMedico,profesion,especialidadMedica,registroMedico, generoId, fechaNacimiento) }
 
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = personalMedico,
-                        onCheckedChange = { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudad, direccion, it, profesion, especialidadMedica, registroMedico, genero, fechaNacimiento) }
+                        onCheckedChange = { viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudadId, direccion, it, profesion, especialidadMedica, registroMedico, generoId, fechaNacimiento) }
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = "Personal médico", fontSize = 14.sp, color = Color.Black)
@@ -477,7 +486,7 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                 val isLoading by viewModel.isLoading.observeAsState(initial = false)
 
                 Button(
-                    onClick = { viewModel.RegistrarUsuario(navController) },
+                    onClick = { viewModel.registrarUsuario(navController) },
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
                         .height(48.dp),

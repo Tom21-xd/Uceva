@@ -1,4 +1,4 @@
-package com.Tom.uceva_dengue.Domain.Repositories
+package com.Tom.uceva_dengue.Domain.Interface
 
 import com.Tom.uceva_dengue.Domain.Entities.Municipio
 import kotlinx.coroutines.flow.Flow
