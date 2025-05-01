@@ -20,11 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.Tom.uceva_dengue.Domain.Entities.Publicacion
+import com.Tom.uceva_dengue.Data.Model.PublicationModel
 
 @Composable
 fun PostCard(
-    publicacion: Publicacion
+    publicacion: PublicationModel
 ) {
     Card(
         modifier = Modifier
@@ -38,7 +38,7 @@ fun PostCard(
                 .fillMaxWidth()
         ) {
             Text(
-                text = publicacion.Titulo.toString(),
+                text = publicacion.TITULO_PUBLICACION.toString(),
                 fontSize = 20.sp
             )
 
@@ -56,7 +56,7 @@ fun PostCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = publicacion.Descripcion.toString(),
+                text = publicacion.DESCRIPCION_PUBLICACION.toString(),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
@@ -67,8 +67,8 @@ fun PostCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "Publicado por: ${publicacion.Usuario}")
-                Text(text = publicacion.FechaPublicacion.toString())
+                Text(text = "Publicado por: ${publicacion.NOMBRE_USUARIO}")
+                Text(text = publicacion.FECHA_PUBLICACION.toString())
             }
         }
     }

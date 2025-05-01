@@ -7,22 +7,17 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.Tom.uceva_dengue.Domain.Entities.Departamento
-import com.Tom.uceva_dengue.Domain.Entities.Genero
-import com.Tom.uceva_dengue.Domain.Entities.Municipio
-import com.Tom.uceva_dengue.Domain.Entities.Usuario
-import com.Tom.uceva_dengue.Domain.UseCases.Departamento.GetDepartamentosUseCase
-import com.Tom.uceva_dengue.Domain.UseCases.Genero.GetGenerosUseCase
-import com.Tom.uceva_dengue.Domain.UseCases.IniciarSesionUseCase
-import com.Tom.uceva_dengue.Domain.UseCases.Municipio.GetMunicipiosUseCase
-import com.Tom.uceva_dengue.Domain.UseCases.Usuario.CrearUsuarioUseCase
+import com.Tom.uceva_dengue.Data.Api.RetrofitClient
+import com.Tom.uceva_dengue.Data.Model.CityModel
+import com.Tom.uceva_dengue.Data.Model.DepartmentModel
+import com.Tom.uceva_dengue.Data.Model.GenreModel
+import com.Tom.uceva_dengue.Data.Model.LoginModel
+import com.Tom.uceva_dengue.Data.Model.RegisterUserModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class AuthViewModel : ViewModel() {
-
-    private val iniciarSesionUseCase = IniciarSesionUseCase()
+class AuthViewModel: ViewModel() {
 
     private val _correo = MutableLiveData<String>()
     val correo: MutableLiveData<String>
@@ -64,13 +59,14 @@ class AuthViewModel : ViewModel() {
 
     fun iniciosesioncorreo(email: String, password: String, HomeScreen: () -> Unit) {
         viewModelScope.launch {
+            HomeScreen()
             _loading.value = true
 
-            val resultado = iniciarSesionUseCase.execute(email, password)
+            val response = RetrofitClient.authService.login(LoginModel(email, password))
 
             _loading.value = false
 
-            resultado.onSuccess { usuarioEncontrado ->
+            response.onSuccess { usuarioEncontrado ->
                 HomeScreen()
             }.onFailure { error ->
             }
@@ -78,19 +74,15 @@ class AuthViewModel : ViewModel() {
     }
 
     //---------------------------Registro----------------------------------------
-    private val getDepartmentsUseCase: GetDepartamentosUseCase = GetDepartamentosUseCase()
-    private val getMunicipiosUseCase: GetMunicipiosUseCase = GetMunicipiosUseCase()
-    private val getGenerosUseCase: GetGenerosUseCase = GetGenerosUseCase()
-    private val CrearUsuarioUseCase: CrearUsuarioUseCase = CrearUsuarioUseCase()
 
 
-    private val _departamentos = MutableStateFlow<List<Departamento>>(emptyList())
+    private val _departamentos = MutableStateFlow<List<DepartmentModel>>(emptyList())
     val departamentos = _departamentos.asStateFlow()
 
-    private val _municipios = MutableStateFlow<List<Municipio>>(emptyList())
+    private val _municipios = MutableStateFlow<List<CityModel>>(emptyList())
     val municipios = _municipios.asStateFlow()
 
-    private val _generos = MutableStateFlow<List<Genero>>(emptyList())
+    private val _generos = MutableStateFlow<List<GenreModel>>(emptyList())
     val generos = _generos.asStateFlow()
 
     init {
@@ -100,25 +92,25 @@ class AuthViewModel : ViewModel() {
 
     private fun fetchDepartamentos() {
         viewModelScope.launch {
-            getDepartmentsUseCase.execute().collect { listaDepartamentos ->
-                _departamentos.value = listaDepartamentos
-            }
+            _departamentos.value = RetrofitClient.departmentService.getDepartments()
+
         }
     }
 
     fun fetchGeneros() {
         viewModelScope.launch {
-            getGenerosUseCase.execute().collect {
-                _generos.value = it
-            }
+            _generos.value = RetrofitClient.genreService.getGenres()
         }
     }
 
     fun fetchMunicipios(departamentoId: String) {
         viewModelScope.launch {
-            getMunicipiosUseCase.execute(departamentoId).collect {
-                _municipios.value = it
+            try {
+                _municipios.value = RetrofitClient.cityService.getCities(departamentoId)
+            } catch (e: Exception) {
+                // Manejo de error
             }
+
         }
     }
 
@@ -235,8 +227,7 @@ class AuthViewModel : ViewModel() {
                 return@launch
             }
 
-            val usuario = Usuario(
-                ID_USUARIO = 0,
+            val usuario = RegisterUserModel(
                 NOMBRE_USUARIO = "${_nombres.value} ${_apellidos.value}",
                 CORREO_USUARIO = email,
                 CONTRASENIA_USUARIO = password,
@@ -244,21 +235,24 @@ class AuthViewModel : ViewModel() {
                 FK_ID_ROL = 2,
                 FK_ID_TIPOSANGRE = _tipoSangre.value ?: 0,
                 FK_ID_GENERO = _generoId.value ?: 0,
-                FK_ID_ESTADOUSUARIO = 2
+                FK_ID_MUNICIPIO = _ciudadId.value ?: 0
             )
 
-            val resultadoMySQL = CrearUsuarioUseCase.execute(usuario)
+            try {
+                val responseMessage = RetrofitClient.authService.register(usuario)
 
-            _isLoading.value = false
-
-            resultadoMySQL.onSuccess {
-                Log.d("Registro", "Usuario registrado en MySQL")
+                Log.d("Registro", "Usuario registrado en MySQL: $responseMessage")
                 navController.navigate("HomeScreen")
-            }.onFailure { error ->
-                Log.e("Registro", "Error al registrar en MySQL: ${error.message}")
+
+            } catch (e: Exception) {
+                Log.e("Registro", "Error al registrar en MySQL: ${e.message}")
+            } finally {
+                _isLoading.value = false
             }
         }
     }
+
+
 
 
 }

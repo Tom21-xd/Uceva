@@ -78,7 +78,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation (libs.android.maps.utils)
     implementation (libs.maps.utils.ktx)
-    implementation(libs.mysql.connector.java)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 
 
     testImplementation(libs.junit)

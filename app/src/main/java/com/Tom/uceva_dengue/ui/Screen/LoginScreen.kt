@@ -380,9 +380,9 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        ComboBox(selectedValue = generoNombre, options = generos.map { it.Nombre }, label = "Género") {
-                            val selectedGenero = generos.find { it.Nombre == generoNombre}
-                            val opc = selectedGenero?.Id ?: 0
+                        ComboBox(selectedValue = generoNombre, options = generos.map { it.NOMBRE_GENERO }, label = "Género") {
+                            val selectedGenero = generos.find { it.NOMBRE_GENERO == generoNombre}
+                            val opc = selectedGenero?.ID_GENERO ?: 0
                             viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudadId, direccion, personalMedico,profesion,especialidadMedica,registroMedico,
                                 opc as Int, fechaNacimiento)
 
@@ -442,25 +442,25 @@ fun Registro(modifier: Modifier, viewModel:AuthViewModel, navController: NavCont
                     Column(modifier = Modifier.weight(1f)) {
                         ComboBox(
                             selectedValue = departamento,
-                            options = if (departamentos.isNotEmpty()) departamentos.map { it.Nombre } else listOf("Cargando..."),
+                            options = if (departamentos.isNotEmpty()) departamentos.map { it.NOMBRE_DEPARTAMENTO } else listOf("Cargando..."),
                             label = "Departamento",
                             enabled = departamentos.isNotEmpty()
                         ) { nuevoDepartamento ->
                             viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, nuevoDepartamento, ciudadId, direccion, personalMedico,profesion,especialidadMedica,registroMedico, generoId, fechaNacimiento)
-                            val departamentoSeleccionado = departamentos.firstOrNull { it.Nombre == nuevoDepartamento }
-                            departamentoSeleccionado?.Id?.let { viewModel.fetchMunicipios(it) }
+                            val departamentoSeleccionado = departamentos.firstOrNull { it.NOMBRE_DEPARTAMENTO == nuevoDepartamento }
+                            departamentoSeleccionado?.ID_DEPARTAMENTO?.let { viewModel.fetchMunicipios(it.toString()) }
                         }
                     }
                     Spacer(modifier = Modifier.width(5.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         ComboBox(
                             selectedValue = ciudadNombre,
-                            options = if (ciudades.isNotEmpty()) ciudades.map { it.Nombre ?: "" } else emptyList(),
+                            options = if (ciudades.isNotEmpty()) ciudades.map { it.NOMBRE_CIUDAD ?: "" } else emptyList(),
                             label = "Municipio",
                             enabled = departamento.isNotEmpty() && ciudades.isNotEmpty()
                         ) { nuevaCiudad ->
-                            val ciudadSeleccionada = ciudades.firstOrNull { it.Nombre == nuevaCiudad }
-                            val ciudadId = ciudadSeleccionada?.Id ?: 0
+                            val ciudadSeleccionada = ciudades.firstOrNull { it.NOMBRE_CIUDAD == nuevaCiudad }
+                            val ciudadId = ciudadSeleccionada?.ID_CIUDAD ?: 0
                             viewModel.OnRegisterChange(correo, contra, confirmacionContra, nombres, apellidos, departamento, ciudadId as Int, direccion, personalMedico,profesion,especialidadMedica,registroMedico, generoId, fechaNacimiento)
                         }
                     }

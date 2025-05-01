@@ -2,6 +2,7 @@
 agp = "8.5.2"
 androidMapsUtils = "3.8.2"
 animatedNavigationBar = "1.0.0"
+converterGson = "2.9.0"
 datastorePreferences = "1.1.2"
 kotlin = "1.9.0"
 coreKtx = "1.15.0"
@@ -14,10 +15,10 @@ composeBom = "2025.01.01"
 mapsCompose = "4.4.1"
 mapsUtilsKtx = "5.1.1"
 material3 = "1.3.1"
-mysqlConnectorJava = "8.0.33"
 navigationCompose = "2.8.6"
 materialIconsExtended = "1.7.7"
 playServicesMaps = "19.0.0"
+retrofit = "2.9.0"
 runtimeLivedata = "1.7.7"
 firebaseAuthKtx = "23.1.0"
 googleGmsGoogleServices = "4.4.2"
@@ -33,7 +34,7 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 animated-navigation-bar = { module = "com.exyte:animated-navigation-bar", version.ref = "animatedNavigationBar" }
-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -54,11 +55,11 @@ firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx",
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 maps-utils-ktx = { module = "com.google.maps.android:maps-utils-ktx", version.ref = "mapsUtilsKtx" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
-mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "mysqlConnectorJava" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 androidx-datastore-core-android = { group = "androidx.datastore", name = "datastore-core-android", version.ref = "datastoreCoreAndroid" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

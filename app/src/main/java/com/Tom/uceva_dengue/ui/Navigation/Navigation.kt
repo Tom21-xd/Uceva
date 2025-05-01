@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -49,7 +50,7 @@ fun NavigationCon(context: Context) {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = drawerState.isOpen, // Habilita gestos solo si el menú está abierto
+        gesturesEnabled = drawerState.isOpen,
         drawerContent = {
             MenuLateral(navController = navController, drawerState = drawerState)
         }
@@ -62,7 +63,7 @@ fun NavigationCon(context: Context) {
                             title = {
                                 Text(
                                     text = getTopBarTitle(route),
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth().padding(0.dp, 0.dp, 60.dp, 0.dp),
                                     textAlign = TextAlign.Center,
                                     fontSize = 18.sp
                                 )
