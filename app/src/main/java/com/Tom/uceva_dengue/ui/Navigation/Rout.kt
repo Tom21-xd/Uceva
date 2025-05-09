@@ -7,7 +7,6 @@ enum class Rout {
     NotificationScreen,
     ProfileScreen,
     OptionScreen,
-    InfoScreen
-
-
+    InfoScreen,
+    CreatePublicationScreen,
 }

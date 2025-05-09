@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.Tom.uceva_dengue.ui.viewModel.MapViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -199,7 +200,7 @@ fun CreateCaseScreen() {
                             .background(Color.LightGray),
                         contentAlignment = Alignment.Center // Centrar texto dentro del mapa
                     ) {
-                        MapScreen()
+                        MapScreen(viewModel = MapViewModel())
                     }
                 }
             }
@@ -244,8 +245,3 @@ fun SectionHeader(
     }
 }
 
-@Composable
-@Preview
-fun previ(){
-    CreateCaseScreen()
-}

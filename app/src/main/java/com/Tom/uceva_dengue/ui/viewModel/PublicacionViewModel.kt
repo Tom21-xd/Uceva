@@ -1,41 +1,44 @@
 package com.Tom.uceva_dengue.ui.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class PublicacionViewModel : ViewModel() {
-
-//    private val getPublicacionesUseCase = GetPublicacionesUseCase()
-//
-//    private val _publicaciones = MutableStateFlow<List<Publicacion>>(emptyList())
-//    val publicaciones = _publicaciones.asStateFlow()
-//
-//    init {
-//        obtenerPublicaciones()
-//    }
-//
-//    private fun obtenerPublicaciones() {
-//        viewModelScope.launch {
-//            getPublicacionesUseCase.execute().collect {
-//                _publicaciones.value = it
-//            }
-//        }
-//    }
-private val _publicaciones = MutableStateFlow(
-    listOf(
-        PublicationModel(
-            ID_PUBLICACION = 1,
-            TITULO_PUBLICACION = "Prevención del Dengue",
-            DESCRIPCION_PUBLICACION = "Evita la proliferación del mosquito eliminando criaderos de agua estancada.",
-            FECHA_PUBLICACION = "2024-02-13",
-            IMAGEN_PUBLICACION = "",
-            FK_ID_USUARIO = 1,
-            NOMBRE_USUARIO = "Ministerio de Salud"
-        )
-    )
-)
-
+    private val _publicaciones = MutableStateFlow<List<PublicationModel>>(emptyList())
     val publicaciones = _publicaciones.asStateFlow()
+
+    init {
+        obtenerPublicaciones()
+    }
+
+    fun obtenerPublicaciones() {
+        viewModelScope.launch {
+            try {
+                _publicaciones.value = RetrofitClient.publicationService.getPublications()
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al obtener publicaciones", e)
+            }
+        }
+    }
+
+    fun buscarPublicacion(nombre: String) {
+        viewModelScope.launch {
+            try {
+                if (nombre.isNotBlank()) {
+                    _publicaciones.value = RetrofitClient.publicationService.getPublication(nombre)
+                } else {
+                    obtenerPublicaciones() // Si el campo está vacío, obtenemos todas las publicaciones
+                }
+                Log.d("PublicacionViewModel", "Publicaciones: ${_publicaciones.value}")
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al buscar publicaciones", e)
+            }
+        }
+    }
 }
+

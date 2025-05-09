@@ -12,6 +12,7 @@ android {
     defaultConfig {
         applicationId = "com.Tom.uceva_dengue"
         minSdk = 24
+        //noinspection OldTargetApi
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -54,7 +55,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.firebase.auth)
+
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -68,18 +69,19 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
-    implementation(libs.firebase.auth.ktx)
-    implementation (libs.maps.compose)
+    implementation(libs.maps.compose)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.androidx.datastore.core.android)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.datastore.core)
     implementation(libs.androidx.room.ktx)
-    implementation (libs.android.maps.utils)
-    implementation (libs.maps.utils.ktx)
+    implementation(libs.android.maps.utils)
+    implementation(libs.maps.utils.ktx)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.coil.compose)
 
 
     testImplementation(libs.junit)

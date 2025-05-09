@@ -26,6 +26,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.theme.*
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
@@ -36,7 +37,6 @@ import com.exyte.animatednavbar.utils.noRippleClickable
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
-    val bottomBarRoutes = listOf("MapScreen", "HomeScreen", "NotificationScreen")
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     val items = remember { NavigationBarItems.values() }
@@ -83,9 +83,9 @@ fun BottomNavigationBar(navController: NavController) {
 
 
 enum class NavigationBarItems(val icon: ImageVector, val route: String) {
-    Map(icon = Icons.Default.Map, route = "MapScreen"),
-    Hospital(icon = Icons.Default.LocalHospital, route = "HomeScreen"),
-    Notification(icon = Icons.Default.Notifications, route = "NotificationScreen")
+    Map(icon = Icons.Default.Map, Rout.MapScreen.name),
+    Hospital(icon = Icons.Default.LocalHospital, Rout.HomeScreen.name),
+    Notification(icon = Icons.Default.Notifications, Rout.NotificationScreen.name)
 }
 
 fun Modifier.noRippleClickable (onClick:() -> Unit): Modifier =composed {

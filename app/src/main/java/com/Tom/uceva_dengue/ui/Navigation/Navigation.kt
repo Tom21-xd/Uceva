@@ -2,6 +2,7 @@ package com.Tom.uceva_dengue.ui.Navigation
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,11 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.Tom.uceva_dengue.Data.Service.AuthRepository
 import com.Tom.uceva_dengue.ui.Components.BottomNavigationBar
 import com.Tom.uceva_dengue.ui.Components.MenuLateral
+import com.Tom.uceva_dengue.ui.Screen.CreatePublicationScreen
 import com.Tom.uceva_dengue.ui.Screen.HomeScreen
 import com.Tom.uceva_dengue.ui.Screen.LoginScreen
 import com.Tom.uceva_dengue.ui.Screen.MapScreen
@@ -36,6 +40,8 @@ import com.Tom.uceva_dengue.ui.Screen.NotificationScreen
 import com.Tom.uceva_dengue.ui.Screen.ProfileScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
+import com.Tom.uceva_dengue.ui.viewModel.CreatePublicationViewModel
+import com.Tom.uceva_dengue.ui.viewModel.MapViewModel
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import kotlinx.coroutines.launch
 
@@ -48,6 +54,15 @@ fun NavigationCon(context: Context) {
     val scope = rememberCoroutineScope()
     val currentRoute = navController.currentBackStackEntryFlow.collectAsState(initial = null)
 
+    val authRepository = AuthRepository(context)
+    val user = authRepository.getUser()
+    val role = authRepository.getRole()
+    Log.d("NavigationCon", "User: $user, Role: $role")
+    val startDestination = if (user == null) {
+        Rout.LoginScreen.name
+    } else {
+        Rout.HomeScreen.name
+    }
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen,
@@ -63,7 +78,9 @@ fun NavigationCon(context: Context) {
                             title = {
                                 Text(
                                     text = getTopBarTitle(route),
-                                    modifier = Modifier.fillMaxWidth().padding(0.dp, 0.dp, 60.dp, 0.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(0.dp, 0.dp, 60.dp, 0.dp),
                                     textAlign = TextAlign.Center,
                                     fontSize = 18.sp
                                 )
@@ -96,17 +113,17 @@ fun NavigationCon(context: Context) {
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Rout.LoginScreen.name,
+                startDestination = startDestination,
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Rout.LoginScreen.name) {
-                    LoginScreen(viewModel = AuthViewModel(), navController = navController)
+                    LoginScreen(viewModel = viewModel<AuthViewModel>(), navController = navController)
                 }
                 composable(Rout.HomeScreen.name) {
-                    HomeScreen(viewModel = PublicacionViewModel())
+                    HomeScreen(viewModel = PublicacionViewModel(),role = role ,navController)
                 }
                 composable(Rout.MapScreen.name) {
-                    MapScreen()
+                    MapScreen(viewModel = MapViewModel())
                 }
                 composable(Rout.NotificationScreen.name) {
                     NotificationScreen()
@@ -119,6 +136,10 @@ fun NavigationCon(context: Context) {
                 composable(Rout.InfoScreen.name) {
 
                 }
+                composable(Rout.CreatePublicationScreen.name) {
+                    CreatePublicationScreen(viewModel = CreatePublicationViewModel())
+                }
+
             }
         }
     }
