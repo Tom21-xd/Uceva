@@ -3,7 +3,6 @@ package com.Tom.uceva_dengue.ui.viewModel
 import android.app.Application
 import android.util.Log
 import android.util.Patterns
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -16,6 +15,7 @@ import com.Tom.uceva_dengue.Data.Model.GenreModel
 import com.Tom.uceva_dengue.Data.Model.LoginModel
 import com.Tom.uceva_dengue.Data.Model.RegisterUserModel
 import com.Tom.uceva_dengue.Data.Service.AuthRepository
+import com.Tom.uceva_dengue.ui.Navigation.Rout
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -179,7 +179,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun fetchGeneros() {
         viewModelScope.launch {
             try {
-                _generos.value = RetrofitClient.genreService.getGenres()
+                _generos.value = RetrofitClient.genreService.getGenres().body()!!
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Error al cargar géneros: ${e.message}")
             }
@@ -283,7 +283,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 val responseMessage = RetrofitClient.authService.register(usuario)
 
                 Log.d("Registro", "Usuario registrado en MySQL: $responseMessage")
-                navController.navigate("HomeScreen")
+                navController.navigate(Rout.LoginScreen.name)
 
             } catch (e: Exception) {
                 Log.e("Registro", "Error al registrar usuario: ${e.message}")

@@ -332,7 +332,6 @@ fun Registro(modifier: Modifier, viewModel: AuthViewModel, navController: NavCon
     val cityName: String by viewModel.cityName.observeAsState(initial = "")
     val department: String by viewModel.department.observeAsState(initial = "")
 
-    // Tipo de documento
     var tipoDocumentoSeleccionado by remember { mutableStateOf(tipoIdentificaciones.first().codigo) }
     var numeroDocumento by remember { mutableStateOf("") }
     var contrasenaVisible by remember { mutableStateOf(false) }
@@ -346,7 +345,6 @@ fun Registro(modifier: Modifier, viewModel: AuthViewModel, navController: NavCon
         ) {
             Text("Registro", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
 
-            // Campos de texto
             Campo(firstName, "Nombres") {
                 viewModel.onRegisterChange(email, password, it, lastName, bloodTypeId, cityId, address, genderId)
             }
@@ -355,6 +353,9 @@ fun Registro(modifier: Modifier, viewModel: AuthViewModel, navController: NavCon
             }
             Campo(email, "Correo") {
                 viewModel.onRegisterChange(it, password, firstName, lastName, bloodTypeId, cityId, address, genderId)
+            }
+            Campo(address, "Direccion") {
+                viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, cityId, it, genderId)
             }
             OutlinedTextField(
                 value = password,

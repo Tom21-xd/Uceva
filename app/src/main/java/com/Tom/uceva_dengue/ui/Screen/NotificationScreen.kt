@@ -1,103 +1,113 @@
 package com.Tom.uceva_dengue.ui.Screen
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.Tom.uceva_dengue.ui.Components.BottomNavigationBar
+import com.Tom.uceva_dengue.Data.Model.NotificationModel
+import com.Tom.uceva_dengue.ui.viewModel.NotificationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationScreen (){
-    Column {
-        NotificationList(
-            notifications = listOf(
-                NotificationItem("Notificación 1", "Este es el contenido de la notificación 1.", "04/04/2024"),
-                NotificationItem("Notificación 2", "Este es el contenido de la notificación 2.", "04/04/2024"),
-                NotificationItem("Notificación 3", "Este es el contenido de la notificación 3.", "04/04/2024"),
-                NotificationItem("Notificación 4", "Este es el contenido de la notificación 4.", "04/04/2024")
-            ),
-            contentPadding = PaddingValues(10.dp) // Pasar el padding a la lista
-        )
-    }
+fun NotificationScreen(
+    navController: NavController,
+    viewModel: NotificationViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
+    val notifications by viewModel.notifications.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
-}
-data class NotificationItem(
-    val title: String,
-    val content: String,
-    val date: String
-)
-
-@Composable
-fun NotificationList(notifications: List<NotificationItem>, contentPadding: PaddingValues) {
-    LazyColumn(
-        modifier = Modifier
+    Column(
+        Modifier
             .fillMaxSize()
-            .padding(contentPadding), // Aplicar el padding a la lista de notificaciones
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(Color(0xFFF8F9FD))
+            .padding(16.dp)
     ) {
-        items(notifications) { notification ->
-            NotificationCard(notification)
+
+        when {
+            isLoading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            error != null -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = error ?: "Error inesperado", color = Color.Red)
+                }
+            }
+            else -> {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(notifications) { notif ->
+                        NotificationCard(notif)
+                    }
+                }
+            }
         }
     }
 }
-
 @Composable
-fun NotificationCard(notification: NotificationItem) {
+fun NotificationCard(notification: NotificationModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
-        elevation = CardDefaults.cardElevation(4.dp)
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(text = notification.title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = notification.content)
-            Spacer(modifier = Modifier.height(8.dp))
+        Column(Modifier.fillMaxWidth()) {
+            // Indicador lateral + cabecera
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .background(Color(0xFF5E81F4).copy(alpha = 0.1f), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Publicado", fontSize = 12.sp, color = Color.Gray)
-                Text(text = notification.date, fontSize = 12.sp, color = Color.Gray)
+                // Barrita azul
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .fillMaxHeight()
+                        .background(Color(0xFF5E81F4), shape = RoundedCornerShape(topStart = 12.dp))
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = notification.NOMBRE_TIPONOTIFICACION ?: "Sin título",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = notification.FECHA_NOTIFICACION ?: "",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(end = 12.dp)
+                )
+            }
+
+            // Contenido
+            Column(Modifier.padding(16.dp)) {
+                Text(
+                    text = notification.DESCRIPCION_TIPONOTIFICACION ?: "Sin contenido",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF4A4A4A)
+                )
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewNotificationScreen() {
-    NotificationScreen()
-}

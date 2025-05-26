@@ -11,6 +11,7 @@ data class CaseModel(
     val ID_MUNICIPIO: Int,
     val FK_ID_HOSPITAL: Int,
     val FK_ID_TIPODENGUE: Int,
+    val NOMBRE_TIPODENGUE: String,
     val FK_ID_PACIENTE: Int,
     val NOMBRE_PACIENTE: String,
     val FK_ID_PERSONALMEDICO: Int,

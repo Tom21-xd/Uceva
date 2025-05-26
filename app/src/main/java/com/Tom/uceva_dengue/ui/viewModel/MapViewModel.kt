@@ -22,11 +22,11 @@ class MapViewModel : ViewModel() {
         if (!isCasesFetched) {
             viewModelScope.launch {
                 try {
-                    val response = RetrofitClient.caseService.getCase()
+                    val response = RetrofitClient.caseService.getCases()
                     Log.d("Mapa", "Response: $response")
 
-                    if (response != _cases.value) {
-                        _cases.value = response
+                    if (response.body() != _cases.value) {
+                        _cases.value = response.body()!!
                     }
 
                     isCasesFetched = true

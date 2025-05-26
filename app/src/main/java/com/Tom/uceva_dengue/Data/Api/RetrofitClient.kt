@@ -2,12 +2,17 @@ import com.Tom.uceva_dengue.Data.Service.AuthService
 import com.Tom.uceva_dengue.Data.Service.BloodTypeService
 import com.Tom.uceva_dengue.Data.Service.CaseService
 import com.Tom.uceva_dengue.Data.Service.CityService
+import com.Tom.uceva_dengue.Data.Service.DengueService
 import com.Tom.uceva_dengue.Data.Service.DepartmentService
 import com.Tom.uceva_dengue.Data.Service.GenreService
+import com.Tom.uceva_dengue.Data.Service.HospitalService
+import com.Tom.uceva_dengue.Data.Service.NotificationService
 import com.Tom.uceva_dengue.Data.Service.PublicationService
+import com.Tom.uceva_dengue.Data.Service.UserService
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
@@ -21,7 +26,8 @@ object RetrofitClient {
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(ScalarsConverterFactory.create())  // Primero Scalars
+            .addConverterFactory(GsonConverterFactory.create())  // Para respuestas en texto
             .build()
     }
 
@@ -45,6 +51,18 @@ object RetrofitClient {
     }
     val caseService : CaseService by lazy {
         retrofit.create(CaseService::class.java)
+    }
+    val userService : UserService by lazy {
+        retrofit.create(UserService::class.java)
+    }
+    val dengueService : DengueService by lazy {
+        retrofit.create(DengueService::class.java)
+    }
+    val hospitalService : HospitalService by lazy {
+        retrofit.create(HospitalService::class.java)
+    }
+    val notificationService : NotificationService by lazy {
+        retrofit.create(NotificationService::class.java)
     }
 
 

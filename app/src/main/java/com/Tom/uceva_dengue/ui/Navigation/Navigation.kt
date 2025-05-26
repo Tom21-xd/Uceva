@@ -32,16 +32,27 @@ import androidx.navigation.compose.rememberNavController
 import com.Tom.uceva_dengue.Data.Service.AuthRepository
 import com.Tom.uceva_dengue.ui.Components.BottomNavigationBar
 import com.Tom.uceva_dengue.ui.Components.MenuLateral
+import com.Tom.uceva_dengue.ui.Screen.CaseDetailsScreen
+import com.Tom.uceva_dengue.ui.Screen.CaseScreen
+import com.Tom.uceva_dengue.ui.Screen.CreateCaseScreen
 import com.Tom.uceva_dengue.ui.Screen.CreatePublicationScreen
 import com.Tom.uceva_dengue.ui.Screen.HomeScreen
+import com.Tom.uceva_dengue.ui.Screen.HospitalScreen
+import com.Tom.uceva_dengue.ui.Screen.InfoScreen
 import com.Tom.uceva_dengue.ui.Screen.LoginScreen
 import com.Tom.uceva_dengue.ui.Screen.MapScreen
 import com.Tom.uceva_dengue.ui.Screen.NotificationScreen
 import com.Tom.uceva_dengue.ui.Screen.ProfileScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
+import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
+import com.Tom.uceva_dengue.ui.viewModel.CaseViewModel
+import com.Tom.uceva_dengue.ui.viewModel.CreateCaseViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CreatePublicationViewModel
+import com.Tom.uceva_dengue.ui.viewModel.HospitalViewModel
 import com.Tom.uceva_dengue.ui.viewModel.MapViewModel
+import com.Tom.uceva_dengue.ui.viewModel.NotificationViewModel
+import com.Tom.uceva_dengue.ui.viewModel.ProfileViewModel
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import kotlinx.coroutines.launch
 
@@ -67,7 +78,7 @@ fun NavigationCon(context: Context) {
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen,
         drawerContent = {
-            MenuLateral(navController = navController, drawerState = drawerState)
+            MenuLateral(navController = navController, drawerState = drawerState,authRepository)
         }
     ) {
         Scaffold(
@@ -126,19 +137,34 @@ fun NavigationCon(context: Context) {
                     MapScreen(viewModel = MapViewModel())
                 }
                 composable(Rout.NotificationScreen.name) {
-                    NotificationScreen()
+                    NotificationScreen(navController, NotificationViewModel())
                 }
                 composable(Rout.ProfileScreen.name) {
-                    ProfileScreen()
+                    ProfileScreen(viewModel = ProfileViewModel(role))
                 }
                 composable(Rout.OptionScreen.name) {
                 }
                 composable(Rout.InfoScreen.name) {
-
+                    InfoScreen()
                 }
                 composable(Rout.CreatePublicationScreen.name) {
-                    CreatePublicationScreen(viewModel = CreatePublicationViewModel())
+                    CreatePublicationScreen(viewModel = CreatePublicationViewModel(),role,user,navController)
                 }
+                composable(Rout.CaseScreen.name){
+                    CaseScreen(caseViewModel = CaseViewModel(),role,navController)
+                }
+                composable(Rout.CreateCaseScreen.name) {
+                    CreateCaseScreen(CreateCaseViewModel(),role,user,navController)
+                }
+                composable("${Rout.CaseDetailsScreen.name}/{id}") { backStackEntry ->
+                    val id = backStackEntry.arguments?.getString("id") ?: ""
+                    val viewModel: CaseDetailsViewModel = viewModel()
+                    CaseDetailsScreen( id,viewModel,navController)
+                }
+                composable(Rout.HospitalScreen.name){
+                    HospitalScreen(navController,HospitalViewModel())
+                }
+
 
             }
         }
@@ -146,10 +172,20 @@ fun NavigationCon(context: Context) {
 }
 
 fun getTopBarTitle(route: String): String {
-    return when (route) {
+    val cleanRoute = route.substringBefore("/") // solo se queda con el nombre base
+    return when (cleanRoute) {
         Rout.HomeScreen.name -> "Publicaciones"
         Rout.MapScreen.name -> "Mapa de calor"
         Rout.NotificationScreen.name -> "Notificaciones"
+        Rout.ProfileScreen.name -> "Perfil"
+        Rout.OptionScreen.name -> "Opciones"
+        Rout.InfoScreen.name -> "Información"
+        Rout.CreatePublicationScreen.name -> "Crear Publicación"
+        Rout.CaseScreen.name -> "Casos de dengue"
+        Rout.CreateCaseScreen.name -> "Crear Caso"
+        Rout.CaseDetailsScreen.name -> "Detalle del caso"
+        Rout.HospitalScreen.name -> "Hospitales"
         else -> "Mi Aplicación"
     }
 }
+

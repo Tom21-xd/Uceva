@@ -1,80 +1,110 @@
 package com.Tom.uceva_dengue.ui.Screen
 
-import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import com.Tom.uceva_dengue.R
+import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.CreatePublicationViewModel
 
+
 @Composable
-fun CreatePublicationScreen(viewModel: CreatePublicationViewModel) {
+fun CreatePublicationScreen(
+    viewModel: CreatePublicationViewModel,
+    role: Int,
+    user: String?,
+    navController: NavHostController
+) {
     val context = LocalContext.current
     var titulo by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var isLoading by remember { mutableStateOf(false) }
-    val userId = "123"  // Cambiar por el ID real del usuario
 
     val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         selectedImageUri = uri
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Crear Publicación", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = "Nueva Publicación",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF444444),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
-        // Campo de título
+        // Campo de Título
         BasicTextField(
             value = titulo,
             onValueChange = { titulo = it },
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
-            textStyle = TextStyle(fontSize = 18.sp, color = Color.Black),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White, shape = MaterialTheme.shapes.medium)
+                .padding(vertical = 14.dp, horizontal = 20.dp),
+            textStyle = TextStyle(fontSize = 18.sp, color = Color(0xFF333333)),
             decorationBox = { innerTextField ->
-                Box(modifier = Modifier.fillMaxWidth().background(Color(0xFFF0F0F0)).padding(12.dp)) {
-                    if (titulo.isEmpty()) Text("Título", color = Color.Gray)
+                Box {
+                    if (titulo.isEmpty()) Text("Título", color = Color(0xFFAAAAAA))
                     innerTextField()
                 }
             }
         )
 
-        // Campo de descripción
+        // Campo de Descripción
         BasicTextField(
             value = descripcion,
             onValueChange = { descripcion = it },
-            modifier = Modifier.fillMaxWidth().padding(8.dp).height(150.dp),
-            textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White, shape = MaterialTheme.shapes.medium)
+                .padding(vertical = 14.dp, horizontal = 20.dp)
+                .height(150.dp),
+            textStyle = TextStyle(fontSize = 16.sp, color = Color(0xFF333333)),
             decorationBox = { innerTextField ->
-                Box(modifier = Modifier.fillMaxWidth().background(Color(0xFFF0F0F0)).padding(12.dp)) {
-                    if (descripcion.isEmpty()) Text("Descripción", color = Color.Gray)
+                Box {
+                    if (descripcion.isEmpty()) Text("Descripción", color = Color(0xFFAAAAAA))
                     innerTextField()
                 }
             }
         )
 
-        // Selector de imagen
+        // Selección de Imagen
         Box(
-            modifier = Modifier.fillMaxWidth().height(200.dp).background(Color(0xFFF0F0F0)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .background(Color.White, shape = MaterialTheme.shapes.medium)
+                .clickable { imagePickerLauncher.launch("image/*") }
+                .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             if (selectedImageUri != null) {
@@ -85,15 +115,19 @@ fun CreatePublicationScreen(viewModel: CreatePublicationViewModel) {
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Text("Seleccionar imagen", color = Color.Gray)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.Image,
+                        contentDescription = "Seleccionar Imagen",
+                        tint = Color(0xFFAAAAAA),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text("Seleccionar Imagen", color = Color(0xFFAAAAAA))
+                }
             }
         }
 
-        Button(onClick = { imagePickerLauncher.launch("image/*") }) {
-            Text("Seleccionar Imagen")
-        }
-
-        // Botón para publicar
+        // Botón de Publicar
         Button(
             onClick = {
                 if (titulo.isNotEmpty() && descripcion.isNotEmpty() && selectedImageUri != null) {
@@ -102,13 +136,15 @@ fun CreatePublicationScreen(viewModel: CreatePublicationViewModel) {
                         context = context,
                         title = titulo,
                         description = descripcion,
-                        userId = userId,
+                        userId = user ?: "",
                         imageUri = selectedImageUri,
                         onSuccess = {
                             isLoading = false
                             titulo = ""
                             descripcion = ""
                             selectedImageUri = null
+                            navController.navigate(Rout.HomeScreen.name)
+                            Toast.makeText(context, "Publicacion Creada correctamente", Toast.LENGTH_SHORT).show()
                         },
                         onError = { errorMessage ->
                             isLoading = false
@@ -118,12 +154,18 @@ fun CreatePublicationScreen(viewModel: CreatePublicationViewModel) {
                 }
             },
             enabled = !isLoading,
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00796B))
         ) {
             if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             } else {
-                Text("Publicar")
+                Text("Publicar", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

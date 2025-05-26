@@ -34,53 +34,55 @@ import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.exyte.animatednavbar.utils.noRippleClickable
 
-
 @Composable
 fun BottomNavigationBar(navController: NavController) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
+    // Definir las rutas válidas para el menú inferior
     val items = remember { NavigationBarItems.values() }
     val selectedIndex = remember(currentRoute) {
         items.indexOfFirst { it.route == currentRoute }.takeIf { it >= 0 } ?: -1
     }
 
-    AnimatedNavigationBar(
-        modifier = Modifier.height(64.dp),
-        selectedIndex = selectedIndex.coerceAtLeast(0), // Evita errores en AnimatedNavigationBar
-        cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
-        ballAnimation = Parabolic(tween(300)),
-        indentAnimation = Height(tween(300)),
-        barColor = fondo,
-        ballColor = fondo,
-    ) {
-        items.forEachIndexed { index, item ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable {
-                        if (index != selectedIndex) { // Navegar solo si es diferente
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
+    // Mostrar el menú solo si la ruta actual es válida
+    if (selectedIndex >= 0) {
+        AnimatedNavigationBar(
+            modifier = Modifier.height(64.dp),
+            selectedIndex = selectedIndex,
+            cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
+            ballAnimation = Parabolic(tween(300)),
+            indentAnimation = Height(tween(300)),
+            barColor = fondo,
+            ballColor = fondo,
+        ) {
+            items.forEachIndexed { index, item ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            if (index != selectedIndex) { // Navegar solo si es diferente
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    modifier = Modifier.size(26.dp),
-                    imageVector = item.icon,
-                    contentDescription = "Bottom Bar Icon",
-                    tint = if (selectedIndex == index) negro else blanco
-                )
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        modifier = Modifier.size(26.dp),
+                        imageVector = item.icon,
+                        contentDescription = "Bottom Bar Icon",
+                        tint = if (selectedIndex == index) negro else blanco
+                    )
+                }
             }
         }
     }
 }
-
 
 enum class NavigationBarItems(val icon: ImageVector, val route: String) {
     Map(icon = Icons.Default.Map, Rout.MapScreen.name),

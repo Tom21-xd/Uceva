@@ -1,8 +1,11 @@
 package com.Tom.uceva_dengue.ui.Menus
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cases
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -27,6 +30,21 @@ sealed  class Items_Menu_lateral (
         Icons.Default.Info,
         "Informacion",
         Rout.InfoScreen.name
+    )
+    object Item_Menu_Lateral4: Items_Menu_lateral(
+        Icons.Default.Home,
+        "Home",
+        Rout.HomeScreen.name
+    )
+    object Item_Menu_Lateral5: Items_Menu_lateral(
+        Icons.Default.Cases,
+        "Casos de dengue",
+        Rout.CaseScreen.name
+    )
+    object Item_Menu_Lateral6: Items_Menu_lateral(
+        Icons.Default.LocalHospital,
+        "Hospitales",
+        Rout.HospitalScreen.name
     )
 
 

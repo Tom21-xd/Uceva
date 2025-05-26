@@ -9,4 +9,9 @@ enum class Rout {
     OptionScreen,
     InfoScreen,
     CreatePublicationScreen,
+    CaseScreen,
+    HospitalScreen,
+    CreateCaseScreen,
+    OlvContraseniaScreen,
+    CaseDetailsScreen
 }

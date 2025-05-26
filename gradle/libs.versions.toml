@@ -4,6 +4,7 @@ androidMapsUtils = "3.8.2"
 animatedNavigationBar = "1.0.0"
 coilCompose = "2.2.2"
 converterGson = "2.9.0"
+converterScalars = "2.9.0"
 datastorePreferences = "1.1.2"
 kotlin = "1.9.0"
 coreKtx = "1.15.0"
@@ -62,6 +63,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 androidx-datastore-core-android = { group = "androidx.datastore", name = "datastore-core-android", version.ref = "datastoreCoreAndroid" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit2-converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalars" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

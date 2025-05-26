@@ -123,8 +123,6 @@ fun MapScreen(viewModel: MapViewModel) {
                         tileProvider = heatmapProvider
                     )
                 }
-
-                // Marker para búsqueda
                 searchLocation?.let {
                     Marker(
                         state = MarkerState(position = it),
