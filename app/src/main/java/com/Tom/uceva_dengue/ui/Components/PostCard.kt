@@ -3,6 +3,9 @@ package com.Tom.uceva_dengue.ui.Components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
 
 @Composable
@@ -29,14 +32,40 @@ fun PostCard(publicacion: PublicationModel
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = imageUrl,
                 contentDescription = "Imagen de la publicación",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-                contentScale = ContentScale.Fit
+                contentScale = ContentScale.Fit,
+                loading = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                },
+                error = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFFF0F0F0)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.BrokenImage,
+                            contentDescription = "Error al cargar imagen",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+                }
             )
 
             Column(modifier = Modifier.padding(16.dp)) {

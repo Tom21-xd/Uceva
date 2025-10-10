@@ -4,10 +4,12 @@ import com.Tom.uceva_dengue.Data.Service.CaseService
 import com.Tom.uceva_dengue.Data.Service.CityService
 import com.Tom.uceva_dengue.Data.Service.DengueService
 import com.Tom.uceva_dengue.Data.Service.DepartmentService
+import com.Tom.uceva_dengue.Data.Service.DiagnosticService
 import com.Tom.uceva_dengue.Data.Service.GenreService
 import com.Tom.uceva_dengue.Data.Service.HospitalService
 import com.Tom.uceva_dengue.Data.Service.NotificationService
 import com.Tom.uceva_dengue.Data.Service.PublicationService
+import com.Tom.uceva_dengue.Data.Service.StatisticsService
 import com.Tom.uceva_dengue.Data.Service.UserService
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -63,6 +65,12 @@ object RetrofitClient {
     }
     val notificationService : NotificationService by lazy {
         retrofit.create(NotificationService::class.java)
+    }
+    val diagnosticService : DiagnosticService by lazy {
+        retrofit.create(DiagnosticService::class.java)
+    }
+    val statisticsService : StatisticsService by lazy {
+        retrofit.create(StatisticsService::class.java)
     }
 
 

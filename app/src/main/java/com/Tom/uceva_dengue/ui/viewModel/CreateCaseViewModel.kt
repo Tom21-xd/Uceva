@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 class CreateCaseViewModel : ViewModel() {
 
@@ -159,6 +160,7 @@ class CreateCaseViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = RetrofitClient.hospitalService.getHospitalsByCity(id)
+                Log.d("CreateCaseViewModel", response.body().toString())
                 if (response.isSuccessful) {
                     _hospitals.value = response.body() ?: emptyList()
                 } else {

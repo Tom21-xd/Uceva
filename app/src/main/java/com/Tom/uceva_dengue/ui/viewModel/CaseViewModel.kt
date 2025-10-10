@@ -1,5 +1,6 @@
 package com.Tom.uceva_dengue.ui.viewModel
 
+import RetrofitClient
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -96,6 +97,61 @@ class CaseViewModel : ViewModel() {
             _cases.value
         } else {
             _cases.value.filter { case -> case.NOMBRE_TIPODENGUE == TypeOfDengue }
+        }
+    }
+
+    // HU-006: Eliminar caso
+    fun deleteCase(caseId: Int, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.caseService.deleteCase(caseId)
+                if (response.isSuccessful) {
+                    // Actualizar lista local
+                    _cases.value = _cases.value.filter { it.ID_CASOREPORTADO != caseId }
+                    _filteredCases.value = _filteredCases.value.filter { it.ID_CASOREPORTADO != caseId }
+                    isCasesFetched = false
+                    onSuccess()
+                } else {
+                    onError("Error al eliminar el caso: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("CaseViewModel", "Error al eliminar el caso", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    // HU-012: Obtener historial de casos de un paciente
+    fun getCaseHistory(userId: Int, onSuccess: (List<CaseModel>) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.caseService.getCaseHistory(userId)
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al obtener el historial: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("CaseViewModel", "Error al obtener el historial de casos", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    // Obtener casos por hospital
+    fun getCasesByHospital(hospitalId: Int, onSuccess: (List<CaseModel>) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.caseService.getCasesByHospital(hospitalId)
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al obtener casos del hospital: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("CaseViewModel", "Error al obtener casos por hospital", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
         }
     }
 }

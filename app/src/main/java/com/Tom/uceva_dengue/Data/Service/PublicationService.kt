@@ -4,12 +4,7 @@ import com.Tom.uceva_dengue.Data.Model.PublicationModel
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.Part
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface PublicationService{
     @GET("Publication/getPublications")
@@ -27,4 +22,18 @@ interface PublicationService{
         @Part("UsuarioId") usuarioId: RequestBody
     ): Response<String>
 
+    // HU-007: Obtener publicación por ID
+    @GET("Publication/getPublicationById/{id}")
+    suspend fun getPublicationById(@Path("id") id: Int): Response<PublicationModel>
+
+    // HU-007: Actualizar publicación
+    @PUT("Publication/updatePublication/{id}")
+    suspend fun updatePublication(
+        @Path("id") id: Int,
+        @Body publicationData: Map<String, String?>
+    ): Response<Map<String, String>>
+
+    // HU-007: Eliminar publicación
+    @DELETE("Publication/deletePublication/{id}")
+    suspend fun deletePublication(@Path("id") id: Int): Response<Map<String, String>>
 }

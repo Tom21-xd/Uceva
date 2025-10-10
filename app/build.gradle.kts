@@ -12,8 +12,7 @@ android {
     defaultConfig {
         applicationId = "com.Tom.uceva_dengue"
         minSdk = 24
-        //noinspection OldTargetApi
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
