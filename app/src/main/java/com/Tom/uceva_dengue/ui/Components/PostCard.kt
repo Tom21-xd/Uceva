@@ -37,7 +37,7 @@ fun PostCard(
     var showMenu by remember { mutableStateOf(false) }
 
     // Mostrar opciones si es admin/personal médico O si es el autor de la publicación
-    val canEdit = (role == 1 || role == 3) || (currentUserId == publicacion.FK_ID_USUARIO)
+    val canEdit = (role == 2 || role == 3) || (currentUserId == publicacion.FK_ID_USUARIO)
 
     Card(
         shape = RoundedCornerShape(16.dp),

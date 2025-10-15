@@ -91,7 +91,7 @@ fun HospitalCard(
             )
 
                 // Menú de opciones (solo para admin y personal médico)
-                if (role == 1 || role == 3) {
+                if (role == 2 || role == 3) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)

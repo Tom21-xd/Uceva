@@ -113,8 +113,8 @@ fun HospitalScreen(
             }
         }
 
-        // Botón FAB para crear hospital (solo admin y personal médico)
-        if (role == 1 || role == 3) {
+        // Botón FAB para crear hospital (solo Administrador y Personal Médico)
+        if (role == 2 || role == 3) {
             FloatingActionButton(
                 onClick = {
                     navController.navigate(Rout.CreateHospitalScreen.name)

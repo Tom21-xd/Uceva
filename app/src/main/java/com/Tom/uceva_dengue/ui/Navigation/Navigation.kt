@@ -4,8 +4,10 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
@@ -35,6 +37,7 @@ import com.Tom.uceva_dengue.ui.Components.MenuLateral
 import com.Tom.uceva_dengue.ui.Screen.CaseDetailsScreen
 import com.Tom.uceva_dengue.ui.Screen.CaseScreen
 import com.Tom.uceva_dengue.ui.Screen.CreateCaseScreen
+import com.Tom.uceva_dengue.ui.Screen.CreateCaseScreenModern
 import com.Tom.uceva_dengue.ui.Screen.CreatePublicationScreen
 import com.Tom.uceva_dengue.ui.Screen.UpdatePublicationScreen
 import com.Tom.uceva_dengue.ui.Screen.HomeScreen
@@ -43,9 +46,13 @@ import com.Tom.uceva_dengue.ui.Screen.CreateHospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.UpdateHospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.InfoScreen
 import com.Tom.uceva_dengue.ui.Screen.LoginScreen
+import com.Tom.uceva_dengue.ui.Screen.LoginScreenModern
+import com.Tom.uceva_dengue.ui.Screen.ForgotPasswordScreenModern
 import com.Tom.uceva_dengue.ui.Screen.MapScreen
+import com.Tom.uceva_dengue.ui.Screen.MapScreenModern
 import com.Tom.uceva_dengue.ui.Screen.NotificationScreen
 import com.Tom.uceva_dengue.ui.Screen.ProfileScreen
+import com.Tom.uceva_dengue.ui.Screen.ProfileScreenModern
 import com.Tom.uceva_dengue.ui.Screen.UserManagementScreen
 import com.Tom.uceva_dengue.ui.Screen.EditUserScreenFunctional
 import com.Tom.uceva_dengue.ui.theme.fondo
@@ -90,6 +97,7 @@ fun NavigationCon(context: Context) {
         }
     ) {
         Scaffold(
+            contentWindowInsets = WindowInsets.systemBars,
             topBar = {
                 currentRoute.value?.destination?.route?.let { route ->
                     if (route != Rout.LoginScreen.name) {
@@ -136,7 +144,7 @@ fun NavigationCon(context: Context) {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Rout.LoginScreen.name) {
-                    LoginScreen(viewModel = viewModel<AuthViewModel>(), navController = navController)
+                    LoginScreenModern(viewModel = viewModel<AuthViewModel>(), navController = navController)
                 }
                 composable(Rout.HomeScreen.name) {
                     HomeScreen(
@@ -147,13 +155,13 @@ fun NavigationCon(context: Context) {
                     )
                 }
                 composable(Rout.MapScreen.name) {
-                    MapScreen(viewModel = MapViewModel())
+                    MapScreenModern(viewModel = MapViewModel())
                 }
                 composable(Rout.NotificationScreen.name) {
                     NotificationScreen(navController, NotificationViewModel())
                 }
                 composable(Rout.ProfileScreen.name) {
-                    ProfileScreen(viewModel = ProfileViewModel(role))
+                    ProfileScreenModern(viewModel = ProfileViewModel(role))
                 }
                 composable(Rout.OptionScreen.name) {
                 }
@@ -171,7 +179,7 @@ fun NavigationCon(context: Context) {
                     CaseScreen(caseViewModel = CaseViewModel(),role,navController)
                 }
                 composable(Rout.CreateCaseScreen.name) {
-                    CreateCaseScreen(CreateCaseViewModel(),role,user,navController)
+                    CreateCaseScreenModern(CreateCaseViewModel(),role,user,navController)
                 }
                 composable("${Rout.CaseDetailsScreen.name}/{id}") { backStackEntry ->
                     val id = backStackEntry.arguments?.getString("id") ?: ""
@@ -211,6 +219,9 @@ fun NavigationCon(context: Context) {
                         navController = navController,
                         viewModel = EditUserViewModel()
                     )
+                }
+                composable(Rout.OlvContraseniaScreen.name) {
+                    ForgotPasswordScreenModern(navController = navController)
                 }
 
             }

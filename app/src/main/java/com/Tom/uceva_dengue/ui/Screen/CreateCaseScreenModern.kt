@@ -1,0 +1,687 @@
+package com.Tom.uceva_dengue.ui.Screen
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.navigation.NavHostController
+import com.Tom.uceva_dengue.Data.Model.UserModel
+import com.Tom.uceva_dengue.ui.Components.ComboBox
+import com.Tom.uceva_dengue.ui.Navigation.Rout
+import com.Tom.uceva_dengue.ui.viewModel.CreateCaseViewModel
+import com.Tom.uceva_dengue.ui.viewModel.MapViewModel
+import com.Tom.uceva_dengue.utils.geocodeAddress
+import com.Tom.uceva_dengue.utils.moveToUserLocation
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
+
+// Colores modernos
+private val PrimaryBlue = Color(0xFF5E81F4)
+private val SecondaryBlue = Color(0xFF667EEA)
+private val AccentPurple = Color(0xFF764BA2)
+private val SuccessGreen = Color(0xFF48BB78)
+private val BackgroundGray = Color(0xFFF8F9FA)
+private val CardWhite = Color(0xFFFFFFFF)
+
+@Composable
+fun CreateCaseScreenModern(
+    viewModel: CreateCaseViewModel,
+    role: Int,
+    user: String?,
+    navController: NavHostController
+) {
+    var isPatientSectionExpanded by remember { mutableStateOf(true) }
+    var isDengueSectionExpanded by remember { mutableStateOf(false) }
+    var isLocationSectionExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundGray)
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                // Header
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(8.dp, RoundedCornerShape(20.dp)),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = CardWhite
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(SecondaryBlue, AccentPurple)
+                                )
+                            )
+                            .padding(20.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .background(Color.White.copy(alpha = 0.3f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Reportar Caso",
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = "Nuevo caso de dengue",
+                                    fontSize = 14.sp,
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                ModernSectionCard(
+                    title = "Información del Paciente",
+                    icon = Icons.Default.Person,
+                    expanded = isPatientSectionExpanded,
+                    onExpandChanged = { isPatientSectionExpanded = !isPatientSectionExpanded }
+                ) {
+                    PatientSectionModern(viewModel)
+                }
+            }
+
+            item {
+                ModernSectionCard(
+                    title = "Tipo de Dengue y Síntomas",
+                    icon = Icons.Default.Warning,
+                    expanded = isDengueSectionExpanded,
+                    onExpandChanged = { isDengueSectionExpanded = !isDengueSectionExpanded }
+                ) {
+                    DengueSectionModern(viewModel)
+                }
+            }
+
+            item {
+                ModernSectionCard(
+                    title = "Ubicación",
+                    icon = Icons.Default.LocationOn,
+                    expanded = isLocationSectionExpanded,
+                    onExpandChanged = { isLocationSectionExpanded = !isLocationSectionExpanded }
+                ) {
+                    LocationSectionModern(viewModel, MapViewModel())
+                }
+            }
+
+            item {
+                // Botón de submit
+                Button(
+                    onClick = {
+                        viewModel.createCase(
+                            idPersonalMedico = user?.toInt() ?: 0,
+                            onSuccess = {
+                                Toast.makeText(context, "Caso creado exitosamente", Toast.LENGTH_SHORT).show()
+                                navController.navigate(Rout.CaseScreen.name)
+                            },
+                            onError = { errorMsg ->
+                                Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .shadow(8.dp, RoundedCornerShape(28.dp)),
+                    shape = RoundedCornerShape(28.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Reportar Caso",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(80.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun ModernSectionCard(
+    title: String,
+    icon: ImageVector,
+    expanded: Boolean,
+    onExpandChanged: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(4.dp, RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = CardWhite)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Header clickable
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onExpandChanged() }
+                    .background(PrimaryBlue.copy(alpha = 0.05f))
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(PrimaryBlue.copy(alpha = 0.1f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = PrimaryBlue,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Text(
+                        text = title,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF2D3748)
+                    )
+                }
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = PrimaryBlue
+                )
+            }
+
+            // Content
+            AnimatedVisibility(visible = expanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    content()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PatientSectionModern(viewModel: CreateCaseViewModel) {
+    val isExistingUser by viewModel.isExistingUser.collectAsState()
+    val patientFirstName by viewModel.patientFirstName.collectAsState()
+    val address by viewModel.address.collectAsState()
+    val users by viewModel.users.collectAsState()
+    val selectedUser by viewModel.selectedUser.collectAsState()
+    val genres by viewModel.genres.collectAsState()
+    val typeofblood by viewModel.typeofblood.collectAsState()
+    val genreSelected: String by viewModel.selectedGenre.observeAsState(initial = "")
+    val bloodTypeSelected: String by viewModel.selectedBloodType.observeAsState(initial = "")
+
+    var searchQuery by remember { mutableStateOf("") }
+    var filteredUsers by remember { mutableStateOf(users) }
+    var showDropdown by remember { mutableStateOf(false) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        // Toggle usuario existente
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(PrimaryBlue.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    selected = isExistingUser,
+                    onClick = {
+                        viewModel.setExistingUser(true)
+                        showDropdown = false
+                        searchQuery = ""
+                    },
+                    colors = RadioButtonDefaults.colors(selectedColor = PrimaryBlue)
+                )
+                Text("Usuario Existente", fontSize = 14.sp)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    selected = !isExistingUser,
+                    onClick = {
+                        viewModel.setExistingUser(false)
+                        showDropdown = false
+                    },
+                    colors = RadioButtonDefaults.colors(selectedColor = PrimaryBlue)
+                )
+                Text("Nuevo Usuario", fontSize = 14.sp)
+            }
+        }
+
+        if (isExistingUser) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { query ->
+                        searchQuery = query
+                        filteredUsers = if (query.isNotBlank()) {
+                            users.filter {
+                                it.NOMBRE_USUARIO.toString().contains(query, ignoreCase = true)
+                            }
+                        } else {
+                            emptyList()
+                        }
+                        showDropdown = filteredUsers.isNotEmpty()
+                    },
+                    label = { Text("Buscar Usuario") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = PrimaryBlue) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryBlue,
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
+
+                DropdownMenu(
+                    expanded = showDropdown,
+                    onDismissRequest = { showDropdown = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    filteredUsers.forEach { user ->
+                        DropdownMenuItem(
+                            text = { Text(user.NOMBRE_USUARIO.toString()) },
+                            onClick = {
+                                viewModel.selectUser(user)
+                                searchQuery = user.NOMBRE_USUARIO.toString()
+                                showDropdown = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            selectedUser?.let { SelectedUserCardModern(it) }
+        } else {
+            OutlinedTextField(
+                value = patientFirstName,
+                onValueChange = viewModel::setPatientFirstName,
+                label = { Text("Nombres Completos") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = PrimaryBlue) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PrimaryBlue,
+                    unfocusedBorderColor = Color.LightGray
+                )
+            )
+
+            ComboBox(
+                selectedValue = genreSelected,
+                options = genres.map { it.NOMBRE_GENERO },
+                label = "Género"
+            ) { seleccion ->
+                val selectedGenre = genres.firstOrNull { it.NOMBRE_GENERO == seleccion }
+                selectedGenre?.let {
+                    viewModel.setSelectedGenre(it.NOMBRE_GENERO, it.ID_GENERO)
+                }
+            }
+
+            ComboBox(
+                selectedValue = bloodTypeSelected,
+                options = typeofblood.map { it.NOMBRE_TIPOSANGRE },
+                label = "Tipo de Sangre"
+            ) { seleccion ->
+                val selectedBlood = typeofblood.firstOrNull { it.NOMBRE_TIPOSANGRE == seleccion }
+                selectedBlood?.let {
+                    viewModel.setSelectedBloodType(it.NOMBRE_TIPOSANGRE, it.ID_TIPOSANGRE)
+                }
+            }
+
+            OutlinedTextField(
+                value = address,
+                onValueChange = viewModel::setAddress,
+                label = { Text("Dirección de Residencia") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = PrimaryBlue) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PrimaryBlue,
+                    unfocusedBorderColor = Color.LightGray
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun SelectedUserCardModern(user: UserModel) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = PrimaryBlue.copy(alpha = 0.05f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = user.NOMBRE_USUARIO.toString(),
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color(0xFF2D3748)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row {
+                Text("Género: ", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                Text(user.NOMBRE_GENERO ?: "Sin género", fontSize = 14.sp, color = Color(0xFF718096))
+            }
+            Row {
+                Text("Dirección: ", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                Text(user.DIRECCION_USUARIO ?: "Sin dirección", fontSize = 14.sp, color = Color(0xFF718096))
+            }
+        }
+    }
+}
+
+@Composable
+fun DengueSectionModern(viewModel: CreateCaseViewModel) {
+    val symptoms by viewModel.symptoms.collectAsState()
+    val selectedSymptoms by viewModel.selectedSymptoms.collectAsState()
+    val typesOfDengue by viewModel.typesOfDengue.collectAsState()
+    val selectedDengueType by viewModel.selectedDengueType.collectAsState()
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(
+            text = "Síntomas Presentados",
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp,
+            color = Color(0xFF2D3748)
+        )
+
+        val columnCount = 2
+        val rows = symptoms.chunked(columnCount)
+
+        rows.forEach { rowSymptoms ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                rowSymptoms.forEach { symptom ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Checkbox(
+                            checked = selectedSymptoms.contains(symptom.ID_SINTOMA),
+                            onCheckedChange = { viewModel.toggleSymptom(symptom.ID_SINTOMA) },
+                            colors = CheckboxDefaults.colors(checkedColor = PrimaryBlue)
+                        )
+                        Text(
+                            text = symptom.NOMBRE_SINTOMA ?: "Sin Nombre",
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+                if (rowSymptoms.size < columnCount) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+
+        Divider(color = Color(0xFFE2E8F0), modifier = Modifier.padding(vertical = 8.dp))
+
+        ComboBox(
+            selectedValue = selectedDengueType,
+            options = typesOfDengue.map { it.NOMBRE_TIPODENGUE },
+            label = "Tipo de Dengue"
+        ) { seleccion ->
+            viewModel.setDengueType(seleccion)
+        }
+    }
+}
+
+@Composable
+fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewModel) {
+    val hospitals by viewModel.hospitals.collectAsState()
+    val description by viewModel.description.collectAsState()
+    val departamentos by viewModel.departamentos.collectAsState()
+    val ciudades by viewModel.municipios.collectAsState()
+
+    val cityName: String by viewModel.cityName.observeAsState(initial = "")
+    val selectedHospital by viewModel.selectedHospital.observeAsState(initial = "")
+    val department: String by viewModel.department.observeAsState(initial = "")
+
+    var searchText by remember { mutableStateOf("") }
+    var searchLocation by remember { mutableStateOf<LatLng?>(null) }
+    var userLocation by remember { mutableStateOf<LatLng?>(null) }
+
+    val context = LocalContext.current
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(1.61438, -75.60623), 12f)
+    }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (granted) {
+                moveToUserLocation(context, fusedLocationClient, cameraPositionState) {
+                    userLocation = it
+                }
+            }
+        }
+    )
+
+    val hasLocationPermission = ContextCompat.checkSelfPermission(
+        context, Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        ComboBox(
+            selectedValue = department,
+            options = departamentos.map { it.NOMBRE_DEPARTAMENTO },
+            label = "Departamento",
+            enabled = true
+        ) { nuevoDepartamento ->
+            val departamentoSeleccionado = departamentos.firstOrNull { it.NOMBRE_DEPARTAMENTO == nuevoDepartamento }
+            departamentoSeleccionado?.ID_DEPARTAMENTO?.let {
+                viewModel.fetchMunicipios(it.toString())
+                viewModel.setDepartment(nuevoDepartamento)
+                viewModel.setCityName("")
+            }
+        }
+
+        ComboBox(
+            selectedValue = cityName,
+            options = ciudades.map { it.NOMBRE_MUNICIPIO ?: "" },
+            label = "Municipio",
+            enabled = department.isNotBlank()
+        ) { nuevaCiudad ->
+            val ciudadSeleccionada = ciudades.firstOrNull { it.NOMBRE_MUNICIPIO == nuevaCiudad }
+            ciudadSeleccionada?.let {
+                viewModel.setCityName(nuevaCiudad)
+                viewModel.setSelectedHospital("", 0)
+                viewModel.fetchHospitals(it.ID_MUNICIPIO)
+            }
+        }
+
+        ComboBox(
+            selectedValue = selectedHospital,
+            options = hospitals.map { it.NOMBRE_HOSPITAL ?: "" },
+            label = "Hospital",
+            enabled = cityName.isNotBlank()
+        ) { hospital ->
+            val hospitalSeleccionado = hospitals.firstOrNull { it.NOMBRE_HOSPITAL == hospital }
+            hospitalSeleccionado?.let {
+                viewModel.setSelectedHospital(it.NOMBRE_HOSPITAL, it.ID_HOSPITAL)
+            }
+        }
+
+        OutlinedTextField(
+            value = description,
+            onValueChange = viewModel::setDescription,
+            label = { Text("Descripción del Caso") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp),
+            shape = RoundedCornerShape(12.dp),
+            maxLines = 4,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = PrimaryBlue,
+                unfocusedBorderColor = Color.LightGray
+            )
+        )
+
+        // Búsqueda de dirección
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                label = { Text("Buscar dirección") },
+                placeholder = { Text("Ej: Calle 10 #15-20") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PrimaryBlue,
+                    unfocusedBorderColor = Color.LightGray
+                )
+            )
+
+            IconButton(
+                onClick = {
+                    val location = geocodeAddress(context, searchText)
+                    if (location != null) {
+                        searchLocation = location
+                        cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
+                        viewModel.setLocationCoordinates(location)
+                    }
+                },
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(PrimaryBlue, RoundedCornerShape(12.dp))
+            ) {
+                Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.White)
+            }
+        }
+
+        // Mapa
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(350.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Box {
+                GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState,
+                    uiSettings = MapUiSettings(
+                        zoomControlsEnabled = false,
+                        compassEnabled = true
+                    )
+                ) {
+                    searchLocation?.let {
+                        Marker(
+                            state = MarkerState(position = it),
+                            title = "Ubicación buscada"
+                        )
+                    }
+                    userLocation?.let {
+                        Marker(
+                            state = MarkerState(position = it),
+                            title = "Mi ubicación"
+                        )
+                    }
+                }
+
+                FloatingActionButton(
+                    onClick = {
+                        if (hasLocationPermission) {
+                            moveToUserLocation(context, fusedLocationClient, cameraPositionState) {
+                                userLocation = it
+                            }
+                        } else {
+                            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        }
+                    },
+                    containerColor = PrimaryBlue,
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(Icons.Default.LocationOn, contentDescription = "Mi ubicación")
+                }
+            }
+        }
+    }
+}

@@ -128,7 +128,8 @@ fun HomeScreen(
             }
         }
 
-        if (role == 1 || role == 3) {
+        // Administrador (2) y Personal Médico (3) pueden crear publicaciones
+        if (role == 2 || role == 3) {
             FloatingActionButton(
                 onClick = { navController.navigate(Rout.CreatePublicationScreen.name) },
                 shape = RoundedCornerShape(50),

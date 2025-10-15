@@ -2,7 +2,6 @@ package com.Tom.uceva_dengue.ui.Screen
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.location.Geocoder
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -19,9 +18,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.Tom.uceva_dengue.ui.viewModel.MapViewModel
-import com.google.android.gms.location.FusedLocationProviderClient
+import com.Tom.uceva_dengue.utils.geocodeAddress
+import com.Tom.uceva_dengue.utils.moveToUserLocation
+import com.Tom.uceva_dengue.utils.parseLatLngFromString
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -33,6 +33,7 @@ fun MapScreen(viewModel: MapViewModel) {
     var searchText by remember { mutableStateOf("") }
     var searchLocation by remember { mutableStateOf<LatLng?>(null) }
     var userLocation by remember { mutableStateOf<LatLng?>(null) }
+    var isMapLoading by remember { mutableStateOf(true) }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(1.61438, -75.60623), 12f)
@@ -74,7 +75,33 @@ fun MapScreen(viewModel: MapViewModel) {
 
     val tileOverlayState = rememberTileOverlayState()
 
+    // Simular carga del mapa
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(500)
+        isMapLoading = false
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
+        // Mostrar indicador de carga mientras se inicializa el mapa
+        if (isMapLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(50.dp),
+                        color = Color(0xFF0066CC)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Cargando mapa...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Gray
+                    )
+                }
+            }
+        }
         Column(Modifier.fillMaxSize()) {
 
             OutlinedTextField(
@@ -161,61 +188,6 @@ fun MapScreen(viewModel: MapViewModel) {
                 .padding(16.dp)
         ) {
             Icon(Icons.Default.LocationSearching, contentDescription = "Mi ubicación")
-        }
-    }
-}
-
-fun parseLatLngFromString(address: String): LatLng? {
-    val coordinates = address.split(":")
-    return if (coordinates.size == 2) {
-        try {
-            val lat = coordinates[0].toDouble()
-            val lng = coordinates[1].toDouble()
-            LatLng(lat, lng)
-        } catch (e: Exception) {
-            null
-        }
-    } else {
-        null
-    }
-}
-
-fun geocodeAddress(context: android.content.Context, address: String): LatLng? {
-    val geocoder = Geocoder(context)
-    return try {
-        val addresses = geocoder.getFromLocationName(address, 1)
-        if (!addresses.isNullOrEmpty()) {
-            val location = addresses[0]
-            LatLng(location.latitude, location.longitude)
-        } else null
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
-}
-
-fun moveToUserLocation(
-    context: android.content.Context,
-    fusedLocationClient: FusedLocationProviderClient,
-    cameraPositionState: CameraPositionState,
-    onLocationFound: (LatLng) -> Unit
-) {
-    if (ContextCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    ) {
-        val locationRequest = fusedLocationClient.getCurrentLocation(
-            Priority.PRIORITY_HIGH_ACCURACY, null
-        )
-
-        locationRequest.addOnSuccessListener { location ->
-            location?.let {
-                val userLatLng = LatLng(it.latitude, it.longitude)
-                cameraPositionState.position = CameraPosition.fromLatLngZoom(userLatLng, 15f)
-                onLocationFound(userLatLng)
-            }
-        }.addOnFailureListener { e ->
-            e.printStackTrace()
         }
     }
 }

@@ -4,10 +4,15 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Map
@@ -46,40 +51,44 @@ fun BottomNavigationBar(navController: NavController) {
 
     // Mostrar el menú solo si la ruta actual es válida
     if (selectedIndex >= 0) {
-        AnimatedNavigationBar(
-            modifier = Modifier.height(64.dp),
-            selectedIndex = selectedIndex,
-            cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
-            ballAnimation = Parabolic(tween(300)),
-            indentAnimation = Height(tween(300)),
-            barColor = fondo,
-            ballColor = fondo,
-        ) {
-            items.forEachIndexed { index, item ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-                            if (index != selectedIndex) { // Navegar solo si es diferente
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
+        Column {
+            AnimatedNavigationBar(
+                modifier = Modifier.height(64.dp),
+                selectedIndex = selectedIndex,
+                cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
+                ballAnimation = Parabolic(tween(300)),
+                indentAnimation = Height(tween(300)),
+                barColor = fondo,
+                ballColor = fondo,
+            ) {
+                items.forEachIndexed { index, item ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {
+                                if (index != selectedIndex) { // Navegar solo si es diferente
+                                    navController.navigate(item.route) {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        modifier = Modifier.size(26.dp),
-                        imageVector = item.icon,
-                        contentDescription = "Bottom Bar Icon",
-                        tint = if (selectedIndex == index) negro else blanco
-                    )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(26.dp),
+                            imageVector = item.icon,
+                            contentDescription = "Bottom Bar Icon",
+                            tint = if (selectedIndex == index) negro else blanco
+                        )
+                    }
                 }
             }
+            // Agregar espaciador para la barra de navegación del sistema
+            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
 }
