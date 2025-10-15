@@ -5,9 +5,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,9 +26,18 @@ import coil.compose.SubcomposeAsyncImage
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
 
 @Composable
-fun PostCard(publicacion: PublicationModel
+fun PostCard(
+    publicacion: PublicationModel,
+    currentUserId: Int? = null,
+    role: Int = 0,
+    onEdit: ((PublicationModel) -> Unit)? = null,
+    onDelete: ((PublicationModel) -> Unit)? = null
 ) {
-    val imageUrl = "https://api.prometeondev.com/api/image/getImage/${publicacion.IMAGEN_PUBLICACION}"
+    val imageUrl = "https://api.prometeondev.com/Image/getImage/${publicacion.IMAGEN_PUBLICACION}"
+    var showMenu by remember { mutableStateOf(false) }
+
+    // Mostrar opciones si es admin/personal médico O si es el autor de la publicación
+    val canEdit = (role == 1 || role == 3) || (currentUserId == publicacion.FK_ID_USUARIO)
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -32,6 +48,7 @@ fun PostCard(publicacion: PublicationModel
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
+            Box(modifier = Modifier.fillMaxWidth()) {
             SubcomposeAsyncImage(
                 model = imageUrl,
                 contentDescription = "Imagen de la publicación",
@@ -67,6 +84,69 @@ fun PostCard(publicacion: PublicationModel
                     }
                 }
             )
+
+                // Menú de opciones
+                if (canEdit) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        IconButton(
+                            onClick = { showMenu = true },
+                            modifier = Modifier
+                                .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(50))
+                                .size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "Más opciones",
+                                tint = Color(0xFF333333)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Editar",
+                                            tint = Color(0xFF5E81F4)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Editar")
+                                    }
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    onEdit?.invoke(publicacion)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Eliminar",
+                                            tint = Color(0xFFE53935)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Eliminar", color = Color(0xFFE53935))
+                                    }
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    onDelete?.invoke(publicacion)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
 
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(

@@ -1,7 +1,7 @@
 package com.Tom.uceva_dengue.ui.viewModel
 
-import RetrofitClient
 import android.util.Log
+import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.Tom.uceva_dengue.Data.Model.NotificationModel

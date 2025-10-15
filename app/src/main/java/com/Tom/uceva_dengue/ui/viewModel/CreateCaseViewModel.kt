@@ -2,6 +2,7 @@ package com.Tom.uceva_dengue.ui.viewModel
 
 import android.util.Log
 import androidx.lifecycle.LiveData
+import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -156,18 +157,22 @@ class CreateCaseViewModel : ViewModel() {
 
 
 
-    fun fetchHospitals(id:Int) {
+    fun fetchHospitals(id: Int) {
         viewModelScope.launch {
             try {
-                val response = RetrofitClient.hospitalService.getHospitalsByCity(id)
-                Log.d("CreateCaseViewModel", response.body().toString())
+                val response = RetrofitClient.hospitalService.getHospitalsByCity(id.toString())
+                Log.d("CreateCaseViewModel", "Hospitales recibidos: ${response.body()?.size ?: 0}")
                 if (response.isSuccessful) {
-                    _hospitals.value = response.body() ?: emptyList()
+                    val hospitalList = response.body() ?: emptyList()
+                    _hospitals.value = hospitalList
+                    Log.d("CreateCaseViewModel", "Lista de hospitales actualizada: ${hospitalList.size} hospitales")
                 } else {
-                    Log.e("CreateCaseViewModel", "Error al cargar hospitales: ${response.message()}")
+                    Log.e("CreateCaseViewModel", "Error al cargar hospitales: ${response.code()} - ${response.message()}")
+                    _hospitals.value = emptyList()
                 }
             } catch (e: Exception) {
                 Log.e("CreateCaseViewModel", "Error al cargar hospitales", e)
+                _hospitals.value = emptyList()
             }
         }
     }
@@ -289,6 +294,22 @@ class CreateCaseViewModel : ViewModel() {
 
     fun setBloodType(bloodType: String) {
         _selectedBloodType.value = bloodType
+    }
+
+    private val _selectedGenreId = MutableLiveData(0)
+    val selectedGenreId: LiveData<Int> get() = _selectedGenreId
+
+    private val _selectedBloodTypeId = MutableLiveData(0)
+    val selectedBloodTypeId: LiveData<Int> get() = _selectedBloodTypeId
+
+    fun setSelectedGenre(name: String, id: Int) {
+        _selectedGenre.value = name
+        _selectedGenreId.value = id
+    }
+
+    fun setSelectedBloodType(name: String, id: Int) {
+        _selectedBloodType.value = name
+        _selectedBloodTypeId.value = id
     }
 
     fun selectUser(user: UserModel) {

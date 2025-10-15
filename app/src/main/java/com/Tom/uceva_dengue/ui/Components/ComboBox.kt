@@ -49,14 +49,22 @@ fun ComboBox(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            options.forEach { option ->
+            if (options.isEmpty()) {
                 DropdownMenuItem(
-                    text = { Text(text = option) },
-                    onClick = {
-                        onValueChangedEvent(option)
-                        expanded = false
-                    }
+                    text = { Text(text = "No hay opciones disponibles") },
+                    onClick = { expanded = false },
+                    enabled = false
                 )
+            } else {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(text = option) },
+                        onClick = {
+                            onValueChangedEvent(option)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }

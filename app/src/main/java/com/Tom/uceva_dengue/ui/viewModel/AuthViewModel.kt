@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import com.Tom.uceva_dengue.Data.Model.BloodTypeModel
 import com.Tom.uceva_dengue.Data.Model.CityModel
 import com.Tom.uceva_dengue.Data.Model.DepartmentModel
@@ -65,6 +66,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> get() = _loading
+
+    private val _registerMessage = MutableLiveData<String?>(null)
+    val registerMessage: LiveData<String?> get() = _registerMessage
+
+    private val _registerError = MutableLiveData<String?>(null)
+    val registerError: LiveData<String?> get() = _registerError
 
     fun iniciosesioncorreo(email: String, password: String, HomeScreen: () -> Unit) {
         viewModelScope.launch {
@@ -169,9 +176,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun fetchDepartamentos() {
         viewModelScope.launch {
             try {
-                _departamentos.value = RetrofitClient.departmentService.getDepartments()
+                val result = RetrofitClient.departmentService.getDepartments()
+                _departamentos.value = result
+                Log.d("AuthViewModel", "Departamentos cargados: ${result.size}")
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Error al cargar departamentos: ${e.message}")
+                Log.e("AuthViewModel", "Error al cargar departamentos: ${e.message}", e)
+                e.printStackTrace()
             }
         }
     }
@@ -179,9 +189,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun fetchGeneros() {
         viewModelScope.launch {
             try {
-                _generos.value = RetrofitClient.genreService.getGenres().body()!!
+                val response = RetrofitClient.genreService.getGenres()
+                if (response.isSuccessful) {
+                    val result = response.body() ?: emptyList()
+                    _generos.value = result
+                    Log.d("AuthViewModel", "Géneros cargados: ${result.size}")
+                } else {
+                    Log.e("AuthViewModel", "Error en respuesta de géneros: ${response.code()} - ${response.message()}")
+                }
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Error al cargar géneros: ${e.message}")
+                Log.e("AuthViewModel", "Error al cargar géneros: ${e.message}", e)
+                e.printStackTrace()
             }
         }
     }
@@ -189,9 +207,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun fetchTiposSangre() {
         viewModelScope.launch {
             try {
-                _tiposSangre.value = RetrofitClient.bloodTypeService.getBloodTypes()
+                val result = RetrofitClient.bloodTypeService.getBloodTypes()
+                _tiposSangre.value = result
+                Log.d("AuthViewModel", "Tipos de sangre cargados: ${result.size}")
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Error al cargar tipos de sangre: ${e.message}")
+                Log.e("AuthViewModel", "Error al cargar tipos de sangre: ${e.message}", e)
+                e.printStackTrace()
             }
         }
     }
@@ -199,9 +220,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun fetchMunicipios(departamentoId: String) {
         viewModelScope.launch {
             try {
-                _municipios.value = RetrofitClient.cityService.getCities(departamentoId)
+                val result = RetrofitClient.cityService.getCities(departamentoId)
+                _municipios.value = result
+                Log.d("AuthViewModel", "Municipios cargados: ${result.size}")
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Error al cargar municipios: ${e.message}")
+                Log.e("AuthViewModel", "Error al cargar municipios: ${e.message}", e)
+                e.printStackTrace()
             }
         }
     }
@@ -236,6 +260,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _isLoading.value = true
 
             try {
+                _registerError.value = null
+                _registerMessage.value = null
                 var rolId = 2  // Por defecto, rol regular
 
                 if (esPersonalMedico) {
@@ -248,12 +274,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     val primerApellido = apellidosDivididos.firstOrNull() ?: ""
 
                     if (primerNombre.isNotBlank() && primerApellido.isNotBlank()) {
-                        val response = RetrofitClient.authService.consultarRethus(
-                            primerNombre = primerNombre,
-                            primerApellido = primerApellido,
-                            tipoIdentificacion = tipoIdentificacion,
-                            cedula = numeroDocumento
+                        val rethusBody = mapOf(
+                            "PrimerNombre" to primerNombre,
+                            "PrimerApellido" to primerApellido,
+                            "TipoIdentificacion" to tipoIdentificacion,
+                            "Cedula" to numeroDocumento
                         )
+                        val response = RetrofitClient.authService.consultarRethus(rethusBody)
                         val a = response.body()?.isSuccess()
                         if (response.isSuccessful && a == true) {
                             rolId = 3
@@ -280,17 +307,56 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     FK_ID_MUNICIPIO = _cityId.value ?: 0
                 )
 
-                val responseMessage = RetrofitClient.authService.register(usuario)
+                val response = RetrofitClient.authService.register(usuario)
 
-                Log.d("Registro", "Usuario registrado en MySQL: $responseMessage")
-                navController.navigate(Rout.LoginScreen.name)
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    val message = body?.message ?: "Registro completado"
+                    val usuario = body?.usuario
+
+                    Log.d("Registro", "Usuario registrado en MySQL: $body")
+
+                    // Iniciar sesión automáticamente con el usuario creado
+                    if (usuario != null) {
+                        val authRepository = AuthRepository(getApplication<Application>().applicationContext)
+                        authRepository.saveUserAndRole(
+                            usuario.ID_USUARIO.toString(),
+                            usuario.FK_ID_ROL
+                        )
+                        Log.d("Registro", "Sesión iniciada automáticamente. Usuario: ${usuario.ID_USUARIO}, Rol: ${usuario.FK_ID_ROL}")
+
+                        _registerMessage.value = "$message. Redirigiendo..."
+                        // Navegar automáticamente al HomeScreen después de un pequeño delay
+                        kotlinx.coroutines.delay(1000)
+                        navController.navigate(Rout.HomeScreen.name) {
+                            popUpTo(Rout.LoginScreen.name) { inclusive = true }
+                        }
+                    } else {
+                        _registerMessage.value = message
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = try {
+                        JSONObject(errorBody ?: "").optString("message", "No fue posible registrar al usuario")
+                    } catch (e: Exception) {
+                        "No fue posible registrar al usuario"
+                    }
+                    Log.e("Registro", "Error de API al registrar usuario: $errorBody")
+                    _registerError.value = message
+                }
 
             } catch (e: Exception) {
                 Log.e("Registro", "Error al registrar usuario: ${e.message}")
+                _registerError.value = "Error de conexion. Revisa tu internet o intentalo mas tarde."
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun clearRegisterFeedback() {
+        _registerMessage.value = null
+        _registerError.value = null
     }
 
     fun setBloodTypeName(name: String) {

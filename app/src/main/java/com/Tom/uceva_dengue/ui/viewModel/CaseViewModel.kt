@@ -1,7 +1,7 @@
 package com.Tom.uceva_dengue.ui.viewModel
 
-import RetrofitClient
 import android.util.Log
+import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.Tom.uceva_dengue.Data.Model.CaseModel
@@ -56,7 +56,7 @@ class CaseViewModel : ViewModel() {
         if (!isCaseStatesFetched) {
             viewModelScope.launch {
                 try {
-                    val response = RetrofitClient.caseService.getStateCase()
+                    val response = RetrofitClient.caseService.getCaseStates()
                     if (response.isSuccessful && response.body() != null) {
                         _caseStates.value = response.body()!!
                         isCaseStatesFetched = true

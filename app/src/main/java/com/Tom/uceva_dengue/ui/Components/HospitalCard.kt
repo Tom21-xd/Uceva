@@ -6,14 +6,24 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,8 +35,14 @@ import coil.compose.SubcomposeAsyncImage
 import com.Tom.uceva_dengue.Data.Model.HospitalModel
 
 @Composable
-fun HospitalCard(hospital: HospitalModel) {
-    val imageUrl = "https://api.prometeondev.com/api/image/getImage/${hospital.IMAGEN_HOSPITAL}"
+fun HospitalCard(
+    hospital: HospitalModel,
+    role: Int = 0,
+    onEdit: ((HospitalModel) -> Unit)? = null,
+    onDelete: ((HospitalModel) -> Unit)? = null
+) {
+    val imageUrl = "https://api.prometeondev.com/Image/getImage/${hospital.IMAGEN_HOSPITAL}"
+    var showMenu by remember { mutableStateOf(false) }
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -37,6 +53,7 @@ fun HospitalCard(hospital: HospitalModel) {
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
+            Box(modifier = Modifier.fillMaxWidth()) {
             SubcomposeAsyncImage(
                 model = imageUrl,
                 contentDescription = "Imagen de ${hospital.NOMBRE_HOSPITAL}",
@@ -72,6 +89,69 @@ fun HospitalCard(hospital: HospitalModel) {
                     }
                 }
             )
+
+                // Menú de opciones (solo para admin y personal médico)
+                if (role == 1 || role == 3) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        IconButton(
+                            onClick = { showMenu = true },
+                            modifier = Modifier
+                                .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(50))
+                                .size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "Más opciones",
+                                tint = Color(0xFF333333)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Editar",
+                                            tint = Color(0xFF5E81F4)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Editar")
+                                    }
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    onEdit?.invoke(hospital)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Eliminar",
+                                            tint = Color(0xFFE53935)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Eliminar", color = Color(0xFFE53935))
+                                    }
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    onDelete?.invoke(hospital)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
 
             Column(modifier = Modifier
                 .fillMaxWidth()

@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.alpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Email
@@ -159,36 +161,41 @@ fun Login(modifier: Modifier, viewModel: AuthViewModel, navController: NavContro
     val loading: Boolean by viewModel.loading.observeAsState(initial = false)
     val loginError: String? by viewModel.loginError.observeAsState()
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .padding(bottom = 80.dp), // Espaciado para evitar superposición con menú inferior
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        HeaderImage(Modifier.size(120.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Column(modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            HeaderImage(Modifier.align(Alignment.CenterHorizontally))
-            Spacer(modifier = Modifier.height(16.dp))
+        CampoCorreo(correo) { viewModel.onLoginChange(it, contra) }
+        Spacer(modifier = Modifier.height(16.dp))
 
-            CampoCorreo(correo) { viewModel.onLoginChange(it, contra) }
-            Spacer(modifier = Modifier.height(8.dp))
+        CampoContra(
+            contra = contra,
+            contravisible = contravisible,
+            onTextFieldChanged = { viewModel.onLoginChange(correo, it) },
+            onToggleVisibility = { viewModel.onContraVisibilityChange(!contravisible) }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
 
-            CampoContra(
-                contra = contra,
-                contravisible = contravisible,
-                onTextFieldChanged = { viewModel.onLoginChange(correo, it) },
-                onToggleVisibility = { viewModel.onContraVisibilityChange(!contravisible) }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        OlvContra(Modifier.padding(vertical = 8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            BotonInicio(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                loginEnabled = loginEnabled,
-                loading = loading,
-                onClick = {
-                    viewModel.iniciosesioncorreo(correo, contra) {
-                        navController.navigate(Rout.HomeScreen.name)
-                    }
+        BotonInicio(
+            modifier = Modifier,
+            loginEnabled = loginEnabled,
+            loading = loading,
+            onClick = {
+                viewModel.iniciosesioncorreo(correo, contra) {
+                    navController.navigate(Rout.HomeScreen.name)
                 }
-            )
-        }
-
-        OlvContra(Modifier.align(Alignment.BottomCenter))
+            }
+        )
 
         if (!loginError.isNullOrEmpty()) {
             AlertDialog(
@@ -211,18 +218,58 @@ fun BotonInicio(
     loading: Boolean,
     onClick: () -> Unit
 ) {
+    val animatedAlpha = androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (loginEnabled && !loading) 1f else 0.5f,
+        animationSpec = androidx.compose.animation.core.tween(300),
+        label = "alpha"
+    )
+
     Button(
         onClick = onClick,
         modifier = modifier
-            .width(200.dp)
-            .height(48.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE1E3DA)),
-        enabled = loginEnabled && !loading
+            .width(220.dp)
+            .height(52.dp)
+            .alpha(animatedAlpha.value),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF5E81F4),
+            disabledContainerColor = Color(0xFF5E81F4).copy(alpha = 0.5f)
+        ),
+        enabled = loginEnabled && !loading,
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 4.dp,
+            pressedElevation = 8.dp
+        )
     ) {
-        if (loading) {
-            CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(24.dp))
-        } else {
-            Text(text = "Iniciar sesión", color = Color(0xFF000000))
+        androidx.compose.animation.AnimatedVisibility(
+            visible = loading,
+            enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(),
+            exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut()
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Cargando...", color = Color.White, fontWeight = FontWeight.Medium)
+            }
+        }
+
+        androidx.compose.animation.AnimatedVisibility(
+            visible = !loading,
+            enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(),
+            exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut()
+        ) {
+            Text(
+                text = "Iniciar sesión",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -331,6 +378,8 @@ fun Registro(modifier: Modifier, viewModel: AuthViewModel, navController: NavCon
     val cityId: Int by viewModel.cityId.observeAsState(initial = 0)
     val cityName: String by viewModel.cityName.observeAsState(initial = "")
     val department: String by viewModel.department.observeAsState(initial = "")
+    val registerMessage: String? by viewModel.registerMessage.observeAsState()
+    val registerError: String? by viewModel.registerError.observeAsState()
 
     var tipoDocumentoSeleccionado by remember { mutableStateOf(tipoIdentificaciones.first().codigo) }
     var numeroDocumento by remember { mutableStateOf("") }
@@ -446,6 +495,16 @@ fun Registro(modifier: Modifier, viewModel: AuthViewModel, navController: NavCon
                 }
             }
 
+            registerError?.let { message ->
+                Text(
+                    text = message,
+                    color = Color(0xFFD32F2F),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                )
+            }
+
             // Botón de Registro
             Button(
                 onClick = {
@@ -460,6 +519,21 @@ fun Registro(modifier: Modifier, viewModel: AuthViewModel, navController: NavCon
                 enabled = true
             ) {
                 Text("Registrarme")
+            }
+
+            // Mostrar mensaje de éxito en texto (sin diálogo)
+            registerMessage?.let { message ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = message,
+                    color = Color(0xFF2E7D32),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
             }
         }
     }

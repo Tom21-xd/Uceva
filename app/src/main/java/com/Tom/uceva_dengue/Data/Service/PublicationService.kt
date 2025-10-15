@@ -14,7 +14,7 @@ interface PublicationService{
     suspend fun getPublication(@Query("nombre") nombre: String): List<PublicationModel>
 
     @Multipart
-    @POST("/Publication/createPublication")
+    @POST("Publication/createPublication")
     suspend fun createPublication(
         @Part("Titulo") titulo: RequestBody,
         @Part("Descripcion") descripcion: RequestBody,

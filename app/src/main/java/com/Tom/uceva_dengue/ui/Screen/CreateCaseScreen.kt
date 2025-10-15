@@ -139,33 +139,48 @@ fun SectionHeader(
     onExpandChanged: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFFEFF2FA))
-            .padding(vertical = 8.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onExpandChanged() }
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Icon(
-                imageVector = if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
-                contentDescription = null
-            )
-        }
-        Divider(color = Color.LightGray, thickness = 1.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFEFF2FA))
+                    .clickable { onExpandChanged() }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF5E81F4)
+                )
+                Icon(
+                    imageVector = if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
+                    contentDescription = null,
+                    tint = Color(0xFF5E81F4)
+                )
+            }
 
-        if (expanded) {
-            Spacer(modifier = Modifier.height(8.dp))
-            content()
-            Spacer(modifier = Modifier.height(8.dp))
+            if (expanded) {
+                HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 1.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(16.dp)
+                ) {
+                    content()
+                }
+            }
         }
     }
 }
@@ -188,37 +203,53 @@ fun PatientSection(viewModel: CreateCaseViewModel) {
     var showDropdown by remember { mutableStateOf(false) }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.Start,
+        modifier = Modifier.fillMaxWidth()
     ) {
         // Usuario Existente o Nuevo
-        Text("¿Usuario existente?", fontWeight = FontWeight.Bold)
+        Text(
+            text = "¿Usuario existente?",
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            color = Color(0xFF333333)
+        )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            RadioButton(
-                selected = isExistingUser,
-                onClick = {
-                    viewModel.setExistingUser(true)
-                    showDropdown = false // Ocultar el menú al cambiar a existente
-                    searchQuery = "" // Limpiar búsqueda
-                }
-            )
-            Text("Sí")
-            RadioButton(
-                selected = !isExistingUser,
-                onClick = {
-                    viewModel.setExistingUser(false)
-                    showDropdown = false // Ocultar el menú al cambiar a nuevo
-                }
-            )
-            Text("No")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                RadioButton(
+                    selected = isExistingUser,
+                    onClick = {
+                        viewModel.setExistingUser(true)
+                        showDropdown = false
+                        searchQuery = ""
+                    }
+                )
+                Text("Sí", fontSize = 15.sp)
+            }
+
+            Spacer(modifier = Modifier.width(24.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                RadioButton(
+                    selected = !isExistingUser,
+                    onClick = {
+                        viewModel.setExistingUser(false)
+                        showDropdown = false
+                    }
+                )
+                Text("No", fontSize = 15.sp)
+            }
         }
 
         if (isExistingUser) {
@@ -237,7 +268,11 @@ fun PatientSection(viewModel: CreateCaseViewModel) {
                         showDropdown = filteredUsers.isNotEmpty()
                     },
                     label = { Text("Buscar Usuario") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    trailingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = null)
+                    }
                 )
 
                 DropdownMenu(
@@ -270,16 +305,19 @@ fun PatientSection(viewModel: CreateCaseViewModel) {
                 value = patientFirstName,
                 onValueChange = viewModel::setPatientFirstName,
                 label = { Text("Nombres") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp)
             )
 
             ComboBox(
                 selectedValue = genreSelected,
                 options = genres.map { it.NOMBRE_GENERO },
-                label = "Genero"
+                label = "Género"
             ) { seleccion ->
                 val selectedGenre = genres.firstOrNull { it.NOMBRE_GENERO == seleccion }
-                val id = selectedGenre?.ID_GENERO ?: 0
+                selectedGenre?.let {
+                    viewModel.setSelectedGenre(it.NOMBRE_GENERO, it.ID_GENERO)
+                }
             }
 
             ComboBox(
@@ -288,15 +326,17 @@ fun PatientSection(viewModel: CreateCaseViewModel) {
                 label = "Tipo de sangre"
             ) { seleccion ->
                 val selectedBlood = typeofblood.firstOrNull { it.NOMBRE_TIPOSANGRE == seleccion }
-                val id = selectedBlood?.ID_TIPOSANGRE ?: 0
+                selectedBlood?.let {
+                    viewModel.setSelectedBloodType(it.NOMBRE_TIPOSANGRE, it.ID_TIPOSANGRE)
+                }
             }
-
 
             OutlinedTextField(
                 value = address,
                 onValueChange = viewModel::setAddress,
                 label = { Text("Dirección") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp)
             )
 
         }
@@ -311,13 +351,16 @@ fun DengueSection(viewModel: CreateCaseViewModel) {
     val selectedDengueType by viewModel.selectedDengueType.collectAsState()
     val  selectedDengueTypeID by viewModel.selectedDengueTypeID.collectAsState()
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.Start,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text("Síntomas", fontWeight = FontWeight.Bold)
+        Text(
+            text = "Síntomas",
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            color = Color(0xFF333333)
+        )
 
         val columnCount = 2
         val rows = symptoms.chunked(columnCount)
@@ -352,16 +395,19 @@ fun DengueSection(viewModel: CreateCaseViewModel) {
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Text("Tipo de Dengue", fontWeight = FontWeight.Bold)
-
-        var expanded by remember { mutableStateOf(false) }
+        Text(
+            text = "Tipo de Dengue",
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            color = Color(0xFF333333)
+        )
 
         ComboBox(
             selectedValue = selectedDengueType,
             options = typesOfDengue.map { it.NOMBRE_TIPODENGUE },
-            label = "Tipo de dengue"
+            label = "Seleccione tipo de dengue"
         ) { seleccion ->
             viewModel.setDengueType(seleccion)
         }
@@ -409,11 +455,9 @@ fun LocationSection(viewModel: CreateCaseViewModel, mapViewModel: MapViewModel) 
     ) == PackageManager.PERMISSION_GRANTED
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.Start,
+        modifier = Modifier.fillMaxWidth()
     ) {
         ComboBox(
             selectedValue = department,
@@ -436,10 +480,12 @@ fun LocationSection(viewModel: CreateCaseViewModel, mapViewModel: MapViewModel) 
             enabled = department.isNotBlank()
         ) { nuevaCiudad ->
             val ciudadSeleccionada = ciudades.firstOrNull { it.NOMBRE_MUNICIPIO == nuevaCiudad }
-            val idCiudad = ciudadSeleccionada?.ID_MUNICIPIO ?: 0
-            viewModel.fetchHospitals(idCiudad)
-            viewModel.setCityName(nuevaCiudad)
-            viewModel.setSelectedHospital("", 0)
+            ciudadSeleccionada?.let {
+                val idCiudad = it.ID_MUNICIPIO
+                viewModel.setCityName(nuevaCiudad)
+                viewModel.setSelectedHospital("", 0)
+                viewModel.fetchHospitals(idCiudad)
+            }
         }
 
         ComboBox(

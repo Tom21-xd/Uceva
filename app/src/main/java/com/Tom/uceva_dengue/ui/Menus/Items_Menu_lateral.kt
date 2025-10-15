@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,6 +46,11 @@ sealed  class Items_Menu_lateral (
         Icons.Default.LocalHospital,
         "Hospitales",
         Rout.HospitalScreen.name
+    )
+    object Item_Menu_Lateral7: Items_Menu_lateral(
+        Icons.Default.ManageAccounts,
+        "Gestión de Usuarios",
+        Rout.UserManagementScreen.name
     )
 
 

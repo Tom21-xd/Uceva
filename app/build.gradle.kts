@@ -85,6 +85,11 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.retrofit2.converter.scalars)
 
+    // Firebase Cloud Messaging
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.analytics)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

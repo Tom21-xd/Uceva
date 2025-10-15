@@ -1,6 +1,9 @@
 package com.Tom.uceva_dengue.Data.Service
 
 import com.Tom.uceva_dengue.Data.Model.LoginModel
+import com.Tom.uceva_dengue.Data.Model.RecoverPasswordRequest
+import com.Tom.uceva_dengue.Data.Model.RecoverPasswordResponse
+import com.Tom.uceva_dengue.Data.Model.RegisterResponse
 import com.Tom.uceva_dengue.Data.Model.RegisterUserModel
 import com.Tom.uceva_dengue.Data.Model.RethusResponse
 import com.Tom.uceva_dengue.Data.Model.UserModel
@@ -14,14 +17,12 @@ interface AuthService {
     suspend fun login(@Body body: LoginModel): Response<UserModel>
 
     @POST("Auth/register")
-    suspend fun register(@Body body: RegisterUserModel): Response<String>
+    suspend fun register(@Body body: RegisterUserModel): Response<RegisterResponse>
 
     @POST("Auth/Rethus")
-    suspend fun consultarRethus(
-        @Query("primerNombre") primerNombre: String,
-        @Query("primerApellido") primerApellido: String,
-        @Query("tipoIdentificacion") tipoIdentificacion: String,
-        @Query("cedula") cedula: String
-    ): Response<RethusResponse>
+    suspend fun consultarRethus(@Body body: Map<String, String>): Response<RethusResponse>
+
+    @POST("Auth/recoverPassword")
+    suspend fun recoverPassword(@Body body: RecoverPasswordRequest): Response<RecoverPasswordResponse>
 
 }

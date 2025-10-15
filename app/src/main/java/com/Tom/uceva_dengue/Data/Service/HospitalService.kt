@@ -14,8 +14,8 @@ interface HospitalService {
     @GET("Hospital/filterHospitals")
     suspend fun filterHospitals(@Query("name") name: String): Response<List<HospitalModel>>
 
-    @GET("Hospital/getHospitaToCity")
-    suspend fun getHospitalsByCity(@Query("filtro") cityId: Int): Response<List<HospitalModel>>
+    @GET("Hospital/getHospitalByCity")
+    suspend fun getHospitalsByCity(@Query("filtro") cityId: String): Response<List<HospitalModel>>
 
     // HU-009: Obtener hospital por ID
     @GET("Hospital/getHospitalById/{id}")
@@ -25,11 +25,11 @@ interface HospitalService {
     @Multipart
     @POST("Hospital/createHospital")
     suspend fun createHospital(
-        @Part("nombre") nombre: RequestBody,
-        @Part("direccion") direccion: RequestBody,
-        @Part("latitud") latitud: RequestBody,
-        @Part("longitud") longitud: RequestBody,
-        @Part("id_municipio") idMunicipio: RequestBody,
+        @Part("Nombre") nombre: RequestBody,
+        @Part("Direccion") direccion: RequestBody,
+        @Part("Latitud") latitud: RequestBody,
+        @Part("Longitud") longitud: RequestBody,
+        @Part("IdMunicipio") idMunicipio: RequestBody,
         @Part imagen: MultipartBody.Part?
     ): Response<Map<String, String>>
 

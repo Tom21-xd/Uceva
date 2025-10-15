@@ -38,11 +38,29 @@ fun MenuLateral(
 ) {
     fun getMenuItemsByRole(role: Int): List<Items_Menu_lateral> {
         return when (role) {
-            1, 3 -> listOf(
+            1 -> listOf(
                 Items_Menu_lateral.Item_Menu_Lateral4, // Home
                 Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
                 Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
                 Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
+                Items_Menu_lateral.Item_Menu_Lateral3, // Información
+                Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
+            )
+            2 -> listOf(
+                Items_Menu_lateral.Item_Menu_Lateral4, // Home
+                Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
+                Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
+                Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
+                Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios (Solo Admin)
+                Items_Menu_lateral.Item_Menu_Lateral3, // Información
+                Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
+            )
+            3 -> listOf(
+                Items_Menu_lateral.Item_Menu_Lateral4, // Home
+                Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
+                Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
+                Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
+                Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios (Personal Médico)
                 Items_Menu_lateral.Item_Menu_Lateral3, // Información
                 Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
             )

@@ -11,14 +11,14 @@ interface CaseService {
     @GET("Case/getCases")
     suspend fun getCases(): Response<List<CaseModel>>
 
-    @POST("Case/creatreCase")
+    @POST("Case/createCase")
     suspend fun createCase(@Body case: CreateCaseModel): Response<Void>
 
     @GET("Case/getCaseById")
     suspend fun getCaseById(@Query("id") id: String): Response<CaseModel>
 
-    @GET("Case/getStateCase")
-    suspend fun getStateCase(): Response<List<CaseStateModel>>
+    @GET("CaseState/getCaseStates")
+    suspend fun getCaseStates(): Response<List<CaseStateModel>>
 
     @PATCH("Case/updateCase/{id}")
     suspend fun updateCase(

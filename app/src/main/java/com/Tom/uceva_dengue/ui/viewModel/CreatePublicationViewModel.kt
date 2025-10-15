@@ -1,7 +1,7 @@
 package com.Tom.uceva_dengue.ui.viewModel
 
-import RetrofitClient
 import android.content.Context
+import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel

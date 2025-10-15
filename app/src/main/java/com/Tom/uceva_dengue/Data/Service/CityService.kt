@@ -5,6 +5,6 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface CityService {
-    @GET("Department/getCities")
+    @GET("City/getCities")
     suspend fun getCities(@Query("filter") filter: String): List<CityModel>
 }
