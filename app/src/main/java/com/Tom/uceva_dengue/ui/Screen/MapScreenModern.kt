@@ -41,6 +41,15 @@ private val LightBlue = Color(0xFF85A5FF)
 private val DangerRed = Color(0xFFFF4757)
 private val WarningOrange = Color(0xFFFFB946)
 private val SuccessGreen = Color(0xFF26DE81)
+private val HospitalGreen = Color(0xFF20BF55)
+
+// Clase simple para items de hospital
+data class HospitalMarkerItem(
+    val latLng: LatLng,
+    val nombre: String,
+    val direccion: String,
+    val hospitalId: Int
+)
 
 @Composable
 fun MapScreenModern(viewModel: MapViewModel) {
@@ -76,12 +85,29 @@ fun MapScreenModern(viewModel: MapViewModel) {
     ) == PackageManager.PERMISSION_GRANTED
 
     val cases by viewModel.cases.collectAsState()
+    val hospitals by viewModel.hospitals.collectAsState()
 
     val heatmapPoints = remember(cases) {
         cases.mapNotNull {
             it.DIRECCION_CASOREPORTADO?.let { address ->
                 parseLatLngFromString(address)
             }
+        }
+    }
+
+    val hospitalMarkers = remember(hospitals) {
+        hospitals.mapNotNull { hospital ->
+            val latitud = hospital.LATITUD_HOSPITAL?.toDoubleOrNull()
+            val longitud = hospital.LONGITUD_HOSPITAL?.toDoubleOrNull()
+
+            if (latitud != null && longitud != null) {
+                HospitalMarkerItem(
+                    latLng = LatLng(latitud, longitud),
+                    nombre = hospital.NOMBRE_HOSPITAL ?: "Hospital",
+                    direccion = hospital.DIRECCION_HOSPITAL ?: "",
+                    hospitalId = hospital.ID_HOSPITAL
+                )
+            } else null
         }
     }
 
@@ -170,6 +196,17 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     TileOverlay(
                         state = tileOverlayState,
                         tileProvider = heatmapProvider
+                    )
+                }
+
+                // Marcadores de hospitales
+                hospitalMarkers.forEach { hospital ->
+                    Marker(
+                        state = MarkerState(position = hospital.latLng),
+                        title = hospital.nombre,
+                        snippet = hospital.direccion,
+                        icon = com.google.android.gms.maps.model.BitmapDescriptorFactory
+                            .defaultMarker(com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_GREEN)
                     )
                 }
 
@@ -316,20 +353,21 @@ fun MapScreenModern(viewModel: MapViewModel) {
             }
         }
 
-        // Card de información inferior
+        // Card de información inferior (compacto)
         Card(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(16.dp)
-                .shadow(12.dp, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)),
-            shape = RoundedCornerShape(20.dp),
+                .padding(12.dp)
+                .shadow(8.dp, RoundedCornerShape(16.dp)),
+            shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -337,29 +375,46 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Mapa de Calor - Dengue",
-                        fontSize = 18.sp,
+                        "Mapa de Calor",
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF2D3748)
                     )
 
-                    Card(
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = PrimaryBlue.copy(alpha = 0.1f)
-                        )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text(
-                            "${heatmapPoints.size} casos",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryBlue
-                        )
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = PrimaryBlue.copy(alpha = 0.1f)
+                            )
+                        ) {
+                            Text(
+                                "${heatmapPoints.size} casos",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryBlue
+                            )
+                        }
+
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = HospitalGreen.copy(alpha = 0.1f)
+                            )
+                        ) {
+                            Text(
+                                "${hospitalMarkers.size} hospitales",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = HospitalGreen
+                            )
+                        }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -395,13 +450,13 @@ fun LegendItem(color: Color, label: String, modifier: Modifier = Modifier) {
     ) {
         Box(
             modifier = Modifier
-                .size(12.dp)
+                .size(8.dp)
                 .background(color, CircleShape)
         )
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
             label,
-            fontSize = 12.sp,
+            fontSize = 10.sp,
             color = Color.Gray
         )
     }
