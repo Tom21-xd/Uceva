@@ -13,17 +13,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.Tom.uceva_dengue.ui.viewModel.MapViewModel
 import com.Tom.uceva_dengue.utils.geocodeAddress
 import com.Tom.uceva_dengue.utils.moveToUserLocation
@@ -54,12 +57,29 @@ data class HospitalMarkerItem(
 @Composable
 fun MapScreenModern(viewModel: MapViewModel) {
     val context = LocalContext.current
+    // Detectar si estamos en tema oscuro comparando el color de fondo del tema
+    // Un fondo oscuro tendrá valores RGB bajos (cercanos a 0)
+    val themeBackgroundColor = MaterialTheme.colorScheme.background
+    val isDarkTheme = remember(themeBackgroundColor) {
+        // Calcular luminosidad manualmente
+        val red = themeBackgroundColor.red
+        val green = themeBackgroundColor.green
+        val blue = themeBackgroundColor.blue
+        val luminance = (0.299 * red + 0.587 * green + 0.114 * blue)
+        luminance < 0.5
+    }
     var searchText by remember { mutableStateOf("") }
     var searchLocation by remember { mutableStateOf<LatLng?>(null) }
     var userLocation by remember { mutableStateOf<LatLng?>(null) }
     var isMapLoading by remember { mutableStateOf(true) }
     var showSearchBar by remember { mutableStateOf(false) }
     var isLoadingLocation by remember { mutableStateOf(false) }
+
+    // Colores adaptativos según el tema
+    val backgroundColor = if (isDarkTheme) Color(0xFF1A1A1A) else Color.White
+    val cardBackgroundColor = if (isDarkTheme) Color(0xFF2D2D2D) else Color.White
+    val textColor = if (isDarkTheme) Color(0xFFE0E0E0) else Color(0xFF2D3748)
+    val textSecondaryColor = if (isDarkTheme) Color(0xFFB0B0B0) else Color.Gray
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(1.61438, -75.60623), 12f)
@@ -149,7 +169,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White),
+                    .background(backgroundColor),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -162,7 +182,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     Text(
                         "Cargando mapa de calor...",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray,
+                        color = textSecondaryColor,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -180,7 +200,16 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(
                     isMyLocationEnabled = hasLocationPermission,
-                    mapType = MapType.NORMAL
+                    mapType = MapType.NORMAL,
+                    mapStyleOptions = if (isDarkTheme) {
+                        try {
+                            MapStyleOptions.loadRawResourceStyle(context, com.Tom.uceva_dengue.R.raw.map_style_dark)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    } else {
+                        null
+                    }
                 ),
                 uiSettings = MapUiSettings(
                     zoomControlsEnabled = false,
@@ -250,7 +279,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         .fillMaxWidth()
                         .shadow(8.dp, RoundedCornerShape(16.dp)),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
                 ) {
                     Row(
                         modifier = Modifier
@@ -261,7 +290,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         OutlinedTextField(
                             value = searchText,
                             onValueChange = { searchText = it },
-                            placeholder = { Text("Buscar dirección...", fontSize = 14.sp) },
+                            placeholder = { Text("Buscar dirección...", fontSize = 14.sp, color = textSecondaryColor) },
                             leadingIcon = {
                                 Icon(Icons.Default.Search, contentDescription = null, tint = PrimaryBlue)
                             },
@@ -269,7 +298,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                                 Row {
                                     if (searchText.isNotEmpty()) {
                                         IconButton(onClick = { searchText = "" }) {
-                                            Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+                                            Icon(Icons.Default.Clear, contentDescription = "Limpiar", tint = textColor)
                                         }
                                     }
                                     IconButton(
@@ -290,7 +319,10 @@ fun MapScreenModern(viewModel: MapViewModel) {
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = PrimaryBlue,
-                                unfocusedBorderColor = Color.LightGray
+                                unfocusedBorderColor = if (isDarkTheme) Color(0xFF505050) else Color.LightGray,
+                                focusedTextColor = textColor,
+                                unfocusedTextColor = textColor,
+                                cursorColor = PrimaryBlue
                             )
                         )
                     }
@@ -361,7 +393,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 .padding(12.dp)
                 .shadow(8.dp, RoundedCornerShape(16.dp)),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
         ) {
             Column(
                 modifier = Modifier
@@ -378,7 +410,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         "Mapa de Calor",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2D3748)
+                        color = textColor
                     )
 
                     Row(
@@ -443,6 +475,9 @@ fun MapScreenModern(viewModel: MapViewModel) {
 
 @Composable
 fun LegendItem(color: Color, label: String, modifier: Modifier = Modifier) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val textColor = if (isDarkTheme) Color(0xFFB0B0B0) else Color.Gray
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Center,
@@ -457,7 +492,7 @@ fun LegendItem(color: Color, label: String, modifier: Modifier = Modifier) {
         Text(
             label,
             fontSize = 10.sp,
-            color = Color.Gray
+            color = textColor
         )
     }
 }

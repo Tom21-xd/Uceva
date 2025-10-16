@@ -120,11 +120,13 @@
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(cases) { case ->
-                        CasoDengueCard(case, navController)
+                        CasoDengueCard(case, role, navController)
                     }
                 }
             }
 
+            // Solo Administrador (2) y Personal Médico (3) pueden crear casos
+            if (role == 2 || role == 3) {
                 FloatingActionButton(
                     onClick = { navController.navigate(Rout.CreateCaseScreen.name) },
                     shape = RoundedCornerShape(50),
@@ -135,17 +137,18 @@
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = "Crear publicación",
+                        contentDescription = "Crear caso",
                         tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
+            }
 
         }
 
 
     }
     @Composable
-    fun CasoDengueCard(case: CaseModel, navController: NavHostController) {
+    fun CasoDengueCard(case: CaseModel, role: Int, navController: NavHostController) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -180,9 +183,9 @@
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.width(16.dp))
-                    
+
                     Column {
                         Text(
                             text = case.NOMBRE_PACIENTE,
@@ -209,23 +212,26 @@
                     }
                 }
 
-                IconButton(
-                    onClick = {
-                        navController.navigate("${Rout.CaseDetailsScreen.name}/${case.ID_CASOREPORTADO}")
-                    },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(
-                            color = Color(0xFF00796B).copy(alpha = 0.1f),
-                            shape = CircleShape
+                // Solo Administrador (2) y Personal Médico (3) pueden ver/editar casos
+                if (role == 2 || role == 3) {
+                    IconButton(
+                        onClick = {
+                            navController.navigate("${Rout.CaseDetailsScreen.name}/${case.ID_CASOREPORTADO}")
+                        },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(
+                                color = Color(0xFF00796B).copy(alpha = 0.1f),
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Ver/Editar caso",
+                            tint = Color(0xFF00796B),
+                            modifier = Modifier.size(28.dp)
                         )
-                ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Editar caso",
-                        tint = Color(0xFF00796B),
-                        modifier = Modifier.size(28.dp)
-                    )
+                    }
                 }
             }
         }

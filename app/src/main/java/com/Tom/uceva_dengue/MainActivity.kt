@@ -14,6 +14,7 @@ import com.Tom.uceva_dengue.ui.Navigation.NavigationCon
 import com.Tom.uceva_dengue.ui.theme.Uceva_dengueTheme
 import com.Tom.uceva_dengue.utils.ThemeMode
 import com.Tom.uceva_dengue.utils.UserPreferences
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -27,6 +28,9 @@ class MainActivity : ComponentActivity() {
         Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
             Log.e("APP_CRASH", "Error inesperado", throwable)
         }
+
+        // Inicializar Firebase Cloud Messaging y obtener el token
+        initializeFCM()
 
         setContent {
             val userPreferences = UserPreferences(applicationContext)
@@ -44,6 +48,22 @@ class MainActivity : ComponentActivity() {
             ) {
                 NavigationCon(this)
             }
+        }
+    }
+
+    private fun initializeFCM() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Error al obtener FCM token", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // Obtener el token FCM
+            val token = task.result
+            Log.d("FCM", "FCM Token obtenido: $token")
+
+            // El token se guardará y enviará automáticamente al servidor
+            // mediante MyFirebaseMessagingService.onNewToken()
         }
     }
 }
