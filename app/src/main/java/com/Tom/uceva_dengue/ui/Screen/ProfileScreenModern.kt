@@ -32,12 +32,12 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
         viewModel.loadUserProfile(userId)
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F7FA))) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         when {
             loading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = Color(0xFF5E81F4)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             error != null -> {
@@ -46,7 +46,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                         .align(Alignment.Center)
                         .padding(24.dp)
                         .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3F3)),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(
@@ -56,7 +56,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                         Icon(
                             Icons.Default.Warning,
                             contentDescription = null,
-                            tint = Color(0xFFE53E3E),
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -64,10 +64,10 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                             text = "Error al cargar perfil",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFE53E3E)
+                            color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = error!!, color = Color(0xFF666666))
+                        Text(text = error!!, color = MaterialTheme.colorScheme.onErrorContainer)
                     }
                 }
             }
@@ -83,7 +83,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color.White
+                                containerColor = MaterialTheme.colorScheme.surface
                             ),
                             shape = RoundedCornerShape(20.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -94,8 +94,8 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     .background(
                                         brush = Brush.verticalGradient(
                                             colors = listOf(
-                                                Color(0xFF5E81F4),
-                                                Color(0xFF92C5FC)
+                                                MaterialTheme.colorScheme.primary,
+                                                MaterialTheme.colorScheme.primaryContainer
                                             )
                                         )
                                     )
@@ -107,14 +107,14 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     modifier = Modifier
                                         .size(80.dp)
                                         .clip(CircleShape)
-                                        .background(Color.White.copy(alpha = 0.3f)),
+                                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = (userInfo.NOMBRE_USUARIO?.take(1) ?: "U").uppercase(),
                                         fontSize = 36.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = MaterialTheme.colorScheme.onPrimary
                                     )
                                 }
 
@@ -124,20 +124,20 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     text = userInfo.NOMBRE_USUARIO ?: "Usuario",
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onPrimary
                                 )
 
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Surface(
                                     shape = RoundedCornerShape(12.dp),
-                                    color = Color.White.copy(alpha = 0.2f)
+                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
                                 ) {
                                     Text(
                                         text = userInfo.NOMBRE_ROL ?: "Sin rol",
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                         fontSize = 13.sp,
-                                        color = Color.White
+                                        color = MaterialTheme.colorScheme.onPrimary
                                     )
                                 }
                             }
@@ -148,7 +148,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                         // Información Personal
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             shape = RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                         ) {
@@ -162,13 +162,13 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                         text = "Información Personal",
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF2D3748)
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     IconButton(onClick = { isEditing = !isEditing }) {
                                         Icon(
                                             if (isEditing) Icons.Default.Close else Icons.Default.Edit,
                                             contentDescription = if (isEditing) "Cancelar" else "Editar",
-                                            tint = Color(0xFF5E81F4)
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 }
@@ -181,9 +181,9 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     value = userInfo.CORREO_USUARIO ?: "N/A"
                                 )
 
-                                Divider(
+                                HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 12.dp),
-                                    color = Color(0xFFE2E8F0)
+                                    color = MaterialTheme.colorScheme.outlineVariant
                                 )
 
                                 InfoItem(
@@ -192,9 +192,9 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     value = userInfo.DIRECCION_USUARIO ?: "No especificada"
                                 )
 
-                                Divider(
+                                HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 12.dp),
-                                    color = Color(0xFFE2E8F0)
+                                    color = MaterialTheme.colorScheme.outlineVariant
                                 )
 
                                 InfoItem(
@@ -203,9 +203,9 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     value = userInfo.NOMBRE_GENERO ?: "No especificado"
                                 )
 
-                                Divider(
+                                HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 12.dp),
-                                    color = Color(0xFFE2E8F0)
+                                    color = MaterialTheme.colorScheme.outlineVariant
                                 )
 
                                 InfoItem(
@@ -235,7 +235,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFF0F4FF)
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
                             ),
                             shape = RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -250,7 +250,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                 Icon(
                                     Icons.Default.AccountCircle,
                                     contentDescription = null,
-                                    tint = Color(0xFF5E81F4),
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -258,7 +258,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     text = "ID: ${userInfo.ID_USUARIO}",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF5E81F4)
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
                         }
@@ -272,7 +272,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                     modifier = Modifier
                         .align(Alignment.Center)
                         .padding(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(
@@ -282,13 +282,13 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                         Icon(
                             Icons.Default.Info,
                             contentDescription = null,
-                            tint = Color(0xFF718096),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "No hay información disponible",
-                            color = Color(0xFF718096)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -311,13 +311,13 @@ private fun InfoItem(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF0F4FF)),
+                .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color(0xFF5E81F4),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -328,14 +328,14 @@ private fun InfoItem(
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = Color(0xFF718096),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
                 fontSize = 15.sp,
-                color = Color(0xFF2D3748),
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Normal
             )
         }

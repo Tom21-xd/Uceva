@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,7 +26,7 @@ fun InfoScreen() {
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF0F2F5)),
+            .background(MaterialTheme.colorScheme.background),
         color = Color.Transparent
     ) {
         Column(
@@ -59,7 +59,7 @@ fun InfoScreen() {
             Text(
                 text = "Sistema de reporte y monitoreo de casos de dengue",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF6E6E73),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
@@ -73,7 +73,7 @@ fun InfoScreen() {
             ) {
                 Column(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(MaterialTheme.colorScheme.surface)
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -99,12 +99,12 @@ fun InfoScreen() {
                         )
                     }
 
-                    Divider(color = Color(0xFFE0E0E0), thickness = 1.dp)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
                     Text(
                         text = "Versión 1.0.0",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Column(
@@ -141,7 +141,7 @@ fun InfoScreen() {
                     Text(
                         text = "© 2025 Dengue App",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

@@ -57,14 +57,14 @@ fun UpdateHospitalScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         if (isLoadingData) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = Color(0xFF5E81F4))
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else if (errorMessage != null) {
             Box(
@@ -72,7 +72,7 @@ fun UpdateHospitalScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Error al cargar el hospital", color = Color.Red)
+                    Text("Error al cargar el hospital", color = MaterialTheme.colorScheme.error)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { navController.navigateUp() }) {
                         Text("Volver")
@@ -94,7 +94,7 @@ fun UpdateHospitalScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         SubcomposeAsyncImage(
                             model = imageUrl,
@@ -113,7 +113,7 @@ fun UpdateHospitalScreen(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("Error al cargar imagen", color = Color.Gray)
+                                    Text("Error al cargar imagen", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         )
@@ -122,7 +122,7 @@ fun UpdateHospitalScreen(
                     Text(
                         text = "Nota: La imagen no se puede modificar",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -134,8 +134,8 @@ fun UpdateHospitalScreen(
                     label = { Text("Nombre del Hospital") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF5E81F4),
-                        focusedLabelColor = Color(0xFF5E81F4)
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary
                     )
                 )
 
@@ -147,8 +147,8 @@ fun UpdateHospitalScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = false,
                     colors = OutlinedTextFieldDefaults.colors(
-                        disabledBorderColor = Color.Gray,
-                        disabledLabelColor = Color.Gray
+                        disabledBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
 
@@ -195,17 +195,17 @@ fun UpdateHospitalScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E81F4))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(24.dp)
                         )
                     } else {
                         Text(
                             "Actualizar Hospital",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -219,7 +219,7 @@ fun UpdateHospitalScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFF5E81F4)
+                        contentColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text("Cancelar", fontSize = 18.sp)

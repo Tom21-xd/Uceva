@@ -47,6 +47,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun CreateCaseScreen(
     viewModel: CreateCaseViewModel,
+    authViewModel: com.Tom.uceva_dengue.ui.viewModel.AuthViewModel,
     role: Int,
     user: String?,
     navController: NavHostController
@@ -71,7 +72,7 @@ fun CreateCaseScreen(
                     expanded = isPatientSectionExpanded,
                     onExpandChanged = { isPatientSectionExpanded = !isPatientSectionExpanded }
                 ) {
-                    PatientSection(viewModel)
+                    PatientSection(viewModel, authViewModel)
                 }
             }
 
@@ -189,16 +190,10 @@ fun SectionHeader(
 
 
 @Composable
-fun PatientSection(viewModel: CreateCaseViewModel) {
+fun PatientSection(viewModel: CreateCaseViewModel, authViewModel: com.Tom.uceva_dengue.ui.viewModel.AuthViewModel) {
     val isExistingUser by viewModel.isExistingUser.collectAsState()
-    val patientFirstName by viewModel.patientFirstName.collectAsState()
-    val address by viewModel.address.collectAsState()
     val users by viewModel.users.collectAsState()
     val selectedUser by viewModel.selectedUser.collectAsState()
-    val genres by viewModel.genres.collectAsState()
-    val typeofblood by viewModel.typeofblood.collectAsState()
-    val genreSelected: String by viewModel.selectedGenre.observeAsState(initial = "")
-    val bloodTypeSelected: String by viewModel.selectedBloodType.observeAsState(initial = "")
 
     var searchQuery by remember { mutableStateOf("") }
     var filteredUsers by remember { mutableStateOf(users) }
@@ -300,47 +295,15 @@ fun PatientSection(viewModel: CreateCaseViewModel) {
             selectedUser?.let {
                 SelectedUserCard(it)
             }
-
-
         } else {
-            OutlinedTextField(
-                value = patientFirstName,
-                onValueChange = viewModel::setPatientFirstName,
-                label = { Text("Nombres") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
+            // Usar el formulario de registro completo sin campo de contraseña
+            com.Tom.uceva_dengue.ui.Components.RegistrationForm(
+                viewModel = authViewModel,
+                showMedicalPersonnelOption = false,
+                showTitle = false,
+                showPasswordField = false,
+                medicalPersonnelData = null
             )
-
-            ComboBox(
-                selectedValue = genreSelected,
-                options = genres.map { it.NOMBRE_GENERO },
-                label = "Género"
-            ) { seleccion ->
-                val selectedGenre = genres.firstOrNull { it.NOMBRE_GENERO == seleccion }
-                selectedGenre?.let {
-                    viewModel.setSelectedGenre(it.NOMBRE_GENERO, it.ID_GENERO)
-                }
-            }
-
-            ComboBox(
-                selectedValue = bloodTypeSelected,
-                options = typeofblood.map { it.NOMBRE_TIPOSANGRE },
-                label = "Tipo de sangre"
-            ) { seleccion ->
-                val selectedBlood = typeofblood.firstOrNull { it.NOMBRE_TIPOSANGRE == seleccion }
-                selectedBlood?.let {
-                    viewModel.setSelectedBloodType(it.NOMBRE_TIPOSANGRE, it.ID_TIPOSANGRE)
-                }
-            }
-
-            OutlinedTextField(
-                value = address,
-                onValueChange = viewModel::setAddress,
-                label = { Text("Dirección") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
-            )
-
         }
     }
 }

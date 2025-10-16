@@ -11,6 +11,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -57,7 +58,7 @@ fun HospitalScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF4F4F4))
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp)
         ) {
         // Buscador
@@ -77,7 +78,7 @@ fun HospitalScreen(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Buscar",
-                    tint = Color(0xFF8A8A8A)
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
 
@@ -119,8 +120,8 @@ fun HospitalScreen(
                 onClick = {
                     navController.navigate(Rout.CreateHospitalScreen.name)
                 },
-                containerColor = Color(0xFF5E81F4),
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
@@ -155,7 +156,7 @@ fun HospitalScreen(
                         }
                     }
                 ) {
-                    Text("Eliminar", color = Color(0xFFE53935))
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {

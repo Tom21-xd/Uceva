@@ -71,7 +71,7 @@ fun CreateHospitalScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F7FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -86,7 +86,7 @@ fun CreateHospitalScreen(
                 text = "Imagen del Hospital *",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF5E81F4),
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -99,7 +99,7 @@ fun CreateHospitalScreen(
                         if (selectedImageUri == null) {
                             Modifier.border(
                                 width = 2.dp,
-                                color = Color(0xFF5E81F4),
+                                color = MaterialTheme.colorScheme.primary,
                                 shape = RoundedCornerShape(12.dp)
                             )
                         } else {
@@ -107,7 +107,7 @@ fun CreateHospitalScreen(
                         }
                     ),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -128,18 +128,18 @@ fun CreateHospitalScreen(
                             Icon(
                                 imageVector = Icons.Default.Image,
                                 contentDescription = "Seleccionar Imagen",
-                                tint = Color(0xFF5E81F4),
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 "Toca para seleccionar imagen",
-                                color = Color(0xFF5E81F4),
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
                                 "Requerida",
-                                color = Color(0xFFE57373),
+                                color = MaterialTheme.colorScheme.error,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -155,8 +155,8 @@ fun CreateHospitalScreen(
                 label = { Text("Nombre del Hospital *") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF5E81F4),
-                    focusedLabelColor = Color(0xFF5E81F4)
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
                 )
             )
 
@@ -167,8 +167,8 @@ fun CreateHospitalScreen(
                 label = { Text("Dirección *") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF5E81F4),
-                    focusedLabelColor = Color(0xFF5E81F4)
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
                 )
             )
 
@@ -211,7 +211,7 @@ fun CreateHospitalScreen(
                     text = "Ubicación del Hospital *",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF5E81F4)
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 IconButton(
@@ -220,7 +220,7 @@ fun CreateHospitalScreen(
                     Icon(
                         imageVector = Icons.Default.ZoomOutMap,
                         contentDescription = "Expandir mapa",
-                        tint = Color(0xFF5E81F4)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -277,15 +277,15 @@ fun CreateHospitalScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.1f)),
+                            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "Toca para seleccionar ubicación",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
-                                .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
                                 .padding(12.dp)
                         )
                     }
@@ -320,7 +320,7 @@ fun CreateHospitalScreen(
                         Icon(
                             imageVector = Icons.Default.LocationOn,
                             contentDescription = null,
-                            tint = Color(0xFF5E81F4)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 )
@@ -348,7 +348,7 @@ fun CreateHospitalScreen(
                         Icon(
                             imageVector = Icons.Default.LocationOn,
                             contentDescription = null,
-                            tint = Color(0xFF5E81F4)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 )
@@ -357,7 +357,7 @@ fun CreateHospitalScreen(
             Text(
                 text = "Tip: Toca en el mapa para seleccionar la ubicación del hospital o ingresa las coordenadas manualmente",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -389,17 +389,17 @@ fun CreateHospitalScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E81F4))
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
                     Text(
                         "Crear Hospital",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -413,7 +413,7 @@ fun CreateHospitalScreen(
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color(0xFF5E81F4)
+                    contentColor = MaterialTheme.colorScheme.primary
                 )
             ) {
                 Text("Cancelar", fontSize = 18.sp)
@@ -431,7 +431,7 @@ fun CreateHospitalScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White)
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
                     val dialogCameraPositionState = rememberCameraPositionState {
                         position = CameraPosition.fromLatLngZoom(
@@ -486,12 +486,12 @@ fun CreateHospitalScreen(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(16.dp)
-                            .background(Color.White, RoundedCornerShape(50))
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(50))
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Cerrar",
-                            tint = Color(0xFF5E81F4)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
 
@@ -500,7 +500,7 @@ fun CreateHospitalScreen(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .fillMaxWidth()
-                            .background(Color.White)
+                            .background(MaterialTheme.colorScheme.surface)
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -508,7 +508,7 @@ fun CreateHospitalScreen(
                             text = "Lat: ${String.format("%.6f", tempSelectedLocation.latitude)}, Lng: ${String.format("%.6f", tempSelectedLocation.longitude)}",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF5E81F4)
+                            color = MaterialTheme.colorScheme.primary
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -520,7 +520,7 @@ fun CreateHospitalScreen(
                                 showMapDialog = false
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E81F4))
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Text("Confirmar Ubicación", color = Color.White)
                         }

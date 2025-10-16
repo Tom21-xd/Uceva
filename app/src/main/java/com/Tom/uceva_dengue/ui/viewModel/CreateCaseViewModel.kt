@@ -39,6 +39,15 @@ class CreateCaseViewModel : ViewModel() {
     private val _patientFirstName = MutableStateFlow("")
     val patientFirstName: StateFlow<String> = _patientFirstName
 
+    private val _patientLastName = MutableStateFlow("")
+    val patientLastName: StateFlow<String> = _patientLastName
+
+    private val _patientEmail = MutableStateFlow("")
+    val patientEmail: StateFlow<String> = _patientEmail
+
+    private val _patientPassword = MutableStateFlow("")
+    val patientPassword: StateFlow<String> = _patientPassword
+
     private val _gender = MutableStateFlow("Seleccionar Género")
     val gender: StateFlow<String> = _gender
 
@@ -108,8 +117,13 @@ class CreateCaseViewModel : ViewModel() {
     fun setDepartment(name: String) {
         _department.value = name
     }
+
     fun setCityName(name: String) {
         _cityName.value = name
+    }
+
+    fun setCityId(id: Int) {
+        _cityId.value = id
     }
 
 
@@ -274,6 +288,9 @@ class CreateCaseViewModel : ViewModel() {
         if (!isExisting) {
             _selectedUser.value = null
             _patientFirstName.value = ""
+            _patientLastName.value = ""
+            _patientEmail.value = ""
+            _patientPassword.value = ""
             _gender.value = "Seleccionar Género"
             _address.value = ""
         }
@@ -283,6 +300,17 @@ class CreateCaseViewModel : ViewModel() {
         _patientFirstName.value = firstName
     }
 
+    fun setPatientLastName(lastName: String) {
+        _patientLastName.value = lastName
+    }
+
+    fun setPatientEmail(email: String) {
+        _patientEmail.value = email
+    }
+
+    fun setPatientPassword(password: String) {
+        _patientPassword.value = password
+    }
 
     fun setAddress(address: String) {
         _address.value = address
@@ -324,11 +352,12 @@ class CreateCaseViewModel : ViewModel() {
             try {
                 val tipoDengueId = _selectedDengueTypeID.value
 
-                val idPaciente = if (_isExistingUser.value) {
-                    _selectedUser.value?.ID_USUARIO ?: 0
-                } else {
-                    0
+                // Solo para usuario existente
+                val idPaciente = _selectedUser.value?.ID_USUARIO ?: run {
+                    onError("Debe seleccionar un usuario existente")
+                    return@launch
                 }
+
                 val coordenadas = _locationCoordinates.value?.let { "${it.latitude}:${it.longitude}" } ?: ""
 
                 val request = CreateCaseModel(
@@ -344,12 +373,72 @@ class CreateCaseViewModel : ViewModel() {
                 val response = RetrofitClient.caseService.createCase(request)
                 if (response.isSuccessful) {
                     onSuccess()
-
                 } else {
                     onError("Error al crear el caso: ${response.message()}")
                 }
             } catch (e: Exception) {
                 onError("Excepción al crear el caso: ${e.message}")
+            }
+        }
+    }
+
+    fun createCaseWithNewUser(
+        authViewModel: AuthViewModel,
+        idPersonalMedico: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                // Contraseña predeterminada para pacientes registrados por personal médico
+                val defaultPassword = "123456prueba"
+
+                // Primero registrar al nuevo usuario usando el AuthViewModel
+                val response = RetrofitClient.authService.register(
+                    com.Tom.uceva_dengue.Data.Model.RegisterUserModel(
+                        NOMBRE_USUARIO = "${authViewModel.firstName.value} ${authViewModel.lastName.value}",
+                        CORREO_USUARIO = authViewModel.email.value ?: "",
+                        CONTRASENIA_USUARIO = defaultPassword,
+                        DIRECCION_USUARIO = authViewModel.address.value ?: "",
+                        FK_ID_ROL = 2, // Rol usuario regular
+                        FK_ID_TIPOSANGRE = authViewModel.bloodTypeId.value ?: 0,
+                        FK_ID_GENERO = authViewModel.genderId.value ?: 0,
+                        FK_ID_MUNICIPIO = authViewModel.cityId.value ?: 0
+                    )
+                )
+
+                if (response.isSuccessful) {
+                    val userId = response.body()?.usuario?.ID_USUARIO
+                    if (userId != null && userId > 0) {
+                        // Usuario creado exitosamente, ahora crear el caso
+                        val tipoDengueId = _selectedDengueTypeID.value
+                        val coordenadas = _locationCoordinates.value?.let { "${it.latitude}:${it.longitude}" } ?: ""
+
+                        val request = com.Tom.uceva_dengue.Data.Model.CreateCaseModel(
+                            descripcion = _description.value,
+                            id_hospital = _idhospital.value ?: 0,
+                            id_tipoDengue = tipoDengueId,
+                            id_paciente = userId,
+                            id_personalMedico = idPersonalMedico,
+                            direccion = coordenadas
+                        )
+
+                        val caseResponse = RetrofitClient.caseService.createCase(request)
+                        if (caseResponse.isSuccessful) {
+                            onSuccess()
+                        } else {
+                            onError("Error al crear el caso: ${caseResponse.message()}")
+                        }
+                    } else {
+                        onError("No se pudo obtener el ID del usuario creado")
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    onError("Error al registrar usuario: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                onError("Error: ${e.message}")
+                Log.e("CreateCaseViewModel", "Error al crear caso con nuevo usuario", e)
             }
         }
     }

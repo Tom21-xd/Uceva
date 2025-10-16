@@ -41,12 +41,12 @@ fun UserManagementScreen(
     var deleteError by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
-        containerColor = Color(0xFFF5F7FA),
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(Rout.EditUserScreen.name) },
-                containerColor = Color(0xFF5E81F4),
-                contentColor = Color.White
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Crear usuario")
             }
@@ -58,65 +58,56 @@ fun UserManagementScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            // Header con título y estadísticas rápidas
+            // Header compacto
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp)
+                    modifier = Modifier.padding(12.dp)
                 ) {
-                    Text(
-                        text = "Gestión de Usuarios",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2D3748)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Administra los usuarios del sistema",
-                        fontSize = 14.sp,
-                        color = Color(0xFF718096)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Estadísticas rápidas
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        QuickStat(
-                            icon = Icons.Default.People,
-                            count = state.filteredUsers.size,
-                            label = "Total",
-                            color = Color(0xFF5E81F4)
-                        )
-                        QuickStat(
-                            icon = Icons.Default.Person,
-                            count = state.filteredUsers.count { it.FK_ID_ROL == 1 },
-                            label = "Usuarios",
-                            color = Color(0xFF2196F3)
-                        )
-                        QuickStat(
-                            icon = Icons.Default.AdminPanelSettings,
-                            count = state.filteredUsers.count { it.FK_ID_ROL == 2 },
-                            label = "Admins",
-                            color = Color(0xFFFF9800)
-                        )
-                        QuickStat(
-                            icon = Icons.Default.LocalHospital,
-                            count = state.filteredUsers.count { it.FK_ID_ROL == 3 },
-                            label = "Médicos",
-                            color = Color(0xFF4CAF50)
-                        )
+                        Column {
+                            Text(
+                                text = "Gestión de Usuarios",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "${state.filteredUsers.size} usuarios encontrados",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        // Estadísticas compactas en horizontal
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            CompactStat(
+                                count = state.filteredUsers.count { it.FK_ID_ROL == 1 },
+                                color = Color(0xFF2196F3)
+                            )
+                            CompactStat(
+                                count = state.filteredUsers.count { it.FK_ID_ROL == 2 },
+                                color = Color(0xFFFF9800)
+                            )
+                            CompactStat(
+                                count = state.filteredUsers.count { it.FK_ID_ROL == 3 },
+                                color = Color(0xFF4CAF50)
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Campo de búsqueda
             AnimatedTextField(
@@ -138,7 +129,7 @@ fun UserManagementScreen(
                 Text(
                     text = "Filtrar:",
                     fontSize = 14.sp,
-                    color = Color(0xFF718096),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
                 )
                 FilterChip(
@@ -196,7 +187,7 @@ fun UserManagementScreen(
                         .fillMaxWidth()
                         .weight(1f),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFF3F3)
+                        containerColor = MaterialTheme.colorScheme.errorContainer
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -210,13 +201,13 @@ fun UserManagementScreen(
                         Icon(
                             Icons.Default.Error,
                             contentDescription = null,
-                            tint = Color(0xFFE53935),
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = state.errorMessage ?: "Error desconocido",
-                            color = Color(0xFFE53935)
+                            color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
@@ -237,7 +228,7 @@ fun UserManagementScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(
@@ -272,7 +263,7 @@ fun UserManagementScreen(
                 // Lista de usuarios
                 LazyColumn(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(state.filteredUsers, key = { it.ID_USUARIO }) { user ->
                         UserCard(
@@ -326,14 +317,14 @@ fun UserManagementScreen(
                     Text(
                         "Esta acción no se puede deshacer.",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     if (deleteError != null) {
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = deleteError ?: "",
-                            color = Color(0xFFE53935),
+                            color = MaterialTheme.colorScheme.error,
                             fontSize = 14.sp
                         )
                     }
@@ -379,40 +370,22 @@ fun UserManagementScreen(
 }
 
 @Composable
-private fun QuickStat(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+private fun CompactStat(
     count: Int,
-    label: String,
     color: Color
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .clip(CircleShape)
+            .background(color.copy(alpha = 0.15f)),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(color.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = count.toString(),
-            fontSize = 20.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF2D3748)
-        )
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color(0xFF718096)
+            color = color
         )
     }
 }
@@ -428,21 +401,21 @@ fun UserCard(
             .fillMaxWidth()
             .animateContentSize(),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(12.dp)
         ) {
-            // Avatar con gradiente según el rol
+            // Avatar más pequeño
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(
                         brush = Brush.verticalGradient(
@@ -457,34 +430,35 @@ fun UserCard(
             ) {
                 Text(
                     text = (user.NOMBRE_USUARIO?.take(1) ?: "U").uppercase(),
-                    fontSize = 24.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
-            // Información del usuario
+            // Información compacta del usuario
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = user.NOMBRE_USUARIO ?: "Sin nombre",
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2D3748)
+                    color = Color(0xFF2D3748),
+                    maxLines = 1
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = user.CORREO_USUARIO ?: "Sin correo",
-                    fontSize = 13.sp,
-                    color = Color(0xFF718096)
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
                 )
-                Spacer(modifier = Modifier.height(6.dp))
-                // Rol badge
+                Spacer(modifier = Modifier.height(4.dp))
+                // Rol badge más pequeño
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(6.dp),
                     color = when (user.FK_ID_ROL) {
                         2 -> Color(0xFFFF9800).copy(alpha = 0.15f)
                         3 -> Color(0xFF4CAF50).copy(alpha = 0.15f)
@@ -492,7 +466,7 @@ fun UserCard(
                     }
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -507,16 +481,16 @@ fun UserCard(
                                 3 -> Color(0xFF4CAF50)
                                 else -> Color(0xFF2196F3)
                             },
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(11.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(3.dp))
                         Text(
                             text = when (user.FK_ID_ROL) {
                                 2 -> "Admin"
                                 3 -> "Médico"
                                 else -> "Usuario"
                             },
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
                             color = when (user.FK_ID_ROL) {
                                 2 -> Color(0xFFFF9800)
                                 3 -> Color(0xFF4CAF50)
@@ -528,31 +502,30 @@ fun UserCard(
                 }
             }
 
-            // Botones de acción
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            // Botones de acción horizontales
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 IconButton(
                     onClick = onEdit,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         Icons.Default.Edit,
-                        contentDescription = "Editar usuario",
+                        contentDescription = "Editar",
                         tint = Color(0xFF5E81F4),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
                 IconButton(
                     onClick = onDelete,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         Icons.Default.Delete,
-                        contentDescription = "Eliminar usuario",
+                        contentDescription = "Eliminar",
                         tint = Color(0xFFE53935),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }

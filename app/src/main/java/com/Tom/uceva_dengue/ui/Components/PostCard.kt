@@ -55,7 +55,7 @@ fun PostCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -86,7 +86,7 @@ fun PostCard(
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(
-                                color = Color(0xFF5E81F4),
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(40.dp)
                             )
                         }
@@ -95,7 +95,7 @@ fun PostCard(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(Color(0xFFF0F0F0)),
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(
@@ -105,14 +105,14 @@ fun PostCard(
                                 Icon(
                                     imageVector = Icons.Default.BrokenImage,
                                     contentDescription = "Error al cargar imagen",
-                                    tint = Color.Gray,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(48.dp)
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = "Error al cargar",
                                     fontSize = 12.sp,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -158,13 +158,13 @@ fun PostCard(
                         IconButton(
                             onClick = { showMenu = true },
                             modifier = Modifier
-                                .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(50))
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f), RoundedCornerShape(50))
                                 .size(36.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = "Más opciones",
-                                tint = Color(0xFF333333)
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -178,7 +178,7 @@ fun PostCard(
                                         Icon(
                                             imageVector = Icons.Default.Edit,
                                             contentDescription = "Editar",
-                                            tint = Color(0xFF5E81F4)
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text("Editar")
@@ -195,10 +195,10 @@ fun PostCard(
                                         Icon(
                                             imageVector = Icons.Default.Delete,
                                             contentDescription = "Eliminar",
-                                            tint = Color(0xFFE53935)
+                                            tint = MaterialTheme.colorScheme.error
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Eliminar", color = Color(0xFFE53935))
+                                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
                                     }
                                 },
                                 onClick = {
@@ -223,12 +223,12 @@ fun PostCard(
                 Text(
                     text = publicacion.DESCRIPCION_PUBLICACION,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF4A4A4A)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Divider(color = Color.LightGray, thickness = 1.dp)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -240,12 +240,12 @@ fun PostCard(
                     Text(
                         text = "👤 ${publicacion.USUARIO?.NOMBRE_USUARIO ?: publicacion.NOMBRE_USUARIO ?: "Usuario desconocido"}",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = publicacion.FECHA_PUBLICACION,
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

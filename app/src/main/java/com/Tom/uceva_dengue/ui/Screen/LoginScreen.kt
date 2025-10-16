@@ -360,31 +360,9 @@ val tipoIdentificaciones = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Registro(modifier: Modifier, viewModel: AuthViewModel, navController: NavController) {
-
-    val departamentos by viewModel.departamentos.collectAsState()
-    val ciudades by viewModel.municipios.collectAsState()
-    val generos by viewModel.generos.collectAsState()
-    val tiposSangre by viewModel.tiposSangre.collectAsState()
-
-    val firstName: String by viewModel.firstName.observeAsState(initial = "")
-    val lastName: String by viewModel.lastName.observeAsState(initial = "")
-    val email: String by viewModel.email.observeAsState(initial = "")
-    val password: String by viewModel.password.observeAsState(initial = "")
-    val address: String by viewModel.address.observeAsState(initial = "")
-    val genderId: Int by viewModel.genderId.observeAsState(initial = 0)
-    val genderName: String by viewModel.genderName.observeAsState(initial = "")
-    val bloodTypeId: Int by viewModel.bloodTypeId.observeAsState(initial = 0)
-    val bloodTypeName: String by viewModel.bloodTypeName.observeAsState(initial = "")
-    val cityId: Int by viewModel.cityId.observeAsState(initial = 0)
-    val cityName: String by viewModel.cityName.observeAsState(initial = "")
-    val department: String by viewModel.department.observeAsState(initial = "")
     val registerMessage: String? by viewModel.registerMessage.observeAsState()
-    val registerError: String? by viewModel.registerError.observeAsState()
 
-    var tipoDocumentoSeleccionado by remember { mutableStateOf(tipoIdentificaciones.first().codigo) }
-    var numeroDocumento by remember { mutableStateOf("") }
-    var contrasenaVisible by remember { mutableStateOf(false) }
-    var esPersonalMedico by remember { mutableStateOf(false) }
+    val medicalPersonnelData = remember { mutableStateOf(com.Tom.uceva_dengue.ui.Components.MedicalPersonnelData(false, "", "")) }
 
     Box(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Column(
@@ -392,127 +370,21 @@ fun Registro(modifier: Modifier, viewModel: AuthViewModel, navController: NavCon
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Registro", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-
-            Campo(firstName, "Nombres") {
-                viewModel.onRegisterChange(email, password, it, lastName, bloodTypeId, cityId, address, genderId)
-            }
-            Campo(lastName, "Apellidos") {
-                viewModel.onRegisterChange(email, password, firstName, it, bloodTypeId, cityId, address, genderId)
-            }
-            Campo(email, "Correo") {
-                viewModel.onRegisterChange(it, password, firstName, lastName, bloodTypeId, cityId, address, genderId)
-            }
-            Campo(address, "Direccion") {
-                viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, cityId, it, genderId)
-            }
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    viewModel.onRegisterChange(email, it, firstName, lastName, bloodTypeId, cityId, address, genderId)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Contraseña") },
-                singleLine = true,
-                visualTransformation = if (contrasenaVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { contrasenaVisible = !contrasenaVisible }) {
-                        Icon(
-                            imageVector = if (contrasenaVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = "Mostrar/Ocultar contraseña"
-                        )
-                    }
-                }
+            com.Tom.uceva_dengue.ui.Components.RegistrationForm(
+                viewModel = viewModel,
+                showMedicalPersonnelOption = true,
+                showTitle = true,
+                medicalPersonnelData = medicalPersonnelData
             )
-
-            ComboBox(
-                selectedValue = bloodTypeName,
-                options = tiposSangre.map { it.NOMBRE_TIPOSANGRE },
-                label = "Tipo de Sangre"
-            ) { seleccion ->
-                val selectedBloodType = tiposSangre.firstOrNull { it.NOMBRE_TIPOSANGRE == seleccion }
-                val id = selectedBloodType?.ID_TIPOSANGRE ?: 0
-                viewModel.onRegisterChange(email, password, firstName, lastName, id, cityId, address, genderId)
-                viewModel.setBloodTypeName(seleccion)
-            }
-
-            ComboBox(
-                selectedValue = department,
-                options = departamentos.map { it.NOMBRE_DEPARTAMENTO },
-                label = "Departamento"
-            ) { nuevoDepartamento ->
-                val departamentoSeleccionado = departamentos.firstOrNull { it.NOMBRE_DEPARTAMENTO == nuevoDepartamento }
-                departamentoSeleccionado?.ID_DEPARTAMENTO?.let {
-                    viewModel.fetchMunicipios(it.toString())
-                    viewModel.setDepartment(nuevoDepartamento)
-                }
-            }
-            ComboBox(
-                selectedValue = cityName,
-                options = ciudades.map { it.NOMBRE_MUNICIPIO ?: "" },
-                label = "Municipio"
-            ) { nuevaCiudad ->
-                val ciudadSeleccionada = ciudades.firstOrNull { it.NOMBRE_MUNICIPIO == nuevaCiudad }
-                val idCiudad = ciudadSeleccionada?.ID_MUNICIPIO ?: 0
-                viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, idCiudad, address, genderId)
-                viewModel.setCityName(nuevaCiudad)
-            }
-            ComboBox(
-                selectedValue = genderName,
-                options = generos.map { it.NOMBRE_GENERO },
-                label = "Género"
-            ) { seleccion ->
-                val selectedGenero = generos.firstOrNull { it.NOMBRE_GENERO == seleccion }
-                val id = selectedGenero?.ID_GENERO ?: 0
-                viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, cityId, address, id)
-                viewModel.setGenderName(seleccion)
-            }
-
-
-            // Personal Médico
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = esPersonalMedico,
-                    onCheckedChange = { esPersonalMedico = it }
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Personal Médico", fontSize = 14.sp, color = Color.Black)
-            }
-
-            if (esPersonalMedico) {
-                ComboBox(
-                    selectedValue = tipoDocumentoSeleccionado,
-                    options = tipoIdentificaciones.map { "${it.nombre} (${it.codigo})" },
-                    label = "Tipo de Documento"
-                ) { seleccion ->
-                    tipoDocumentoSeleccionado = tipoIdentificaciones.firstOrNull {
-                        "${it.nombre} (${it.codigo})" == seleccion
-                    }?.codigo ?: ""
-                }
-
-                Campo(numeroDocumento, "Número de Documento") {
-                    numeroDocumento = it
-                }
-            }
-
-            registerError?.let { message ->
-                Text(
-                    text = message,
-                    color = Color(0xFFD32F2F),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                )
-            }
 
             // Botón de Registro
             Button(
                 onClick = {
                     viewModel.registrarUsuario(
                         navController,
-                        esPersonalMedico,
-                        tipoIdentificacion = tipoDocumentoSeleccionado,
-                        numeroDocumento = numeroDocumento
+                        medicalPersonnelData.value.isMedicalPersonnel,
+                        tipoIdentificacion = medicalPersonnelData.value.documentType,
+                        numeroDocumento = medicalPersonnelData.value.documentNumber
                     )
                 },
                 modifier = Modifier.fillMaxWidth(0.9f).height(48.dp),

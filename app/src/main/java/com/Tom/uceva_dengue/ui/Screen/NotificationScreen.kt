@@ -34,12 +34,12 @@ fun NotificationScreen(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F7FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         when {
                 isLoading -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color(0xFF5E81F4))
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
                 error != null -> {
@@ -48,11 +48,11 @@ fun NotificationScreen(
                             Icon(
                                 imageVector = Icons.Default.Error,
                                 contentDescription = null,
-                                tint = Color.Red,
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(text = error ?: "Error inesperado", color = Color.Red)
+                            Text(text = error ?: "Error inesperado", color = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -62,7 +62,7 @@ fun NotificationScreen(
                             Icon(
                                 imageVector = Icons.Default.NotificationsNone,
                                 contentDescription = null,
-                                tint = Color.Gray,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(80.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -70,7 +70,7 @@ fun NotificationScreen(
                                 text = "No hay notificaciones",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -93,7 +93,7 @@ fun NotificationScreen(
 fun NotificationCard(notification: NotificationModel) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -106,14 +106,14 @@ fun NotificationCard(notification: NotificationModel) {
             // Icono circular
             Surface(
                 shape = CircleShape,
-                color = Color(0xFF5E81F4).copy(alpha = 0.15f),
+                color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.size(48.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
-                        tint = Color(0xFF5E81F4),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -132,17 +132,17 @@ fun NotificationCard(notification: NotificationModel) {
                         text = notification.NOMBRE_TIPONOTIFICACION ?: "Sin título",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1B1B1F),
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
                     )
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFF5E81F4).copy(alpha = 0.1f)
+                        color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
                             text = notification.FECHA_NOTIFICACION ?: "",
                             fontSize = 11.sp,
-                            color = Color(0xFF5E81F4),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             fontWeight = FontWeight.Medium
                         )
@@ -154,7 +154,7 @@ fun NotificationCard(notification: NotificationModel) {
                 Text(
                     text = notification.DESCRIPCION_TIPONOTIFICACION ?: "Sin contenido",
                     fontSize = 14.sp,
-                    color = Color(0xFF666666),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp
                 )
             }

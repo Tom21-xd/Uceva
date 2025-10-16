@@ -70,6 +70,7 @@ import com.Tom.uceva_dengue.ui.Screen.NotificationScreen
 import com.Tom.uceva_dengue.ui.Screen.ProfileScreenModern
 import com.Tom.uceva_dengue.ui.Screen.UserManagementScreen
 import com.Tom.uceva_dengue.ui.Screen.EditUserScreenFunctional
+import com.Tom.uceva_dengue.ui.Screen.SettingsScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
@@ -84,6 +85,7 @@ import com.Tom.uceva_dengue.ui.viewModel.ProfileViewModel
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import com.Tom.uceva_dengue.ui.viewModel.UserManagementViewModel
 import com.Tom.uceva_dengue.ui.viewModel.EditUserViewModel
+import com.Tom.uceva_dengue.ui.viewModel.SettingsViewModel
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -217,6 +219,7 @@ fun NavigationCon(context: Context) {
                     ProfileScreenModern(viewModel = viewModel(), userId = user)
                 }
                 composable(Rout.OptionScreen.name) {
+                    SettingsScreen(viewModel = viewModel())
                 }
                 composable(Rout.InfoScreen.name) {
                     InfoScreen()
@@ -232,7 +235,7 @@ fun NavigationCon(context: Context) {
                     CaseScreen(caseViewModel = CaseViewModel(),role,navController)
                 }
                 composable(Rout.CreateCaseScreen.name) {
-                    CreateCaseScreenModern(CreateCaseViewModel(),role,user,navController)
+                    CreateCaseScreenModern(CreateCaseViewModel(), viewModel<AuthViewModel>(), role, user, navController)
                 }
                 composable("${Rout.CaseDetailsScreen.name}/{id}") { backStackEntry ->
                     val id = backStackEntry.arguments?.getString("id") ?: ""

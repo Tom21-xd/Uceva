@@ -12,7 +12,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -49,7 +49,7 @@ fun HospitalCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -77,13 +77,13 @@ fun HospitalCard(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color(0xFFF0F0F0)),
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.BrokenImage,
                             contentDescription = "Error al cargar imagen",
-                            tint = Color.Gray,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(48.dp)
                         )
                     }
@@ -100,13 +100,13 @@ fun HospitalCard(
                         IconButton(
                             onClick = { showMenu = true },
                             modifier = Modifier
-                                .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(50))
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f), RoundedCornerShape(50))
                                 .size(36.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = "Más opciones",
-                                tint = Color(0xFF333333)
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -120,7 +120,7 @@ fun HospitalCard(
                                         Icon(
                                             imageVector = Icons.Default.Edit,
                                             contentDescription = "Editar",
-                                            tint = Color(0xFF5E81F4)
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text("Editar")
@@ -137,10 +137,10 @@ fun HospitalCard(
                                         Icon(
                                             imageVector = Icons.Default.Delete,
                                             contentDescription = "Eliminar",
-                                            tint = Color(0xFFE53935)
+                                            tint = MaterialTheme.colorScheme.error
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Eliminar", color = Color(0xFFE53935))
+                                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
                                     }
                                 },
                                 onClick = {
@@ -155,7 +155,7 @@ fun HospitalCard(
 
             Column(modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(16.dp)
             ) {
                 Text(
@@ -169,11 +169,11 @@ fun HospitalCard(
                 Text(
                     text = hospital.DIRECCION_HOSPITAL ?: "Sin dirección",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF555555)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
-                Divider(color = Color(0xFFE0E0E0), thickness = 1.dp)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
@@ -184,12 +184,12 @@ fun HospitalCard(
                     Text(
                         text = "Casos: ${hospital.CANTIDADCASOS_HOSPITAL}",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color(0xFF777777)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "Depto. ID: ${hospital.NOMBRE_DEPARTAMENTO}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF777777)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

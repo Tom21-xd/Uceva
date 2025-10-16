@@ -56,6 +56,7 @@ private val CardWhite = Color(0xFFFFFFFF)
 @Composable
 fun CreateCaseScreenModern(
     viewModel: CreateCaseViewModel,
+    authViewModel: com.Tom.uceva_dengue.ui.viewModel.AuthViewModel,
     role: Int,
     user: String?,
     navController: NavHostController
@@ -63,7 +64,9 @@ fun CreateCaseScreenModern(
     var isPatientSectionExpanded by remember { mutableStateOf(true) }
     var isDengueSectionExpanded by remember { mutableStateOf(false) }
     var isLocationSectionExpanded by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val isExistingUser by viewModel.isExistingUser.collectAsState()
 
     Box(
         modifier = Modifier
@@ -138,7 +141,7 @@ fun CreateCaseScreenModern(
                     expanded = isPatientSectionExpanded,
                     onExpandChanged = { isPatientSectionExpanded = !isPatientSectionExpanded }
                 ) {
-                    PatientSectionModern(viewModel)
+                    PatientSectionModern(viewModel, authViewModel)
                 }
             }
 
@@ -168,31 +171,61 @@ fun CreateCaseScreenModern(
                 // Botón de submit
                 Button(
                     onClick = {
-                        viewModel.createCase(
-                            idPersonalMedico = user?.toInt() ?: 0,
-                            onSuccess = {
-                                Toast.makeText(context, "Caso creado exitosamente", Toast.LENGTH_SHORT).show()
-                                navController.navigate(Rout.CaseScreen.name)
-                            },
-                            onError = { errorMsg ->
-                                Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
-                            }
-                        )
+                        isLoading = true
+                        if (!isExistingUser) {
+                            // Primero registrar el nuevo usuario usando AuthViewModel
+                            viewModel.createCaseWithNewUser(
+                                authViewModel = authViewModel,
+                                idPersonalMedico = user?.toInt() ?: 0,
+                                onSuccess = {
+                                    isLoading = false
+                                    Toast.makeText(context, "Caso creado exitosamente", Toast.LENGTH_SHORT).show()
+                                    navController.navigate(Rout.CaseScreen.name)
+                                },
+                                onError = { errorMsg ->
+                                    isLoading = false
+                                    Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        } else {
+                            // Usuario existente, crear caso directamente
+                            viewModel.createCase(
+                                idPersonalMedico = user?.toInt() ?: 0,
+                                onSuccess = {
+                                    isLoading = false
+                                    Toast.makeText(context, "Caso creado exitosamente", Toast.LENGTH_SHORT).show()
+                                    navController.navigate(Rout.CaseScreen.name)
+                                },
+                                onError = { errorMsg ->
+                                    isLoading = false
+                                    Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
                         .shadow(8.dp, RoundedCornerShape(28.dp)),
                     shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
+                    colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
+                    enabled = !isLoading
                 ) {
-                    Icon(Icons.Default.Check, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Reportar Caso",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(Icons.Default.Check, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Reportar Caso",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(80.dp))
             }
@@ -272,16 +305,10 @@ fun ModernSectionCard(
 }
 
 @Composable
-fun PatientSectionModern(viewModel: CreateCaseViewModel) {
+fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.uceva_dengue.ui.viewModel.AuthViewModel) {
     val isExistingUser by viewModel.isExistingUser.collectAsState()
-    val patientFirstName by viewModel.patientFirstName.collectAsState()
-    val address by viewModel.address.collectAsState()
     val users by viewModel.users.collectAsState()
     val selectedUser by viewModel.selectedUser.collectAsState()
-    val genres by viewModel.genres.collectAsState()
-    val typeofblood by viewModel.typeofblood.collectAsState()
-    val genreSelected: String by viewModel.selectedGenre.observeAsState(initial = "")
-    val bloodTypeSelected: String by viewModel.selectedBloodType.observeAsState(initial = "")
 
     var searchQuery by remember { mutableStateOf("") }
     var filteredUsers by remember { mutableStateOf(users) }
@@ -366,52 +393,13 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel) {
 
             selectedUser?.let { SelectedUserCardModern(it) }
         } else {
-            OutlinedTextField(
-                value = patientFirstName,
-                onValueChange = viewModel::setPatientFirstName,
-                label = { Text("Nombres Completos") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = PrimaryBlue) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryBlue,
-                    unfocusedBorderColor = Color.LightGray
-                )
-            )
-
-            ComboBox(
-                selectedValue = genreSelected,
-                options = genres.map { it.NOMBRE_GENERO },
-                label = "Género"
-            ) { seleccion ->
-                val selectedGenre = genres.firstOrNull { it.NOMBRE_GENERO == seleccion }
-                selectedGenre?.let {
-                    viewModel.setSelectedGenre(it.NOMBRE_GENERO, it.ID_GENERO)
-                }
-            }
-
-            ComboBox(
-                selectedValue = bloodTypeSelected,
-                options = typeofblood.map { it.NOMBRE_TIPOSANGRE },
-                label = "Tipo de Sangre"
-            ) { seleccion ->
-                val selectedBlood = typeofblood.firstOrNull { it.NOMBRE_TIPOSANGRE == seleccion }
-                selectedBlood?.let {
-                    viewModel.setSelectedBloodType(it.NOMBRE_TIPOSANGRE, it.ID_TIPOSANGRE)
-                }
-            }
-
-            OutlinedTextField(
-                value = address,
-                onValueChange = viewModel::setAddress,
-                label = { Text("Dirección de Residencia") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = PrimaryBlue) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryBlue,
-                    unfocusedBorderColor = Color.LightGray
-                )
+            // Usar el formulario de registro completo sin campo de contraseña
+            com.Tom.uceva_dengue.ui.Components.RegistrationForm(
+                viewModel = authViewModel,
+                showMedicalPersonnelOption = false,
+                showTitle = false,
+                showPasswordField = false,
+                medicalPersonnelData = null
             )
         }
     }
@@ -563,6 +551,7 @@ fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewM
             val ciudadSeleccionada = ciudades.firstOrNull { it.NOMBRE_MUNICIPIO == nuevaCiudad }
             ciudadSeleccionada?.let {
                 viewModel.setCityName(nuevaCiudad)
+                viewModel.setCityId(it.ID_MUNICIPIO)
                 viewModel.setSelectedHospital("", 0)
                 viewModel.fetchHospitals(it.ID_MUNICIPIO)
             }

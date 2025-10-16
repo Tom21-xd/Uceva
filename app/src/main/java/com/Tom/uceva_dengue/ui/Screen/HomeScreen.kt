@@ -43,7 +43,7 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F4F4))
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -64,7 +64,7 @@ fun HomeScreen(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Buscar",
-                        tint = Color(0xFF8A8A8A)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 shape = RoundedCornerShape(24.dp)
@@ -88,19 +88,19 @@ fun HomeScreen(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Sin resultados",
                             modifier = Modifier.size(80.dp),
-                            tint = Color(0xFFBDBDBD)
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = if (searchText.isNotBlank()) "No se encontraron publicaciones" else "No hay publicaciones disponibles",
                             style = MaterialTheme.typography.titleMedium,
-                            color = Color(0xFF757575)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = if (searchText.isNotBlank()) "Intenta con otro término de búsqueda" else "Sé el primero en publicar",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF9E9E9E)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -136,12 +136,12 @@ fun HomeScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp),
-                containerColor = Color(0xFF92C5FC)
+                containerColor = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Crear publicación",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         }
@@ -172,7 +172,7 @@ fun HomeScreen(
                         }
                     }
                 ) {
-                    Text("Eliminar", color = Color(0xFFE53935))
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
