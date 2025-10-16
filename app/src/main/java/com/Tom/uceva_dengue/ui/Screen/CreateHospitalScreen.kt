@@ -5,7 +5,9 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,20 +17,29 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.ZoomOutMap
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.*
 import com.Tom.uceva_dengue.ui.Components.ComboBox
 import com.Tom.uceva_dengue.ui.viewModel.CreateHospitalViewModel
 
@@ -51,6 +62,7 @@ fun CreateHospitalScreen(
 
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+    var showMapDialog by remember { mutableStateOf(false) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -70,11 +82,31 @@ fun CreateHospitalScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Selector de imagen
+            Text(
+                text = "Imagen del Hospital *",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF5E81F4),
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .clickable { imagePickerLauncher.launch("image/*") },
+                    .clickable { imagePickerLauncher.launch("image/*") }
+                    .then(
+                        if (selectedImageUri == null) {
+                            Modifier.border(
+                                width = 2.dp,
+                                color = Color(0xFF5E81F4),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        } else {
+                            Modifier
+                        }
+                    ),
+                shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
             ) {
                 Box(
@@ -89,15 +121,28 @@ fun CreateHospitalScreen(
                             contentScale = ContentScale.Crop
                         )
                     } else {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(16.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Image,
                                 contentDescription = "Seleccionar Imagen",
-                                tint = Color.Gray,
+                                tint = Color(0xFF5E81F4),
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Seleccionar Imagen (Opcional)", color = Color.Gray)
+                            Text(
+                                "Toca para seleccionar imagen",
+                                color = Color(0xFF5E81F4),
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                "Requerida",
+                                color = Color(0xFFE57373),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
@@ -156,36 +201,161 @@ fun CreateHospitalScreen(
                 viewModel.setCityName(nuevaCiudad)
             }
 
-            // Campos de Coordenadas
+            // Sección de Ubicación
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Ubicación del Hospital *",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF5E81F4)
+                )
+
+                IconButton(
+                    onClick = { showMapDialog = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ZoomOutMap,
+                        contentDescription = "Expandir mapa",
+                        tint = Color(0xFF5E81F4)
+                    )
+                }
+            }
+
+            // Mapa interactivo
+            var selectedLocation by remember {
+                mutableStateOf<LatLng?>(
+                    if (latitud.isNotEmpty() && longitud.isNotEmpty()) {
+                        try {
+                            LatLng(latitud.toDouble(), longitud.toDouble())
+                        } catch (e: Exception) {
+                            LatLng(3.4516, -76.5320) // Tulua, Valle del Cauca por defecto
+                        }
+                    } else {
+                        LatLng(3.4516, -76.5320)
+                    }
+                )
+            }
+
+            // Vista previa del mapa (solo visualización)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp)
+                    .clickable { showMapDialog = true },
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Box {
+                    val cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(selectedLocation ?: LatLng(3.4516, -76.5320), 15f)
+                    }
+
+                    GoogleMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = cameraPositionState,
+                        uiSettings = MapUiSettings(
+                            scrollGesturesEnabled = false,
+                            zoomGesturesEnabled = false,
+                            rotationGesturesEnabled = false,
+                            tiltGesturesEnabled = false,
+                            zoomControlsEnabled = false
+                        )
+                    ) {
+                        selectedLocation?.let { location ->
+                            Marker(
+                                state = MarkerState(position = location),
+                                title = "Ubicación del Hospital"
+                            )
+                        }
+                    }
+
+                    // Overlay para indicar que se puede tocar
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Toca para seleccionar ubicación",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
+                                .padding(12.dp)
+                        )
+                    }
+                }
+            }
+
+            // Campos de Coordenadas (solo lectura/información)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedTextField(
                     value = latitud,
-                    onValueChange = { viewModel.setLatitud(it) },
+                    onValueChange = {
+                        viewModel.setLatitud(it)
+                        // Actualizar mapa si las coordenadas son válidas
+                        if (it.isNotEmpty() && longitud.isNotEmpty()) {
+                            try {
+                                selectedLocation = LatLng(it.toDouble(), longitud.toDouble())
+                            } catch (e: Exception) {
+                                // Ignorar errores de conversión
+                            }
+                        }
+                    },
                     label = { Text("Latitud *") },
                     modifier = Modifier.weight(1f),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF5E81F4),
                         focusedLabelColor = Color(0xFF5E81F4)
-                    )
+                    ),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = Color(0xFF5E81F4)
+                        )
+                    }
                 )
 
                 OutlinedTextField(
                     value = longitud,
-                    onValueChange = { viewModel.setLongitud(it) },
+                    onValueChange = {
+                        viewModel.setLongitud(it)
+                        // Actualizar mapa si las coordenadas son válidas
+                        if (latitud.isNotEmpty() && it.isNotEmpty()) {
+                            try {
+                                selectedLocation = LatLng(latitud.toDouble(), it.toDouble())
+                            } catch (e: Exception) {
+                                // Ignorar errores de conversión
+                            }
+                        }
+                    },
                     label = { Text("Longitud *") },
                     modifier = Modifier.weight(1f),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF5E81F4),
                         focusedLabelColor = Color(0xFF5E81F4)
-                    )
+                    ),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = Color(0xFF5E81F4)
+                        )
+                    }
                 )
             }
 
             Text(
-                text = "Tip: Puedes obtener las coordenadas desde Google Maps",
+                text = "Tip: Toca en el mapa para seleccionar la ubicación del hospital o ingresa las coordenadas manualmente",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 modifier = Modifier.fillMaxWidth()
@@ -250,6 +420,113 @@ fun CreateHospitalScreen(
             }
 
             Spacer(modifier = Modifier.height(80.dp))
+        }
+
+        // Diálogo con mapa completo para selección precisa
+        if (showMapDialog) {
+            Dialog(
+                onDismissRequest = { showMapDialog = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White)
+                ) {
+                    val dialogCameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(
+                            if (latitud.isNotEmpty() && longitud.isNotEmpty()) {
+                                try {
+                                    LatLng(latitud.toDouble(), longitud.toDouble())
+                                } catch (e: Exception) {
+                                    LatLng(3.4516, -76.5320)
+                                }
+                            } else {
+                                LatLng(3.4516, -76.5320)
+                            },
+                            15f
+                        )
+                    }
+
+                    var tempSelectedLocation by remember {
+                        mutableStateOf(
+                            if (latitud.isNotEmpty() && longitud.isNotEmpty()) {
+                                try {
+                                    LatLng(latitud.toDouble(), longitud.toDouble())
+                                } catch (e: Exception) {
+                                    LatLng(3.4516, -76.5320)
+                                }
+                            } else {
+                                LatLng(3.4516, -76.5320)
+                            }
+                        )
+                    }
+
+                    GoogleMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = dialogCameraPositionState,
+                        onMapClick = { latLng ->
+                            tempSelectedLocation = latLng
+                        },
+                        uiSettings = MapUiSettings(
+                            zoomControlsEnabled = true,
+                            myLocationButtonEnabled = true
+                        )
+                    ) {
+                        Marker(
+                            state = MarkerState(position = tempSelectedLocation),
+                            title = "Ubicación del Hospital",
+                            snippet = "Lat: ${tempSelectedLocation.latitude}, Lng: ${tempSelectedLocation.longitude}"
+                        )
+                    }
+
+                    // Botón cerrar
+                    IconButton(
+                        onClick = { showMapDialog = false },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(16.dp)
+                            .background(Color.White, RoundedCornerShape(50))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Cerrar",
+                            tint = Color(0xFF5E81F4)
+                        )
+                    }
+
+                    // Información de coordenadas y botón confirmar
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Lat: ${String.format("%.6f", tempSelectedLocation.latitude)}, Lng: ${String.format("%.6f", tempSelectedLocation.longitude)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF5E81F4)
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = {
+                                viewModel.setLatitud(tempSelectedLocation.latitude.toString())
+                                viewModel.setLongitud(tempSelectedLocation.longitude.toString())
+                                showMapDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E81F4))
+                        ) {
+                            Text("Confirmar Ubicación", color = Color.White)
+                        }
+                    }
+                }
+            }
         }
     }
 }

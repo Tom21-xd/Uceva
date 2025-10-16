@@ -68,12 +68,14 @@
                     containerColor = Color.White,
                     contentColor = Color(0xFF00796B),
                     indicator = { tabPositions ->
-                        TabRowDefaults.Indicator(
-                            Modifier
-                                .tabIndicatorOffset(tabPositions[selectedEstadoIndex])
-                                .background(Color(0xFF00796B))
-                                .height(3.dp)
-                        )
+                        if (tabPositions.isNotEmpty() && selectedEstadoIndex < tabPositions.size) {
+                            TabRowDefaults.Indicator(
+                                Modifier
+                                    .tabIndicatorOffset(tabPositions[selectedEstadoIndex])
+                                    .background(Color(0xFF00796B))
+                                    .height(3.dp)
+                            )
+                        }
                     }
                 ) {
                     /*tiposDengue.forEachIndexed { index, typeDengue ->

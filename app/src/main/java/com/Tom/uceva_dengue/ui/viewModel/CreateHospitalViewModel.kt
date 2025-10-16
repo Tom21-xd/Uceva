@@ -129,6 +129,11 @@ class CreateHospitalViewModel : ViewModel() {
                     return@launch
                 }
 
+                if (imageUri == null) {
+                    onError("La imagen del hospital es requerida")
+                    return@launch
+                }
+
                 val nombrePart = RequestBody.create("text/plain".toMediaTypeOrNull(), _nombre.value)
                 val direccionPart = RequestBody.create("text/plain".toMediaTypeOrNull(), _direccion.value)
                 val latitudPart = RequestBody.create("text/plain".toMediaTypeOrNull(), _latitud.value)
