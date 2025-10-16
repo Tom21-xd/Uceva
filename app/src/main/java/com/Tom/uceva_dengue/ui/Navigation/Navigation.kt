@@ -67,7 +67,6 @@ import com.Tom.uceva_dengue.ui.Screen.ForgotPasswordScreenModern
 import com.Tom.uceva_dengue.ui.Screen.MapScreen
 import com.Tom.uceva_dengue.ui.Screen.MapScreenModern
 import com.Tom.uceva_dengue.ui.Screen.NotificationScreen
-import com.Tom.uceva_dengue.ui.Screen.ProfileScreen
 import com.Tom.uceva_dengue.ui.Screen.ProfileScreenModern
 import com.Tom.uceva_dengue.ui.Screen.UserManagementScreen
 import com.Tom.uceva_dengue.ui.Screen.EditUserScreenFunctional

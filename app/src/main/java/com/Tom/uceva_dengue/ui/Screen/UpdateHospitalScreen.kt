@@ -42,8 +42,8 @@ fun UpdateHospitalScreen(
             id = hospitalId,
             onSuccess = { hospital ->
                 nombre = hospital.NOMBRE_HOSPITAL
-                direccion = hospital.DIRECCION_HOSPITAL
-                imageUrl = "https://api.prometeondev.com/Image/getImage/${hospital.IMAGEN_HOSPITAL}"
+                direccion = hospital.DIRECCION_HOSPITAL ?: ""
+                imageUrl = "https://api.prometeondev.com/Image/getImage/${hospital.IMAGEN_HOSPITAL ?: ""}"
                 isLoadingData = false
             },
             onError = { error ->

@@ -18,12 +18,4 @@ data class PublicationModel (
     val NOMBRE_USUARIO: String? = USUARIO?.NOMBRE_USUARIO
 )
 
-/**
- * Basic user information embedded in publication responses
- */
-data class UserInfo(
-    val ID_USUARIO: Int,
-    val NOMBRE_USUARIO: String,
-    val CORREO_USUARIO: String,
-    val NOMBRE_ROL: String?
-)
+// Using shared UserInfo from SharedModels.kt

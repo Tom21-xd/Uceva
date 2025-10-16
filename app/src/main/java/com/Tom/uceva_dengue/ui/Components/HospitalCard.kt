@@ -167,7 +167,7 @@ fun HospitalCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = hospital.DIRECCION_HOSPITAL,
+                    text = hospital.DIRECCION_HOSPITAL ?: "Sin dirección",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF555555)
                 )

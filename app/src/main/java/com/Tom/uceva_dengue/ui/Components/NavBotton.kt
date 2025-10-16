@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -57,8 +58,8 @@ fun BottomNavigationBar(navController: NavController) {
             cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
             ballAnimation = Parabolic(tween(300)),
             indentAnimation = Height(tween(300)),
-            barColor = fondo,
-            ballColor = if (selectedIndex >= 0) fondo else androidx.compose.ui.graphics.Color.Transparent, // Ocultar bolita si no está en ruta principal
+            barColor = Color(0xFF5E81F4), // Color azul del TopAppBar
+            ballColor = if (selectedIndex >= 0) Color(0xFF92C5FC) else Color.Transparent, // Color azul claro para la bolita
         ) {
             items.forEachIndexed { index, item ->
                 Box(
@@ -80,7 +81,7 @@ fun BottomNavigationBar(navController: NavController) {
                         modifier = Modifier.size(26.dp),
                         imageVector = item.icon,
                         contentDescription = "Bottom Bar Icon",
-                        tint = if (selectedIndex == index) negro else blanco
+                        tint = if (selectedIndex == index) Color(0xFF1E3A8A) else Color.White
                     )
                 }
             }

@@ -59,7 +59,9 @@ fun MapScreen(viewModel: MapViewModel) {
 
     val heatmapPoints = remember(cases) {
         cases.mapNotNull {
-            parseLatLngFromString(it.DIRECCION_CASOREPORTADO)
+            it.DIRECCION_CASOREPORTADO?.let { address ->
+                parseLatLngFromString(address)
+            }
         }
     }
 

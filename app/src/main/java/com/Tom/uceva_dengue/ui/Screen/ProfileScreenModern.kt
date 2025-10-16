@@ -10,11 +10,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -23,49 +21,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.Tom.uceva_dengue.ui.viewModel.ProfileViewModel
 
-// Colores modernos para el perfil
-private val PrimaryBlue = Color(0xFF5E81F4)
-private val SecondaryBlue = Color(0xFF667EEA)
-private val AccentPurple = Color(0xFF764BA2)
-private val BackgroundGray = Color(0xFFF8F9FA)
-private val CardWhite = Color(0xFFFFFFFF)
-private val TextPrimary = Color(0xFF2D3748)
-private val TextSecondary = Color(0xFF718096)
-
 @Composable
 fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
     val user by viewModel.user.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
+    var isEditing by remember { mutableStateOf(false) }
 
-    // Cargar el perfil cuando se monte el composable
     LaunchedEffect(userId) {
         viewModel.loadUserProfile(userId)
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundGray)
-    ) {
-        if (loading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = PrimaryBlue)
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F7FA))) {
+        when {
+            loading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color(0xFF5E81F4)
+                )
             }
-            return@Box
-        }
-
-        if (error != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
+            error != null -> {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3F3))
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3F3)),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
@@ -74,214 +56,249 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                         Icon(
                             Icons.Default.Warning,
                             contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = Color(0xFFE53E3E)
+                            tint = Color(0xFFE53E3E),
+                            modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Error al cargar perfil",
-                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFE53E3E)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = error ?: "Error desconocido",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary
-                        )
+                        Text(text = error!!, color = Color(0xFF666666))
                     }
                 }
             }
-            return@Box
-        }
-
-        if (user != null) {
-            val userModel = user!!
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
-            ) {
-                // Avatar y nombre del usuario
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Avatar circular con sombra
-                    Box(
+            user != null -> {
+                user?.let { userInfo ->
+                    Column(
                         modifier = Modifier
-                            .size(100.dp)
-                            .shadow(8.dp, CircleShape)
-                            .clip(CircleShape)
-                            .background(Color.White),
-                        contentAlignment = Alignment.Center
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(90.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(PrimaryBlue, SecondaryBlue)
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
+                        // Header con avatar y nombre
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
-                            Text(
-                                text = (userModel.NOMBRE_USUARIO ?: "U").take(1).uppercase(),
-                                fontSize = 42.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color(0xFF5E81F4),
+                                                Color(0xFF92C5FC)
+                                            )
+                                        )
+                                    )
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                // Avatar
+                                Box(
+                                    modifier = Modifier
+                                        .size(80.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.3f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = (userInfo.NOMBRE_USUARIO?.take(1) ?: "U").uppercase(),
+                                        fontSize = 36.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Text(
+                                    text = userInfo.NOMBRE_USUARIO ?: "Usuario",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = Color.White.copy(alpha = 0.2f)
+                                ) {
+                                    Text(
+                                        text = userInfo.NOMBRE_ROL ?: "Sin rol",
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                        fontSize = 13.sp,
+                                        color = Color.White
+                                    )
+                                }
+                            }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    // Nombre del usuario
-                    Text(
-                        text = userModel.NOMBRE_USUARIO ?: "Usuario",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
+                        // Información Personal
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Información Personal",
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF2D3748)
+                                    )
+                                    IconButton(onClick = { isEditing = !isEditing }) {
+                                        Icon(
+                                            if (isEditing) Icons.Default.Close else Icons.Default.Edit,
+                                            contentDescription = if (isEditing) "Cancelar" else "Editar",
+                                            tint = Color(0xFF5E81F4)
+                                        )
+                                    }
+                                }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
 
-                    // Rol del usuario
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = PrimaryBlue.copy(alpha = 0.1f)
-                        )
-                    ) {
-                        Text(
-                            text = userModel.NOMBRE_ROL ?: "Sin rol",
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = PrimaryBlue
-                        )
+                                InfoItem(
+                                    icon = Icons.Default.Email,
+                                    label = "Correo Electrónico",
+                                    value = userInfo.CORREO_USUARIO ?: "N/A"
+                                )
+
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 12.dp),
+                                    color = Color(0xFFE2E8F0)
+                                )
+
+                                InfoItem(
+                                    icon = Icons.Default.LocationOn,
+                                    label = "Dirección",
+                                    value = userInfo.DIRECCION_USUARIO ?: "No especificada"
+                                )
+
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 12.dp),
+                                    color = Color(0xFFE2E8F0)
+                                )
+
+                                InfoItem(
+                                    icon = Icons.Default.Person,
+                                    label = "Género",
+                                    value = userInfo.NOMBRE_GENERO ?: "No especificado"
+                                )
+
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 12.dp),
+                                    color = Color(0xFFE2E8F0)
+                                )
+
+                                InfoItem(
+                                    icon = Icons.Default.Favorite,
+                                    label = "Tipo de Sangre",
+                                    value = userInfo.NOMBRE_TIPOSANGRE ?: "No especificado"
+                                )
+
+                                if (userInfo.NOMBRE_MUNICIPIO != null) {
+                                    Divider(
+                                        modifier = Modifier.padding(vertical = 12.dp),
+                                        color = Color(0xFFE2E8F0)
+                                    )
+
+                                    InfoItem(
+                                        icon = Icons.Default.Place,
+                                        label = "Municipio",
+                                        value = userInfo.NOMBRE_MUNICIPIO ?: "No especificado"
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Card de ID
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFF0F4FF)
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.AccountCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF5E81F4),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "ID: ${userInfo.ID_USUARIO}",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF5E81F4)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
-
-                // Contenido de las tarjetas de información
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    // Información personal
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(4.dp, RoundedCornerShape(16.dp)),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardWhite)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp)
-                        ) {
-                            Text(
-                                text = "Información Personal",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextPrimary,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-
-                            ProfileInfoItem(
-                                icon = Icons.Default.Email,
-                                label = "Correo Electrónico",
-                                value = userModel.CORREO_USUARIO ?: "Sin correo"
-                            )
-
-                            Divider(
-                                modifier = Modifier.padding(vertical = 12.dp),
-                                color = Color(0xFFE2E8F0)
-                            )
-
-                            ProfileInfoItem(
-                                icon = Icons.Default.LocationOn,
-                                label = "Dirección",
-                                value = userModel.DIRECCION_USUARIO ?: "Sin dirección"
-                            )
-
-                            Divider(
-                                modifier = Modifier.padding(vertical = 12.dp),
-                                color = Color(0xFFE2E8F0)
-                            )
-
-                            ProfileInfoItem(
-                                icon = Icons.Default.Person,
-                                label = "Género",
-                                value = userModel.NOMBRE_GENERO ?: "Sin especificar"
-                            )
-
-                            Divider(
-                                modifier = Modifier.padding(vertical = 12.dp),
-                                color = Color(0xFFE2E8F0)
-                            )
-
-                            ProfileInfoItem(
-                                icon = Icons.Default.Favorite,
-                                label = "Tipo de Sangre",
-                                value = userModel.NOMBRE_TIPOSANGRE ?: "Sin especificar"
-                            )
-                        }
-                    }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Card de estadísticas
+            }
+            else -> {
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(4.dp, RoundedCornerShape(16.dp)),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = PrimaryBlue.copy(alpha = 0.05f)
-                    )
+                        .align(Alignment.Center)
+                        .padding(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        StatItem(
-                            icon = Icons.Default.AccountCircle,
-                            value = "ID: ${userModel.ID_USUARIO}",
-                            label = "Usuario"
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = Color(0xFF718096),
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "No hay información disponible",
+                            color = Color(0xFF718096)
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(80.dp))
-                }
-            }
-        } else if (!loading && error == null) {
-            // Estado cuando no hay usuario cargado pero tampoco hay error ni está cargando
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No hay información de usuario disponible",
-                    color = TextSecondary
-                )
             }
         }
     }
 }
 
 @Composable
-fun ProfileInfoItem(
+private fun InfoItem(
     icon: ImageVector,
     label: String,
     value: String
@@ -294,63 +311,33 @@ fun ProfileInfoItem(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(PrimaryBlue.copy(alpha = 0.1f)),
+                .background(Color(0xFFF0F4FF)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = PrimaryBlue,
+                tint = Color(0xFF5E81F4),
                 modifier = Modifier.size(20.dp)
             )
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = TextSecondary,
+                color = Color(0xFF718096),
                 fontWeight = FontWeight.Medium
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
-                fontSize = 16.sp,
-                color = TextPrimary,
+                fontSize = 15.sp,
+                color = Color(0xFF2D3748),
                 fontWeight = FontWeight.Normal
             )
         }
-    }
-}
-
-@Composable
-fun StatItem(
-    icon: ImageVector,
-    value: String,
-    label: String
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = PrimaryBlue,
-            modifier = Modifier.size(32.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = value,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextPrimary
-        )
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = TextSecondary
-        )
     }
 }
