@@ -120,57 +120,67 @@ fun UserManagementScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Filtros por rol
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            // Filtros por rol con scroll horizontal
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Filtrar:",
-                    fontSize = 14.sp,
+                    text = "Filtrar por rol:",
+                    fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
-                FilterChip(
-                    selected = state.selectedRoleFilter == null,
-                    onClick = { viewModel.filterByRole(null) },
-                    label = { Text("Todos") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFF5E81F4),
-                        selectedLabelColor = Color.White
-                    )
-                )
-                FilterChip(
-                    selected = state.selectedRoleFilter == 1,
-                    onClick = { viewModel.filterByRole(1) },
-                    label = { Text("Usuarios") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFF2196F3),
-                        selectedLabelColor = Color.White
-                    )
-                )
-                FilterChip(
-                    selected = state.selectedRoleFilter == 2,
-                    onClick = { viewModel.filterByRole(2) },
-                    label = { Text("Admins") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFFFF9800),
-                        selectedLabelColor = Color.White
-                    )
-                )
-                FilterChip(
-                    selected = state.selectedRoleFilter == 3,
-                    onClick = { viewModel.filterByRole(3) },
-                    label = { Text("Médicos") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFF4CAF50),
-                        selectedLabelColor = Color.White
-                    )
-                )
+                androidx.compose.foundation.lazy.LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        FilterChip(
+                            selected = state.selectedRoleFilter == null,
+                            onClick = { viewModel.filterByRole(null) },
+                            label = { Text("Todos", fontSize = 13.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFF5E81F4),
+                                selectedLabelColor = Color.White
+                            )
+                        )
+                    }
+                    item {
+                        FilterChip(
+                            selected = state.selectedRoleFilter == 1,
+                            onClick = { viewModel.filterByRole(1) },
+                            label = { Text("Usuarios", fontSize = 13.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFF2196F3),
+                                selectedLabelColor = Color.White
+                            )
+                        )
+                    }
+                    item {
+                        FilterChip(
+                            selected = state.selectedRoleFilter == 2,
+                            onClick = { viewModel.filterByRole(2) },
+                            label = { Text("Admins", fontSize = 13.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFFFF9800),
+                                selectedLabelColor = Color.White
+                            )
+                        )
+                    }
+                    item {
+                        FilterChip(
+                            selected = state.selectedRoleFilter == 3,
+                            onClick = { viewModel.filterByRole(3) },
+                            label = { Text("Médicos", fontSize = 13.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFF4CAF50),
+                                selectedLabelColor = Color.White
+                            )
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Loading indicator
             if (state.isLoading) {

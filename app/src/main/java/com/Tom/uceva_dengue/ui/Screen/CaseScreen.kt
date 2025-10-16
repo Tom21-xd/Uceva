@@ -41,7 +41,7 @@
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF4F4F4))
+                .background(MaterialTheme.colorScheme.background)
                 .padding(bottom = 10.dp)
         ) {
             Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -65,7 +65,7 @@
                     selectedTabIndex = selectedEstadoIndex,
                     modifier = Modifier.fillMaxWidth(),
                     edgePadding = 0.dp,
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = Color(0xFF00796B),
                     indicator = { tabPositions ->
                         if (tabPositions.isNotEmpty() && selectedEstadoIndex < tabPositions.size) {
