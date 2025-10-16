@@ -1,18 +1,61 @@
 package com.Tom.uceva_dengue.ui.Screen
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonOff
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,7 +67,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.Data.Model.UserModel
-import com.Tom.uceva_dengue.ui.Components.AnimatedTextField
 import com.Tom.uceva_dengue.ui.Components.LoadingIndicator
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.UserManagementViewModel
@@ -56,80 +98,156 @@ fun UserManagementScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
         ) {
-            // Campo de búsqueda
-            AnimatedTextField(
-                value = state.searchQuery,
-                onValueChange = { viewModel.searchUsers(it) },
-                label = "Buscar por nombre, correo o ID",
-                leadingIcon = Icons.Default.Search,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Filtros por rol con scroll horizontal
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Filtrar por rol:",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                androidx.compose.foundation.lazy.LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // Header compacto con búsqueda y filtros integrados
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
                 ) {
-                    item {
-                        FilterChip(
-                            selected = state.selectedRoleFilter == null,
-                            onClick = { viewModel.filterByRole(null) },
-                            label = { Text("Todos", fontSize = 13.sp) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFF5E81F4),
-                                selectedLabelColor = Color.White
+                    // Barra de búsqueda compacta
+                    OutlinedTextField(
+                        value = state.searchQuery,
+                        onValueChange = { viewModel.searchUsers(it) },
+                        placeholder = {
+                            Text(
+                                "Buscar usuarios...",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                             )
-                        )
-                    }
-                    item {
-                        FilterChip(
-                            selected = state.selectedRoleFilter == 1,
-                            onClick = { viewModel.filterByRole(1) },
-                            label = { Text("Usuarios", fontSize = 13.sp) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFF2196F3),
-                                selectedLabelColor = Color.White
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = null,
+                                tint = Color(0xFF5E81F4),
+                                modifier = Modifier.size(20.dp)
                             )
-                        )
-                    }
-                    item {
-                        FilterChip(
-                            selected = state.selectedRoleFilter == 2,
-                            onClick = { viewModel.filterByRole(2) },
-                            label = { Text("Admins", fontSize = 13.sp) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFFFF9800),
-                                selectedLabelColor = Color.White
+                        },
+                        trailingIcon = {
+                            if (state.searchQuery.isNotEmpty()) {
+                                IconButton(
+                                    onClick = { viewModel.searchUsers("") },
+                                    modifier = Modifier.size(20.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Clear,
+                                        contentDescription = "Limpiar",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF5E81F4),
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        singleLine = true,
+                        textStyle = LocalTextStyle.current.copy(fontSize = 14.sp)
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Filtros compactos en fila
+                    androidx.compose.foundation.lazy.LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        item {
+                            FilterChip(
+                                selected = state.selectedRoleFilter == null,
+                                onClick = { viewModel.filterByRole(null) },
+                                label = {
+                                    Text(
+                                        "Todos (${state.users.size})",
+                                        fontSize = 12.sp,
+                                        fontWeight = if (state.selectedRoleFilter == null) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                leadingIcon = if (state.selectedRoleFilter == null) {
+                                    { Icon(Icons.Default.Check, null, Modifier.size(14.dp)) }
+                                } else null,
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFF5E81F4),
+                                    selectedLabelColor = Color.White
+                                )
                             )
-                        )
-                    }
-                    item {
-                        FilterChip(
-                            selected = state.selectedRoleFilter == 3,
-                            onClick = { viewModel.filterByRole(3) },
-                            label = { Text("Médicos", fontSize = 13.sp) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFF4CAF50),
-                                selectedLabelColor = Color.White
+                        }
+                        item {
+                            FilterChip(
+                                selected = state.selectedRoleFilter == 1,
+                                onClick = { viewModel.filterByRole(1) },
+                                label = { Text("Usuarios", fontSize = 12.sp) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Person,
+                                        null,
+                                        Modifier.size(14.dp),
+                                        tint = if (state.selectedRoleFilter == 1) Color.White else Color(0xFF2196F3)
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFF2196F3),
+                                    selectedLabelColor = Color.White
+                                )
                             )
-                        )
+                        }
+                        item {
+                            FilterChip(
+                                selected = state.selectedRoleFilter == 2,
+                                onClick = { viewModel.filterByRole(2) },
+                                label = { Text("Admins", fontSize = 12.sp) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.AdminPanelSettings,
+                                        null,
+                                        Modifier.size(14.dp),
+                                        tint = if (state.selectedRoleFilter == 2) Color.White else Color(0xFFFF9800)
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFFFF9800),
+                                    selectedLabelColor = Color.White
+                                )
+                            )
+                        }
+                        item {
+                            FilterChip(
+                                selected = state.selectedRoleFilter == 3,
+                                onClick = { viewModel.filterByRole(3) },
+                                label = { Text("Médicos", fontSize = 12.sp) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.LocalHospital,
+                                        null,
+                                        Modifier.size(14.dp),
+                                        tint = if (state.selectedRoleFilter == 3) Color.White else Color(0xFF4CAF50)
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFF4CAF50),
+                                    selectedLabelColor = Color.White
+                                )
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Loading indicator
             if (state.isLoading) {
@@ -221,7 +339,9 @@ fun UserManagementScreen(
             } else {
                 // Lista de usuarios
                 LazyColumn(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(state.filteredUsers, key = { it.ID_USUARIO }) { user ->
