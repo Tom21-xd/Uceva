@@ -8,10 +8,15 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.Tom.uceva_dengue.Data.Api.RetrofitClient
+import com.Tom.uceva_dengue.Data.Model.FCMTokenRequest
 import com.Tom.uceva_dengue.MainActivity
 import com.Tom.uceva_dengue.R
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -123,12 +128,35 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     private fun sendTokenToServer(token: String) {
         val sharedPreferences = getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-        val userId = sharedPreferences.getString("username", null)
+        val userIdString = sharedPreferences.getString("username", null)
 
-        if (userId != null) {
-            // TODO: Implementar el envío al servidor
-            Log.d(TAG, "Enviando token al servidor para usuario: $userId")
-            // Aquí implementaremos la llamada al API más adelante
+        if (userIdString != null) {
+            try {
+                val userId = userIdString.toIntOrNull()
+                if (userId != null) {
+                    Log.d(TAG, "Enviando token al servidor para usuario: $userId")
+
+                    // Use coroutine to make async call
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val request = FCMTokenRequest(userId = userId, fcmToken = token)
+                            val response = RetrofitClient.fcmService.saveToken(request)
+
+                            if (response.isSuccessful) {
+                                Log.d(TAG, "Token FCM enviado exitosamente al servidor")
+                            } else {
+                                Log.e(TAG, "Error al enviar token al servidor: ${response.errorBody()?.string()}")
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Excepción al enviar token al servidor: ${e.message}", e)
+                        }
+                    }
+                } else {
+                    Log.e(TAG, "ID de usuario no válido: $userIdString")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al procesar ID de usuario: ${e.message}", e)
+            }
         } else {
             Log.d(TAG, "Usuario no logueado, token no enviado al servidor")
         }

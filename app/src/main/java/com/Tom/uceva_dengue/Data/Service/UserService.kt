@@ -1,5 +1,6 @@
 package com.Tom.uceva_dengue.Data.Service
 
+import com.Tom.uceva_dengue.Data.Model.UpdateUserRequest
 import com.Tom.uceva_dengue.Data.Model.UserModel
 import retrofit2.Response
 import retrofit2.http.*
@@ -19,14 +20,14 @@ interface UserService {
     @PUT("User/updateProfile/{id}")
     suspend fun updateProfile(
         @Path("id") id: Int,
-        @Body userData: Map<String, Any?>
+        @Body userData: UpdateUserRequest
     ): Response<Map<String, String>>
 
     // HU-005: Actualizar usuario (Admin)
     @PUT("User/updateUser/{id}")
     suspend fun updateUser(
         @Path("id") id: Int,
-        @Body userData: Map<String, Any?>
+        @Body userData: UpdateUserRequest
     ): Response<Map<String, String>>
 
     // HU-005: Eliminar usuario (Admin)

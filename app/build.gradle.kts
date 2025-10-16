@@ -80,6 +80,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation(libs.coil.compose)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)

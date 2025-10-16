@@ -99,6 +99,8 @@ fun CaseDetailsScreen(
                             ModernInfoCard(
                                 icon = Icons.Default.Person,
                                 title = "Información del Paciente",
+                                iconBackgroundColor = Color(0xFFB2DFDB),
+                                iconTintColor = Color(0xFF00796B),
                                 items = listOf(
                                     "Paciente" to c.NOMBRE_PACIENTE,
                                     "Fecha Reporte" to c.FECHA_CASOREPORTADO,
@@ -166,7 +168,7 @@ fun CaseDetailsScreen(
                                         ModernInfoItem(label = "Tipo de Dengue", value = c.NOMBRE_TIPODENGUE)
                                     }
 
-                                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                                     if (isEditing) {
                                         OutlinedTextField(
@@ -215,7 +217,7 @@ fun CaseDetailsScreen(
                                             .height(56.dp),
                                         shape = RoundedCornerShape(12.dp),
                                         colors = ButtonDefaults.outlinedButtonColors(
-                                            contentColor = Color(0xFF5E81F4)
+                                            contentColor = Color(0xFF00796B)
                                         )
                                     ) {
                                         Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -238,7 +240,7 @@ fun CaseDetailsScreen(
                                             .height(56.dp),
                                         shape = RoundedCornerShape(12.dp),
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0xFF5E81F4)
+                                            containerColor = Color(0xFF00796B)
                                         )
                                     ) {
                                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -259,12 +261,17 @@ fun CaseDetailsScreen(
                         onClick = { isEditing = true },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
-                            .padding(24.dp),
-                        containerColor = Color(0xFF5E81F4),
+                            .padding(24.dp)
+                            .size(64.dp),
+                        containerColor = Color(0xFF00796B),
                         contentColor = Color.White,
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = FloatingActionButtonDefaults.elevation(
+                            defaultElevation = 8.dp,
+                            pressedElevation = 12.dp
+                        )
                     ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar", modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.Edit, contentDescription = "Editar", modifier = Modifier.size(28.dp))
                     }
                 }
             }
@@ -276,12 +283,14 @@ fun CaseDetailsScreen(
 private fun ModernInfoCard(
     icon: ImageVector,
     title: String,
-    items: List<Pair<String, String>>
+    items: List<Pair<String, String>>,
+    iconBackgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    iconTintColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -293,12 +302,12 @@ private fun ModernInfoCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFE8F5E9)
+                    color = iconBackgroundColor
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = Color(0xFF2E7D32),
+                        tint = iconTintColor,
                         modifier = Modifier.padding(12.dp).size(24.dp)
                     )
                 }
@@ -307,7 +316,7 @@ private fun ModernInfoCard(
                     text = title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1B1B1F)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -324,7 +333,7 @@ private fun ModernInfoItem(label: String, value: String?) {
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color(0xFF666666),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -332,7 +341,7 @@ private fun ModernInfoItem(label: String, value: String?) {
             text = value.takeIf { !it.isNullOrBlank() } ?: "Sin información",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF1B1B1F)
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

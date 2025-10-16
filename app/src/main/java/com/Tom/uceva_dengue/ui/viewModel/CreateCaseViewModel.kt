@@ -400,7 +400,7 @@ class CreateCaseViewModel : ViewModel() {
                         CORREO_USUARIO = authViewModel.email.value ?: "",
                         CONTRASENIA_USUARIO = defaultPassword,
                         DIRECCION_USUARIO = authViewModel.address.value ?: "",
-                        FK_ID_ROL = 2, // Rol usuario regular
+                        FK_ID_ROL = 1, // Rol 1 = Usuario regular/Paciente
                         FK_ID_TIPOSANGRE = authViewModel.bloodTypeId.value ?: 0,
                         FK_ID_GENERO = authViewModel.genderId.value ?: 0,
                         FK_ID_MUNICIPIO = authViewModel.cityId.value ?: 0

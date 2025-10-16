@@ -51,7 +51,7 @@ fun CreatePublicationScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F7FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -64,7 +64,7 @@ fun CreatePublicationScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -72,7 +72,7 @@ fun CreatePublicationScreen(
                             text = "Título",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF5E81F4)
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
@@ -82,8 +82,8 @@ fun CreatePublicationScreen(
                             placeholder = { Text("Escribe un título llamativo") },
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF5E81F4),
-                                unfocusedBorderColor = Color(0xFFE0E0E0)
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
                             )
                         )
                     }
@@ -93,7 +93,7 @@ fun CreatePublicationScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -101,7 +101,7 @@ fun CreatePublicationScreen(
                             text = "Descripción",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF5E81F4)
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
@@ -114,8 +114,8 @@ fun CreatePublicationScreen(
                             maxLines = 8,
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF5E81F4),
-                                unfocusedBorderColor = Color(0xFFE0E0E0)
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
                             )
                         )
                     }
@@ -125,7 +125,7 @@ fun CreatePublicationScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -138,7 +138,7 @@ fun CreatePublicationScreen(
                                 text = "Imagen",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF5E81F4)
+                                color = MaterialTheme.colorScheme.primary
                             )
                             if (selectedImageUri != null) {
                                 TextButton(onClick = { selectedImageUri = null }) {
@@ -155,7 +155,7 @@ fun CreatePublicationScreen(
                                 .fillMaxWidth()
                                 .height(200.dp)
                                 .background(
-                                    color = if (selectedImageUri != null) Color.Transparent else Color(0xFFF5F5F5),
+                                    color = if (selectedImageUri != null) Color.Transparent else MaterialTheme.colorScheme.surfaceVariant,
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .clickable { imagePickerLauncher.launch("image/*") },
@@ -167,7 +167,7 @@ fun CreatePublicationScreen(
                                     contentDescription = "Imagen seleccionada",
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .background(Color.Black, shape = RoundedCornerShape(12.dp)),
+                                        .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(12.dp)),
                                     contentScale = ContentScale.Crop
                                 )
                             } else {
@@ -178,13 +178,13 @@ fun CreatePublicationScreen(
                                     Icon(
                                         imageVector = Icons.Default.AddPhotoAlternate,
                                         contentDescription = null,
-                                        tint = Color(0xFF5E81F4),
+                                        tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(56.dp)
                                     )
                                     Spacer(modifier = Modifier.height(12.dp))
                                     Text(
                                         text = "Toca para seleccionar imagen",
-                                        color = Color(0xFF666666),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 14.sp
                                     )
                                 }
@@ -228,7 +228,7 @@ fun CreatePublicationScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E81F4))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(

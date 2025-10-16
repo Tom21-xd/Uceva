@@ -12,10 +12,12 @@ import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import com.Tom.uceva_dengue.Data.Model.BloodTypeModel
 import com.Tom.uceva_dengue.Data.Model.CityModel
 import com.Tom.uceva_dengue.Data.Model.DepartmentModel
+import com.Tom.uceva_dengue.Data.Model.FCMTokenRequest
 import com.Tom.uceva_dengue.Data.Model.GenreModel
 import com.Tom.uceva_dengue.Data.Model.LoginModel
 import com.Tom.uceva_dengue.Data.Model.RegisterUserModel
 import com.Tom.uceva_dengue.Data.Service.AuthRepository
+import com.Tom.uceva_dengue.Data.Service.FCMTokenManager
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -82,7 +84,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d("NavigationCon", "Inicio de sesión exitoso. Respuesta: ${response.body()}")
                 if (response.isSuccessful) {
                     _loginError.value = null
-                    val user = response.body()?.ID_USUARIO.toString()
+                    val userId = response.body()?.ID_USUARIO
+                    val user = userId.toString()
                     val role = response.body()?.FK_ID_ROL
 
 
@@ -92,6 +95,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         authRepository.saveUserAndRole(it, role ?: 2)
                     }
                     Log.d("NavigationCon", "Inicio de sesión exitoso. Usuario: $user, Rol: $role")
+
+                    // Send FCM token to backend after successful login
+                    userId?.let {
+                        sendFCMTokenToServer(it)
+                    }
+
                     HomeScreen()
                 } else {
                     val errorBody = response.errorBody()?.string()
@@ -113,6 +122,26 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _loginError.value = null
     }
 
+    // Function to send FCM token to backend
+    private suspend fun sendFCMTokenToServer(userId: Int) {
+        try {
+            val fcmToken = FCMTokenManager.getFCMToken()
+            if (fcmToken != null) {
+                val request = FCMTokenRequest(userId = userId, fcmToken = fcmToken)
+                val response = RetrofitClient.fcmService.saveToken(request)
+                if (response.isSuccessful) {
+                    Log.d("FCM", "Token FCM guardado exitosamente para usuario $userId")
+                } else {
+                    Log.e("FCM", "Error al guardar token FCM: ${response.errorBody()?.string()}")
+                }
+            } else {
+                Log.w("FCM", "No se pudo obtener el token FCM")
+            }
+        } catch (e: Exception) {
+            Log.e("FCM", "Excepción al enviar token FCM: ${e.message}")
+        }
+    }
+
     //---------------------------Registro----------------------------------------
 
 
@@ -130,6 +159,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> get() = _isLoading
+
+    private val _isValidatingRethus = MutableLiveData<Boolean>()
+    val isValidatingRethus: LiveData<Boolean> get() = _isValidatingRethus
 
     private val _email = MutableLiveData("")
     val email: LiveData<String> get() = _email
@@ -262,7 +294,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 _registerError.value = null
                 _registerMessage.value = null
-                var rolId = 2  // Por defecto, rol regular
+                var rolId = 1  // Por defecto, rol usuario normal
 
                 if (esPersonalMedico) {
                     // Dividir nombres y apellidos
@@ -274,25 +306,49 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     val primerApellido = apellidosDivididos.firstOrNull() ?: ""
 
                     if (primerNombre.isNotBlank() && primerApellido.isNotBlank()) {
-                        val rethusBody = mapOf(
-                            "PrimerNombre" to primerNombre,
-                            "PrimerApellido" to primerApellido,
-                            "TipoIdentificacion" to tipoIdentificacion,
-                            "Cedula" to numeroDocumento
-                        )
-                        val response = RetrofitClient.authService.consultarRethus(rethusBody)
-                        val a = response.body()?.isSuccess()
-                        if (response.isSuccessful && a == true) {
-                            rolId = 3
-                        } else {
-                            Log.e("Rethus", "Validación fallida: ${response.errorBody()?.string()}")
-                            _isLoading.value = false
-                            return@launch
+                        try {
+                            _isValidatingRethus.value = true // Activar loader de RETHUS
+
+                            val rethusBody = mapOf(
+                                "PrimerNombre" to primerNombre,
+                                "PrimerApellido" to primerApellido,
+                                "TipoIdentificacion" to tipoIdentificacion,
+                                "Cedula" to numeroDocumento
+                            )
+                            Log.d("Rethus", "Consultando RETHUS con: $rethusBody")
+
+                            val response = RetrofitClient.authService.consultarRethus(rethusBody)
+
+                            _isValidatingRethus.value = false // Desactivar loader de RETHUS
+
+                            Log.d("Rethus", "Respuesta RETHUS - Code: ${response.code()}, Success: ${response.isSuccessful}")
+                            Log.d("Rethus", "Respuesta RETHUS - Body: ${response.body()}")
+
+                            val isValidated = response.body()?.isSuccess() ?: false
+
+                            if (response.isSuccessful && isValidated) {
+                                rolId = 3  // RETHUS validado exitosamente, rol personal médico
+                                Log.d("Rethus", "✓ Validación RETHUS EXITOSA. Usuario SÍ está en RETHUS. Asignando rol 3 (Personal Médico)")
+                            } else {
+                                // RETHUS falló o no está registrado, se registra como usuario normal (rol 1)
+                                rolId = 1
+                                val message = response.body()?.message ?: "Sin respuesta"
+                                Log.w("Rethus", "✗ Validación RETHUS FALLIDA. Usuario NO está en RETHUS. Message: '$message'. Asignando rol 1 (Usuario Normal)")
+                            }
+                        } catch (rethusException: Exception) {
+                            _isValidatingRethus.value = false // Asegurar que se desactive el loader
+
+                            // Si RETHUS falla por timeout u otro error, registrar como usuario normal
+                            rolId = 1
+                            Log.e("Rethus", "⚠️ Error al consultar RETHUS: ${rethusException.message}. Registrando como usuario normal (rol 1)", rethusException)
+
+                            // Opcional: informar al usuario que RETHUS no está disponible
+                            // pero continuar con el registro como usuario normal
                         }
                     } else {
-                        Log.e("Rethus", "Nombres o apellidos incompletos para validación")
-                        _isLoading.value = false
-                        return@launch
+                        // Nombres incompletos, se registra como usuario normal
+                        rolId = 1
+                        Log.w("Rethus", "Nombres o apellidos incompletos (primer nombre: '$primerNombre', primer apellido: '$primerApellido'). Registrando como usuario normal (rol 1)")
                     }
                 }
 
@@ -307,7 +363,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     FK_ID_MUNICIPIO = _cityId.value ?: 0
                 )
 
+                Log.d("Registro", "Enviando registro: $usuario")
                 val response = RetrofitClient.authService.register(usuario)
+                Log.d("Registro", "Respuesta recibida: ${response.code()}")
 
                 if (response.isSuccessful) {
                     val body = response.body()
@@ -324,6 +382,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                             usuario.FK_ID_ROL
                         )
                         Log.d("Registro", "Sesión iniciada automáticamente. Usuario: ${usuario.ID_USUARIO}, Rol: ${usuario.FK_ID_ROL}")
+
+                        // Send FCM token to backend after successful registration
+                        sendFCMTokenToServer(usuario.ID_USUARIO)
 
                         _registerMessage.value = "$message. Redirigiendo..."
                         // Navegar automáticamente al HomeScreen después de un pequeño delay
@@ -346,8 +407,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
             } catch (e: Exception) {
-                Log.e("Registro", "Error al registrar usuario: ${e.message}")
-                _registerError.value = "Error de conexion. Revisa tu internet o intentalo mas tarde."
+                Log.e("Registro", "Error al registrar usuario: ${e.message}", e)
+                e.printStackTrace()
+                _registerError.value = "Error de conexión: ${e.message}"
             } finally {
                 _isLoading.value = false
             }

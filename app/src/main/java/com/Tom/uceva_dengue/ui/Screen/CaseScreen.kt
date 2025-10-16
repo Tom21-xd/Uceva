@@ -213,13 +213,18 @@
                     onClick = {
                         navController.navigate("${Rout.CaseDetailsScreen.name}/${case.ID_CASOREPORTADO}")
                     },
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(
+                            color = Color(0xFF00796B).copy(alpha = 0.1f),
+                            shape = CircleShape
+                        )
                 ) {
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = "Editar caso",
                         tint = Color(0xFF00796B),
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(28.dp)
                     )
                 }
             }

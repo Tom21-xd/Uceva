@@ -311,6 +311,8 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
     val department by viewModel.department.observeAsState(initial = "")
     val registerMessage by viewModel.registerMessage.observeAsState()
     val registerError by viewModel.registerError.observeAsState()
+    val isLoading by viewModel.isLoading.observeAsState(initial = false)
+    val isValidatingRethus by viewModel.isValidatingRethus.observeAsState(initial = false)
 
     var contrasenaVisible by remember { mutableStateOf(false) }
     var esPersonalMedico by remember { mutableStateOf(false) }
@@ -466,6 +468,43 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
             )
         }
 
+        // Loader de validación RETHUS
+        if (isValidatingRethus) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 3.dp
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Verificando en RETHUS",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Text(
+                            text = "Validando credenciales de personal médico...",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
+        }
+
         registerError?.let { error ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -498,8 +537,8 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
 
         ModernButton(
             text = "Registrarme",
-            enabled = true,
-            loading = false,
+            enabled = !isLoading && !isValidatingRethus,
+            loading = isLoading,
             onClick = {
                 viewModel.registrarUsuario(
                     navController,

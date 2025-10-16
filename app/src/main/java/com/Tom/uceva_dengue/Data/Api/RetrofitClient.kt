@@ -7,6 +7,7 @@ import com.Tom.uceva_dengue.Data.Service.CityService
 import com.Tom.uceva_dengue.Data.Service.DengueService
 import com.Tom.uceva_dengue.Data.Service.DepartmentService
 import com.Tom.uceva_dengue.Data.Service.DiagnosticService
+import com.Tom.uceva_dengue.Data.Service.FCMService
 import com.Tom.uceva_dengue.Data.Service.GenreService
 import com.Tom.uceva_dengue.Data.Service.HospitalService
 import com.Tom.uceva_dengue.Data.Service.NotificationService
@@ -14,6 +15,7 @@ import com.Tom.uceva_dengue.Data.Service.PublicationService
 import com.Tom.uceva_dengue.Data.Service.StatisticsService
 import com.Tom.uceva_dengue.Data.Service.UserService
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -23,13 +25,29 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 import javax.net.ssl.SSLSocketFactory
 import java.security.SecureRandom
+import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
     private const val BASE_URL = "https://api.prometeondev.com/"
 
+    // OkHttpClient con timeouts más largos y logging
+    private val okHttpClient: OkHttpClient by lazy {
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
+        OkHttpClient.Builder()
+            .connectTimeout(60, TimeUnit.SECONDS)  // Timeout de conexión: 60 segundos
+            .readTimeout(60, TimeUnit.SECONDS)     // Timeout de lectura: 60 segundos
+            .writeTimeout(60, TimeUnit.SECONDS)    // Timeout de escritura: 60 segundos
+            .addInterceptor(loggingInterceptor)    // Logging para debug
+            .build()
+    }
+
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(okHttpClient)  // Usar el cliente con timeouts
             .addConverterFactory(ScalarsConverterFactory.create())  // Primero Scalars
             .addConverterFactory(GsonConverterFactory.create())  // Para respuestas en texto
             .build()
@@ -73,6 +91,9 @@ object RetrofitClient {
     }
     val statisticsService : StatisticsService by lazy {
         retrofit.create(StatisticsService::class.java)
+    }
+    val fcmService : FCMService by lazy {
+        retrofit.create(FCMService::class.java)
     }
 
 

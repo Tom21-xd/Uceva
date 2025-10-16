@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.Tom.uceva_dengue.Data.Api.RetrofitClient
+import com.Tom.uceva_dengue.Data.Model.UpdateUserRequest
 import com.Tom.uceva_dengue.Data.Model.UserModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +42,7 @@ class EditUserViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     val user = response.body()
                     if (user != null) {
+                        Log.d("EditUserVM", "User loaded successfully: ${user.ID_USUARIO}, Municipio: ${user.FK_ID_MUNICIPIO}")
                         _state.value = _state.value.copy(
                             user = user,
                             nombre = user.NOMBRE_USUARIO ?: "",
@@ -48,7 +50,7 @@ class EditUserViewModel : ViewModel() {
                             direccion = user.DIRECCION_USUARIO ?: "",
                             selectedRol = user.FK_ID_ROL,
                             selectedGenero = user.FK_ID_GENERO,
-                            selectedMunicipio = user.FK_ID_MUNICIPIO ?: 1,
+                            selectedMunicipio = user.FK_ID_MUNICIPIO ?: 0,
                             isLoading = false
                         )
                     } else {
@@ -131,26 +133,31 @@ class EditUserViewModel : ViewModel() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isSaving = true, errorMessage = null)
             try {
-                val userData = mapOf(
-                    "nombre" to _state.value.nombre,
-                    "correo" to _state.value.correo,
-                    "direccion" to _state.value.direccion,
-                    "id_rol" to _state.value.selectedRol,
-                    "id_genero" to _state.value.selectedGenero,
-                    "id_municipio" to _state.value.selectedMunicipio
+                val userData = UpdateUserRequest(
+                    nombre = _state.value.nombre,
+                    correo = _state.value.correo,
+                    direccion = _state.value.direccion,
+                    id_rol = _state.value.selectedRol,
+                    id_genero = _state.value.selectedGenero,
+                    id_municipio = if (_state.value.selectedMunicipio > 0) _state.value.selectedMunicipio else null
                 )
+
+                Log.d("EditUserVM", "Sending update request: userId=$userId, data=$userData")
 
                 val response = userService.updateUser(userId, userData)
                 if (response.isSuccessful) {
+                    Log.d("EditUserVM", "Update successful")
                     _state.value = _state.value.copy(
                         isSaving = false,
                         successMessage = "Usuario actualizado con éxito"
                     )
                     onSuccess()
                 } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("EditUserVM", "Update failed: ${response.code()}, body: $errorBody")
                     _state.value = _state.value.copy(
                         isSaving = false,
-                        errorMessage = "Error al actualizar usuario: ${response.code()}"
+                        errorMessage = "Error al actualizar usuario: ${response.code()} - ${response.message()}"
                     )
                 }
             } catch (e: Exception) {
@@ -168,5 +175,58 @@ class EditUserViewModel : ViewModel() {
             errorMessage = null,
             successMessage = null
         )
+    }
+
+    fun saveUser(
+        userId: Int,
+        nombre: String,
+        correo: String,
+        direccion: String,
+        idRol: Int,
+        idGenero: Int,
+        idMunicipio: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isSaving = true, errorMessage = null)
+            try {
+                val userData = UpdateUserRequest(
+                    nombre = nombre,
+                    correo = correo,
+                    direccion = direccion,
+                    id_rol = idRol,
+                    id_genero = idGenero,
+                    id_municipio = if (idMunicipio > 0) idMunicipio else null
+                )
+
+                Log.d("EditUserVM", "Saving user: userId=$userId, data=$userData")
+
+                val response = userService.updateUser(userId, userData)
+                if (response.isSuccessful) {
+                    Log.d("EditUserVM", "User saved successfully")
+                    _state.value = _state.value.copy(
+                        isSaving = false,
+                        successMessage = "Usuario guardado correctamente"
+                    )
+                    onSuccess()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("EditUserVM", "Save failed: ${response.code()}, body: $errorBody")
+                    _state.value = _state.value.copy(
+                        isSaving = false,
+                        errorMessage = "Error: ${response.code()} - ${response.message()}"
+                    )
+                    onError("Error al guardar: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("EditUserVM", "Exception saving user", e)
+                _state.value = _state.value.copy(
+                    isSaving = false,
+                    errorMessage = "Error de conexión: ${e.message}"
+                )
+                onError("Error de conexión: ${e.message}")
+            }
+        }
     }
 }

@@ -189,7 +189,7 @@ fun NavigationCon(context: Context) {
             },
             bottomBar = {
                 currentRoute.value?.destination?.route?.let { route ->
-                    if (route != Rout.LoginScreen.name) {
+                    if (route != Rout.LoginScreen.name && route != Rout.OlvContraseniaScreen.name) {
                         BottomNavigationBar(navController)
                     }
                 }
