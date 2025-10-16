@@ -4,10 +4,21 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
@@ -16,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -23,7 +35,11 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -100,33 +116,71 @@ fun NavigationCon(context: Context) {
             contentWindowInsets = WindowInsets.systemBars,
             topBar = {
                 currentRoute.value?.destination?.route?.let { route ->
-                    if (route != Rout.LoginScreen.name) {
-                        TopAppBar(
-                            title = {
+                    if (route != Rout.LoginScreen.name && route != Rout.OlvContraseniaScreen.name) {
+                        // TopAppBar moderno con gradiente azul que respeta el status bar
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    brush = Brush.horizontalGradient(
+                                        colors = listOf(
+                                            Color(0xFF5E81F4),
+                                            Color(0xFF92C5FC)
+                                        )
+                                    )
+                                )
+                                .windowInsetsPadding(WindowInsets.statusBars)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 14.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Botón de menú con superficie redondeada
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = Color.White.copy(alpha = 0.2f),
+                                    modifier = Modifier.size(44.dp)
+                                ) {
+                                    IconButton(
+                                        onClick = {
+                                            scope.launch {
+                                                if (drawerState.isClosed) {
+                                                    drawerState.open()
+                                                } else {
+                                                    drawerState.close()
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Menu,
+                                            contentDescription = "Abrir menú",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                // Título centrado
                                 Text(
                                     text = getTopBarTitle(route),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(0.dp, 0.dp, 60.dp, 0.dp),
+                                    modifier = Modifier.weight(1f),
                                     textAlign = TextAlign.Center,
-                                    fontSize = 18.sp
+                                    fontSize = 19.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White,
+                                    letterSpacing = 0.5.sp
                                 )
-                            },
-                            navigationIcon = {
-                                IconButton(onClick = {
-                                    scope.launch {
-                                        if (drawerState.isClosed) {
-                                            drawerState.open()
-                                        } else {
-                                            drawerState.close()
-                                        }
-                                    }
-                                }) {
-                                    Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
-                                }
-                            },
-                            colors = TopAppBarDefaults.topAppBarColors(containerColor = fondo)
-                        )
+
+                                // Espacio para mantener el título centrado
+                                Spacer(modifier = Modifier.width(60.dp))
+                            }
+                        }
                     }
                 }
             },
@@ -161,7 +215,7 @@ fun NavigationCon(context: Context) {
                     NotificationScreen(navController, NotificationViewModel())
                 }
                 composable(Rout.ProfileScreen.name) {
-                    ProfileScreenModern(viewModel = ProfileViewModel(role))
+                    ProfileScreenModern(viewModel = viewModel(), userId = user)
                 }
                 composable(Rout.OptionScreen.name) {
                 }

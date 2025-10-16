@@ -4,10 +4,16 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -57,172 +63,235 @@ fun UpdatePublicationScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Editar Publicación") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF5E81F4),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
-            )
-        }
-    ) { paddingValues ->
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F7FA))) {
         if (isLoadingData) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (errorMessage != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Error al cargar la publicación", color = Color.Red)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { navController.navigateUp() }) {
-                        Text("Volver")
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF5E81F4))
+                }
+            } else if (errorMessage != null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = null,
+                            tint = Color.Red,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Error al cargar la publicación", color = Color.Red, fontSize = 16.sp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { navController.navigateUp() },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E81F4))
+                        ) {
+                            Text("Volver")
+                        }
                     }
                 }
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Mostrar la imagen actual (no editable)
-                Card(
+            } else {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    SubcomposeAsyncImage(
-                        model = imageUrl,
-                        contentDescription = "Imagen de la publicación",
-                        modifier = Modifier.fillMaxSize(),
-                        loading = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
+                    // Card de imagen (solo lectura)
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                CircularProgressIndicator()
+                                Text(
+                                    text = "Imagen",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF5E81F4)
+                                )
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFFFFF3E0)
+                                ) {
+                                    Text(
+                                        text = "Solo lectura",
+                                        fontSize = 11.sp,
+                                        color = Color(0xFFEF6C00),
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                            ) {
+                                SubcomposeAsyncImage(
+                                    model = imageUrl,
+                                    contentDescription = "Imagen de la publicación",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                    loading = {
+                                        Box(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator(color = Color(0xFF5E81F4))
+                                        }
+                                    },
+                                    error = {
+                                        Box(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Icon(
+                                                    imageVector = Icons.Default.BrokenImage,
+                                                    contentDescription = null,
+                                                    tint = Color.Gray,
+                                                    modifier = Modifier.size(48.dp)
+                                                )
+                                                Text("Error al cargar imagen", color = Color.Gray, fontSize = 12.sp)
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    // Card de título
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Text(
+                                text = "Título",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF5E81F4)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = titulo,
+                                onValueChange = { titulo = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = { Text("Escribe un título llamativo") },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Color(0xFF5E81F4),
+                                    unfocusedBorderColor = Color(0xFFE0E0E0)
+                                )
+                            )
+                        }
+                    }
+
+                    // Card de descripción
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Text(
+                                text = "Descripción",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF5E81F4)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = descripcion,
+                                onValueChange = { descripcion = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 150.dp),
+                                placeholder = { Text("Describe el contenido de la publicación") },
+                                maxLines = 8,
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Color(0xFF5E81F4),
+                                    unfocusedBorderColor = Color(0xFFE0E0E0)
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Botón de Actualizar
+                    Button(
+                        onClick = {
+                            if (titulo.isNotEmpty() && descripcion.isNotEmpty()) {
+                                isLoading = true
+                                viewModel.updatePublication(
+                                    id = publicationId,
+                                    titulo = titulo,
+                                    descripcion = descripcion,
+                                    onSuccess = {
+                                        isLoading = false
+                                        Toast.makeText(
+                                            context,
+                                            "Publicación actualizada con éxito",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        navController.navigateUp()
+                                    },
+                                    onError = { error ->
+                                        isLoading = false
+                                        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Por favor completa todos los campos",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         },
-                        error = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("Error al cargar imagen", color = Color.Gray)
-                            }
-                        }
-                    )
-                }
-
-                Text(
-                    text = "Nota: La imagen no se puede modificar",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                // Campo de Título
-                OutlinedTextField(
-                    value = titulo,
-                    onValueChange = { titulo = it },
-                    label = { Text("Título") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF5E81F4),
-                        focusedLabelColor = Color(0xFF5E81F4)
-                    )
-                )
-
-                // Campo de Descripción
-                OutlinedTextField(
-                    value = descripcion,
-                    onValueChange = { descripcion = it },
-                    label = { Text("Descripción") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
-                    maxLines = 6,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF5E81F4),
-                        focusedLabelColor = Color(0xFF5E81F4)
-                    )
-                )
-
-                // Botón de Actualizar
-                Button(
-                    onClick = {
-                        if (titulo.isNotEmpty() && descripcion.isNotEmpty()) {
-                            isLoading = true
-                            viewModel.updatePublication(
-                                id = publicationId,
-                                titulo = titulo,
-                                descripcion = descripcion,
-                                onSuccess = {
-                                    isLoading = false
-                                    Toast.makeText(
-                                        context,
-                                        "Publicación actualizada con éxito",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    navController.navigateUp()
-                                },
-                                onError = { error ->
-                                    isLoading = false
-                                    Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                                }
+                        enabled = !isLoading,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E81F4))
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(24.dp)
                             )
                         } else {
-                            Toast.makeText(
-                                context,
-                                "Por favor completa todos los campos",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "Actualizar",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
-                    },
-                    enabled = !isLoading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E81F4))
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    } else {
-                        Text(
-                            "Actualizar Publicación",
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
                     }
-                }
 
                 // Botón de Cancelar
                 OutlinedButton(
@@ -230,12 +299,17 @@ fun UpdatePublicationScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = Color(0xFF5E81F4)
                     )
                 ) {
-                    Text("Cancelar", fontSize = 18.sp)
+                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Cancelar", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
+
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }

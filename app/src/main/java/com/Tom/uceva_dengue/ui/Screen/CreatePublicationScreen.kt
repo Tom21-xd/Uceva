@@ -8,19 +8,20 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddPhotoAlternate
-import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,126 +48,201 @@ fun CreatePublicationScreen(
         selectedImageUri = uri
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(Color(0xFFF5F7FA))
     ) {
-        Text(
-            text = "Nueva Publicación",
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF444444),
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        // Campo de Título
-        BasicTextField(
-            value = titulo,
-            onValueChange = { titulo = it },
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White, shape = MaterialTheme.shapes.medium)
-                .padding(vertical = 14.dp, horizontal = 20.dp),
-            textStyle = TextStyle(fontSize = 18.sp, color = Color(0xFF333333)),
-            decorationBox = { innerTextField ->
-                Box {
-                    if (titulo.isEmpty()) Text("Título", color = Color(0xFFAAAAAA))
-                    innerTextField()
-                }
-            }
-        )
-
-        // Campo de Descripción
-        BasicTextField(
-            value = descripcion,
-            onValueChange = { descripcion = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White, shape = MaterialTheme.shapes.medium)
-                .padding(vertical = 14.dp, horizontal = 20.dp)
-                .height(150.dp),
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(0xFF333333)),
-            decorationBox = { innerTextField ->
-                Box {
-                    if (descripcion.isEmpty()) Text("Descripción", color = Color(0xFFAAAAAA))
-                    innerTextField()
-                }
-            }
-        )
-
-        // Selección de Imagen
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .background(Color.White, shape = MaterialTheme.shapes.medium)
-                .clickable { imagePickerLauncher.launch("image/*") }
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            contentAlignment = Alignment.Center
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (selectedImageUri != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(selectedImageUri),
-                    contentDescription = "Imagen seleccionada",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.Image,
-                        contentDescription = "Seleccionar Imagen",
-                        tint = Color(0xFFAAAAAA),
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Text("Seleccionar Imagen", color = Color(0xFFAAAAAA))
+                // Card de título
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text(
+                            text = "Título",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF5E81F4)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = titulo,
+                            onValueChange = { titulo = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Escribe un título llamativo") },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFF5E81F4),
+                                unfocusedBorderColor = Color(0xFFE0E0E0)
+                            )
+                        )
+                    }
                 }
-            }
-        }
 
-        // Botón de Publicar
-        Button(
-            onClick = {
-                if (titulo.isNotEmpty() && descripcion.isNotEmpty() && selectedImageUri != null) {
-                    isLoading = true
-                    viewModel.createPost(
-                        context = context,
-                        title = titulo,
-                        description = descripcion,
-                        userId = user ?: "",
-                        imageUri = selectedImageUri,
-                        onSuccess = {
-                            isLoading = false
-                            titulo = ""
-                            descripcion = ""
-                            selectedImageUri = null
-                            navController.navigate(Rout.HomeScreen.name)
-                            Toast.makeText(context, "Publicacion Creada correctamente", Toast.LENGTH_SHORT).show()
-                        },
-                        onError = { errorMessage ->
-                            isLoading = false
-                            println(errorMessage)
-                        }
-                    )
+                // Card de descripción
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text(
+                            text = "Descripción",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF5E81F4)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = descripcion,
+                            onValueChange = { descripcion = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 150.dp),
+                            placeholder = { Text("Describe el contenido de la publicación") },
+                            maxLines = 8,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFF5E81F4),
+                                unfocusedBorderColor = Color(0xFFE0E0E0)
+                            )
+                        )
+                    }
                 }
-            },
-            enabled = !isLoading,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00796B))
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    color = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
-            } else {
-                Text("Publicar", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
+
+                // Card de imagen
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Imagen",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF5E81F4)
+                            )
+                            if (selectedImageUri != null) {
+                                TextButton(onClick = { selectedImageUri = null }) {
+                                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Quitar")
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .background(
+                                    color = if (selectedImageUri != null) Color.Transparent else Color(0xFFF5F5F5),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .clickable { imagePickerLauncher.launch("image/*") },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (selectedImageUri != null) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(selectedImageUri),
+                                    contentDescription = "Imagen seleccionada",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.Black, shape = RoundedCornerShape(12.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AddPhotoAlternate,
+                                        contentDescription = null,
+                                        tint = Color(0xFF5E81F4),
+                                        modifier = Modifier.size(56.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Text(
+                                        text = "Toca para seleccionar imagen",
+                                        color = Color(0xFF666666),
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Botón de publicar
+                Button(
+                    onClick = {
+                        if (titulo.isNotEmpty() && descripcion.isNotEmpty() && selectedImageUri != null) {
+                            isLoading = true
+                            viewModel.createPost(
+                                context = context,
+                                title = titulo,
+                                description = descripcion,
+                                userId = user ?: "",
+                                imageUri = selectedImageUri,
+                                onSuccess = {
+                                    isLoading = false
+                                    titulo = ""
+                                    descripcion = ""
+                                    selectedImageUri = null
+                                    navController.navigate(Rout.HomeScreen.name)
+                                    Toast.makeText(context, "Publicación creada correctamente", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { errorMessage ->
+                                    isLoading = false
+                                    Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        } else {
+                            Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    enabled = !isLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E81F4))
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    } else {
+                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Publicar", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }

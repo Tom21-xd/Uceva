@@ -49,44 +49,47 @@ fun BottomNavigationBar(navController: NavController) {
         items.indexOfFirst { it.route == currentRoute }.takeIf { it >= 0 } ?: -1
     }
 
-    // Siempre mostrar el menú, pero solo mostrar el indicador si selectedIndex >= 0
-    Column {
-        AnimatedNavigationBar(
-            modifier = Modifier.height(64.dp),
-            selectedIndex = if (selectedIndex >= 0) selectedIndex else 0, // Default a 0 cuando no está en una ruta principal
-            cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
-            ballAnimation = Parabolic(tween(300)),
-            indentAnimation = Height(tween(300)),
-            barColor = fondo,
-            ballColor = if (selectedIndex >= 0) fondo else androidx.compose.ui.graphics.Color.Transparent, // Ocultar bolita si no está en ruta principal
-        ) {
-            items.forEachIndexed { index, item ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-                            // Siempre permitir navegación
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
+    // Mostrar el menú solo si la ruta actual es válida
+    if (selectedIndex >= 0) {
+        Column {
+            AnimatedNavigationBar(
+                modifier = Modifier.height(64.dp),
+                selectedIndex = selectedIndex,
+                cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
+                ballAnimation = Parabolic(tween(300)),
+                indentAnimation = Height(tween(300)),
+                barColor = fondo,
+                ballColor = fondo,
+            ) {
+                items.forEachIndexed { index, item ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {
+                                if (index != selectedIndex) { // Navegar solo si es diferente
+                                    navController.navigate(item.route) {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        modifier = Modifier.size(26.dp),
-                        imageVector = item.icon,
-                        contentDescription = "Bottom Bar Icon",
-                        tint = if (selectedIndex == index) negro else blanco
-                    )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(26.dp),
+                            imageVector = item.icon,
+                            contentDescription = "Bottom Bar Icon",
+                            tint = if (selectedIndex == index) negro else blanco
+                        )
+                    }
                 }
             }
+            // Agregar espaciador para la barra de navegación del sistema
+            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
-        // Agregar espaciador para la barra de navegación del sistema
-        Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
     }
 }
 

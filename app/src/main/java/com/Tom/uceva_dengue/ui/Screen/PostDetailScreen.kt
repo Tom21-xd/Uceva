@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,89 +23,190 @@ import com.Tom.uceva_dengue.Data.Model.PublicationModel
 
 @Composable
 fun PostDetailScreen(publicacion: PublicationModel) {
-    val imageUrl = "https://api.prometeondev.com/api/image/getImage/${publicacion.IMAGEN_PUBLICACION}"
+    val imageUrl = if (!publicacion.IMAGEN_PUBLICACION.isNullOrBlank()) {
+        "https://api.prometeondev.com/Image/getImage/${publicacion.IMAGEN_PUBLICACION}"
+    } else {
+        null
+    }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F8F8))
-            .verticalScroll(rememberScrollState())
+            .background(Color(0xFFF5F7FA))
     ) {
-        // Imagen destacada
-        SubcomposeAsyncImage(
-            model = imageUrl,
-            contentDescription = "Imagen de la publicación",
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(280.dp)
-                .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)),
-            contentScale = ContentScale.Crop,
-            loading = {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(50.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Imagen destacada con overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(320.dp)
+            ) {
+                if (imageUrl != null) {
+                    SubcomposeAsyncImage(
+                        model = imageUrl,
+                        contentDescription = "Imagen de la publicación",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        loading = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color(0xFFF0F0F0)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = Color(0xFF5E81F4),
+                                    modifier = Modifier.size(50.dp)
+                                )
+                            }
+                        },
+                        error = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color(0xFFF0F0F0)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        imageVector = Icons.Default.BrokenImage,
+                                        contentDescription = "Error al cargar imagen",
+                                        tint = Color.Gray,
+                                        modifier = Modifier.size(64.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text("No se pudo cargar la imagen", color = Color.Gray, fontSize = 14.sp)
+                                }
+                            }
+                        }
                     )
+                } else {
+                    // Placeholder cuando no hay imagen
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFFF0F0F0)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.BrokenImage,
+                                contentDescription = "Sin imagen",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("Sin imagen disponible", color = Color.Gray, fontSize = 14.sp)
+                        }
+                    }
                 }
-            },
-            error = {
+
+                // Overlay gradiente en la parte inferior de la imagen
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFFF0F0F0)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.BrokenImage,
-                        contentDescription = "Error al cargar imagen",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(60.dp)
-                    )
-                }
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .align(Alignment.BottomStart)
+                        .background(
+                            androidx.compose.ui.graphics.Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.7f)
+                                )
+                            )
+                        )
+                )
             }
-        )
 
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = publicacion.TITULO_PUBLICACION,
-                style = MaterialTheme.typography.headlineSmall,
-                fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = publicacion.DESCRIPCION_PUBLICACION,
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = 16.sp,
-                color = Color(0xFF333333),
-                lineHeight = 22.sp
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Divider(color = Color.LightGray)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            // Contenido principal
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
             ) {
-                Text(
-                    text = "👤 ${publicacion.NOMBRE_USUARIO}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.Gray
-                )
-                Text(
-                    text = publicacion.FECHA_PUBLICACION,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
-                )
+                // Card del título y descripción
+                androidx.compose.material3.Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text(
+                            text = publicacion.TITULO_PUBLICACION,
+                            fontSize = 24.sp,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            color = Color(0xFF1B1B1F),
+                            lineHeight = 30.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = publicacion.DESCRIPCION_PUBLICACION,
+                            fontSize = 16.sp,
+                            color = Color(0xFF4A4A4A),
+                            lineHeight = 24.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Card de información del autor
+                androidx.compose.material3.Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            androidx.compose.material3.Surface(
+                                shape = androidx.compose.foundation.shape.CircleShape,
+                                color = Color(0xFF5E81F4).copy(alpha = 0.15f),
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = null,
+                                        tint = Color(0xFF5E81F4),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column {
+                                Text(
+                                    text = publicacion.USUARIO?.NOMBRE_USUARIO ?: publicacion.NOMBRE_USUARIO ?: "Usuario desconocido",
+                                    fontSize = 16.sp,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                    color = Color(0xFF1B1B1F)
+                                )
+                                Text(
+                                    text = publicacion.FECHA_PUBLICACION,
+                                    fontSize = 13.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }

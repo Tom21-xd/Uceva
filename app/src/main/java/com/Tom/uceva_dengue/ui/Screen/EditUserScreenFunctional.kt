@@ -45,73 +45,55 @@ fun EditUserScreenFunctional(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Editar Usuario") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF5E81F4),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+    ) {
+        if (state.isLoading) {
+            LoadingIndicator(
+                modifier = Modifier.fillMaxSize(),
+                message = "Cargando datos del usuario..."
             )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(fondo)
-                .padding(paddingValues)
-        ) {
-            if (state.isLoading) {
-                LoadingIndicator(
-                    modifier = Modifier.fillMaxSize(),
-                    message = "Cargando datos del usuario..."
+        } else if (state.errorMessage != null && state.user == null) {
+            // Error loading user
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.Default.Error,
+                    contentDescription = null,
+                    tint = Color(0xFFE53935),
+                    modifier = Modifier.size(64.dp)
                 )
-            } else if (state.errorMessage != null && state.user == null) {
-                // Error loading user
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = state.errorMessage ?: "Error desconocido",
+                    fontSize = 16.sp,
+                    color = Color(0xFFE53935)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { viewModel.loadUser(userId) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF5E81F4)
+                    )
                 ) {
-                    Icon(
-                        Icons.Default.Error,
-                        contentDescription = null,
-                        tint = Color(0xFFE53935),
-                        modifier = Modifier.size(64.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = state.errorMessage ?: "Error desconocido",
-                        fontSize = 16.sp,
-                        color = Color(0xFFE53935)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = { viewModel.loadUser(userId) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF5E81F4)
-                        )
-                    ) {
-                        Text("Reintentar")
-                    }
+                    Text("Reintentar")
                 }
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                     // Información del usuario
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -326,25 +308,24 @@ fun EditUserScreenFunctional(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                    // Botón Guardar
-                    AnimatedButton(
-                        text = "Guardar Cambios",
-                        onClick = {
-                            state.user?.let { user ->
-                                viewModel.validateAndSave(user.ID_USUARIO) {
-                                    // Success handled by dialog
-                                }
+                // Botón Guardar
+                AnimatedButton(
+                    text = "Guardar Cambios",
+                    onClick = {
+                        state.user?.let { user ->
+                            viewModel.validateAndSave(user.ID_USUARIO) {
+                                // Success handled by dialog
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        loading = state.isSaving,
-                        enabled = !state.isSaving
-                    )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    loading = state.isSaving,
+                    enabled = !state.isSaving
+                )
 
-                    Spacer(modifier = Modifier.height(80.dp))
-                }
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }

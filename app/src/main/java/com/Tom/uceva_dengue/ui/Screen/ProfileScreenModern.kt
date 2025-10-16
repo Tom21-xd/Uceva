@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,10 +33,15 @@ private val TextPrimary = Color(0xFF2D3748)
 private val TextSecondary = Color(0xFF718096)
 
 @Composable
-fun ProfileScreenModern(viewModel: ProfileViewModel) {
+fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
     val user by viewModel.user.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    // Cargar el perfil cuando se monte el composable
+    LaunchedEffect(userId) {
+        viewModel.loadUserProfile(userId)
+    }
 
     Box(
         modifier = Modifier
@@ -90,93 +96,83 @@ fun ProfileScreenModern(viewModel: ProfileViewModel) {
             return@Box
         }
 
-        user?.let { userModel ->
+        if (user != null) {
+            val userModel = user!!
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
             ) {
-                // Header con gradiente y avatar
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(SecondaryBlue, AccentPurple)
-                            )
-                        )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        // Avatar circular con sombra
-                        Box(
-                            modifier = Modifier
-                                .size(100.dp)
-                                .shadow(8.dp, CircleShape)
-                                .clip(CircleShape)
-                                .background(Color.White),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(90.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        brush = Brush.verticalGradient(
-                                            colors = listOf(PrimaryBlue, SecondaryBlue)
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = (userModel.NOMBRE_USUARIO ?: "U").take(1).uppercase(),
-                                    fontSize = 42.sp,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Nombre del usuario
-                        Text(
-                            text = userModel.NOMBRE_USUARIO ?: "Usuario",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-
-                        // Rol del usuario
-                        Card(
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.White.copy(alpha = 0.2f)
-                            ),
-                            modifier = Modifier.padding(top = 8.dp)
-                        ) {
-                            Text(
-                                text = userModel.NOMBRE_ROL ?: "Sin rol",
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.White
-                            )
-                        }
-                    }
-                }
-
-                // Contenido de la tarjeta de información
+                // Avatar y nombre del usuario
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Avatar circular con sombra
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .shadow(8.dp, CircleShape)
+                            .clip(CircleShape)
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(90.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(PrimaryBlue, SecondaryBlue)
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = (userModel.NOMBRE_USUARIO ?: "U").take(1).uppercase(),
+                                fontSize = 42.sp,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Nombre del usuario
+                    Text(
+                        text = userModel.NOMBRE_USUARIO ?: "Usuario",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Rol del usuario
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = PrimaryBlue.copy(alpha = 0.1f)
+                        )
+                    ) {
+                        Text(
+                            text = userModel.NOMBRE_ROL ?: "Sin rol",
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = PrimaryBlue
+                        )
+                    }
+                }
+
+                // Contenido de las tarjetas de información
+                Column(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     // Información personal
                     Card(
@@ -240,34 +236,45 @@ fun ProfileScreenModern(viewModel: ProfileViewModel) {
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                    // Card de estadísticas (opcional, puedes agregar más)
-                    Card(
+                // Card de estadísticas
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(4.dp, RoundedCornerShape(16.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = PrimaryBlue.copy(alpha = 0.05f)
+                    )
+                ) {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(4.dp, RoundedCornerShape(16.dp)),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = PrimaryBlue.copy(alpha = 0.05f)
-                        )
+                            .padding(20.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            StatItem(
-                                icon = Icons.Default.AccountCircle,
-                                value = "ID: ${userModel.ID_USUARIO}",
-                                label = "Usuario"
-                            )
-                        }
+                        StatItem(
+                            icon = Icons.Default.AccountCircle,
+                            value = "ID: ${userModel.ID_USUARIO}",
+                            label = "Usuario"
+                        )
                     }
-
-                    Spacer(modifier = Modifier.height(80.dp)) // Espacio para navegación inferior
                 }
+
+                Spacer(modifier = Modifier.height(80.dp))
+                }
+            }
+        } else if (!loading && error == null) {
+            // Estado cuando no hay usuario cargado pero tampoco hay error ni está cargando
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No hay información de usuario disponible",
+                    color = TextSecondary
+                )
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.Tom.uceva_dengue.ui.Components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,9 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
 
 @Composable
@@ -33,8 +36,16 @@ fun PostCard(
     onEdit: ((PublicationModel) -> Unit)? = null,
     onDelete: ((PublicationModel) -> Unit)? = null
 ) {
-    val imageUrl = "https://api.prometeondev.com/Image/getImage/${publicacion.IMAGEN_PUBLICACION}"
+    val imageUrl = if (!publicacion.IMAGEN_PUBLICACION.isNullOrBlank()) {
+        "https://api.prometeondev.com/Image/getImage/${publicacion.IMAGEN_PUBLICACION}"
+    } else {
+        null
+    }
     var showMenu by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // Log para debug
+    Log.d("PostCard", "Loading image: $imageUrl (original: ${publicacion.IMAGEN_PUBLICACION})")
 
     // Mostrar opciones si es admin/personal médico O si es el autor de la publicación
     val canEdit = (role == 2 || role == 3) || (currentUserId == publicacion.FK_ID_USUARIO)
@@ -49,41 +60,93 @@ fun PostCard(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(modifier = Modifier.fillMaxWidth()) {
-            SubcomposeAsyncImage(
-                model = imageUrl,
-                contentDescription = "Imagen de la publicación",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-                contentScale = ContentScale.Fit,
-                loading = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(40.dp)
+            if (imageUrl != null) {
+                SubcomposeAsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .listener(
+                            onError = { _, result ->
+                                Log.e("PostCard", "Error loading image: ${result.throwable.message}")
+                            },
+                            onSuccess = { _, _ ->
+                                Log.d("PostCard", "Image loaded successfully: $imageUrl")
+                            }
                         )
+                        .build(),
+                    contentDescription = "Imagen de la publicación",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = Color(0xFF5E81F4),
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                    },
+                    error = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color(0xFFF0F0F0)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.BrokenImage,
+                                    contentDescription = "Error al cargar imagen",
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Error al cargar",
+                                    fontSize = 12.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
                     }
-                },
-                error = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color(0xFFF0F0F0)),
-                        contentAlignment = Alignment.Center
+                )
+            } else {
+                // Mostrar placeholder cuando no hay imagen
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                        .background(Color(0xFFF0F0F0)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.BrokenImage,
-                            contentDescription = "Error al cargar imagen",
+                            imageVector = Icons.Default.Image,
+                            contentDescription = "Sin imagen",
                             tint = Color.Gray,
                             modifier = Modifier.size(48.dp)
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Sin imagen",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
                     }
                 }
-            )
+            }
 
                 // Menú de opciones
                 if (canEdit) {
@@ -175,7 +238,7 @@ fun PostCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "👤 ${publicacion.NOMBRE_USUARIO}",
+                        text = "👤 ${publicacion.USUARIO?.NOMBRE_USUARIO ?: publicacion.NOMBRE_USUARIO ?: "Usuario desconocido"}",
                         style = MaterialTheme.typography.labelMedium,
                         color = Color.Gray
                     )
