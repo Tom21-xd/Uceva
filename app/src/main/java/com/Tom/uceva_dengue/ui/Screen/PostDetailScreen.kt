@@ -32,7 +32,7 @@ fun PostDetailScreen(publicacion: PublicationModel) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F7FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -55,11 +55,11 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(Color(0xFFF0F0F0)),
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 CircularProgressIndicator(
-                                    color = Color(0xFF5E81F4),
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.size(50.dp)
                                 )
                             }
@@ -68,18 +68,18 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(Color(0xFFF0F0F0)),
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(
                                         imageVector = Icons.Default.BrokenImage,
                                         contentDescription = "Error al cargar imagen",
-                                        tint = Color.Gray,
+                                        tint = MaterialTheme.colorScheme.onSurface,
                                         modifier = Modifier.size(64.dp)
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text("No se pudo cargar la imagen", color = Color.Gray, fontSize = 14.sp)
+                                    Text("No se pudo cargar la imagen", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
                                 }
                             }
                         }
@@ -89,18 +89,18 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color(0xFFF0F0F0)),
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
                                 imageVector = Icons.Default.BrokenImage,
                                 contentDescription = "Sin imagen",
-                                tint = Color.Gray,
+                                tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Sin imagen disponible", color = Color.Gray, fontSize = 14.sp)
+                            Text("Sin imagen disponible", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
                         }
                     }
                 }
@@ -115,7 +115,7 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                             androidx.compose.ui.graphics.Brush.verticalGradient(
                                 colors = listOf(
                                     Color.Transparent,
-                                    Color.Black.copy(alpha = 0.7f)
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
                                 )
                             )
                         )
@@ -132,7 +132,7 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                 androidx.compose.material3.Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -140,7 +140,7 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                             text = publicacion.TITULO_PUBLICACION,
                             fontSize = 24.sp,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                            color = Color(0xFF1B1B1F),
+                            color = MaterialTheme.colorScheme.onSurface,
                             lineHeight = 30.sp
                         )
 
@@ -149,7 +149,7 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                         Text(
                             text = publicacion.DESCRIPCION_PUBLICACION,
                             fontSize = 16.sp,
-                            color = Color(0xFF4A4A4A),
+                            color = MaterialTheme.colorScheme.onSurface,
                             lineHeight = 24.sp
                         )
                     }
@@ -161,7 +161,7 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                 androidx.compose.material3.Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Row(
@@ -174,14 +174,14 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             androidx.compose.material3.Surface(
                                 shape = androidx.compose.foundation.shape.CircleShape,
-                                color = Color(0xFF5E81F4).copy(alpha = 0.15f),
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                                 modifier = Modifier.size(48.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = Icons.Default.Person,
                                         contentDescription = null,
-                                        tint = Color(0xFF5E81F4),
+                                        tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
@@ -194,12 +194,12 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                                     text = publicacion.USUARIO?.NOMBRE_USUARIO ?: publicacion.NOMBRE_USUARIO ?: "Usuario desconocido",
                                     fontSize = 16.sp,
                                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                                    color = Color(0xFF1B1B1F)
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = publicacion.FECHA_PUBLICACION,
                                     fontSize = 13.sp,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }

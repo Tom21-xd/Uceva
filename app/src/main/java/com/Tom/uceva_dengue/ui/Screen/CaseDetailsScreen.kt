@@ -66,7 +66,7 @@ fun CaseDetailsScreen(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F7FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         when {
             isLoading -> {
@@ -75,7 +75,7 @@ fun CaseDetailsScreen(
             error != null -> {
                 Text(
                     text = error ?: "Error inesperado",
-                    color = Color.Red,
+                    color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
@@ -110,7 +110,7 @@ fun CaseDetailsScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
                                 Column(
@@ -122,12 +122,12 @@ fun CaseDetailsScreen(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
-                                            color = Color(0xFFE3F2FD)
+                                            color = MaterialTheme.colorScheme.primaryContainer
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.LocalHospital,
                                                 contentDescription = null,
-                                                tint = Color(0xFF1976D2),
+                                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                                 modifier = Modifier.padding(12.dp).size(24.dp)
                                             )
                                         }
@@ -136,7 +136,7 @@ fun CaseDetailsScreen(
                                             text = "Información Médica",
                                             fontSize = 18.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF1B1B1F)
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                     }
 
@@ -166,7 +166,7 @@ fun CaseDetailsScreen(
                                         ModernInfoItem(label = "Tipo de Dengue", value = c.NOMBRE_TIPODENGUE)
                                     }
 
-                                    Divider(color = Color(0xFFE0E0E0))
+                                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
 
                                     if (isEditing) {
                                         OutlinedTextField(
@@ -182,8 +182,10 @@ fun CaseDetailsScreen(
                                             maxLines = 5,
                                             shape = RoundedCornerShape(12.dp),
                                             colors = OutlinedTextFieldDefaults.colors(
-                                                focusedBorderColor = Color(0xFF5E81F4),
-                                                focusedLabelColor = Color(0xFF5E81F4)
+                                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         )
                                     } else {

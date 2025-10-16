@@ -34,15 +34,6 @@ import com.Tom.uceva_dengue.Data.Model.RecoverPasswordRequest
 import com.Tom.uceva_dengue.R
 import kotlinx.coroutines.launch
 
-// Colores modernos (igual que LoginScreenModern)
-private val PrimaryBlue = Color(0xFF5E81F4)
-private val SecondaryBlue = Color(0xFF667EEA)
-private val AccentPurple = Color(0xFF764BA2)
-private val LightGray = Color(0xFFF5F7FA)
-private val DarkGray = Color(0xFF2D3748)
-private val SuccessGreen = Color(0xFF48BB78)
-private val ErrorRed = Color(0xFFE53E3E)
-
 @Composable
 fun ForgotPasswordScreenModern(navController: NavController) {
     var email by remember { mutableStateOf("") }
@@ -60,8 +51,8 @@ fun ForgotPasswordScreenModern(navController: NavController) {
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        SecondaryBlue,
-                        AccentPurple
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
                     )
                 )
             )
@@ -98,7 +89,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     .shadow(16.dp, RoundedCornerShape(28.dp)),
                 shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Column(
@@ -112,7 +103,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         modifier = Modifier
                             .size(100.dp)
                             .background(
-                                color = PrimaryBlue.copy(alpha = 0.1f),
+                                color = MaterialTheme.colorScheme.primaryContainer,
                                 shape = RoundedCornerShape(50.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -121,7 +112,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                             imageVector = Icons.Default.Email,
                             contentDescription = null,
                             modifier = Modifier.size(50.dp),
-                            tint = PrimaryBlue
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
 
@@ -131,7 +122,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         text = "¿Olvidaste tu contraseña?",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
-                        color = DarkGray,
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
                     )
 
@@ -140,7 +131,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     Text(
                         text = "No te preocupes, ingresa tu correo electrónico y te enviaremos una nueva contraseña temporal.",
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         lineHeight = 20.sp
                     )
@@ -208,13 +199,13 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                             Icon(
                                 Icons.Default.ArrowBack,
                                 contentDescription = null,
-                                tint = PrimaryBlue,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 "Volver al inicio de sesión",
-                                color = PrimaryBlue,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 14.sp
                             )
@@ -230,7 +221,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.9f)
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             ) {
                 Row(
@@ -240,14 +231,14 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     Icon(
                         Icons.Default.Info,
                         contentDescription = null,
-                        tint = PrimaryBlue,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "La contraseña temporal llegará a tu correo en pocos minutos. Recuerda cambiarla después de iniciar sesión.",
                         fontSize = 12.sp,
-                        color = DarkGray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 16.sp
                     )
                 }
@@ -261,14 +252,14 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     showSuccessDialog = false
                     navController.navigateUp()
                 },
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(24.dp),
                 icon = {
                     Box(
                         modifier = Modifier
                             .size(80.dp)
                             .background(
-                                color = SuccessGreen.copy(alpha = 0.1f),
+                                color = MaterialTheme.colorScheme.primaryContainer,
                                 shape = RoundedCornerShape(40.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -276,7 +267,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         Icon(
                             Icons.Default.CheckCircle,
                             contentDescription = null,
-                            tint = SuccessGreen,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(48.dp)
                         )
                     }
@@ -287,7 +278,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         fontWeight = FontWeight.Bold,
                         fontSize = 22.sp,
                         textAlign = TextAlign.Center,
-                        color = DarkGray
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 text = {
@@ -295,7 +286,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         "Hemos enviado una nueva contraseña temporal a tu correo electrónico. Por favor, revisa tu bandeja de entrada.",
                         textAlign = TextAlign.Center,
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 20.sp
                     )
                 },
@@ -309,7 +300,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                             .fillMaxWidth()
                             .height(50.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = SuccessGreen
+                            containerColor = MaterialTheme.colorScheme.primary
                         ),
                         shape = RoundedCornerShape(25.dp)
                     ) {
@@ -327,14 +318,14 @@ fun ForgotPasswordScreenModern(navController: NavController) {
         if (showErrorDialog) {
             AlertDialog(
                 onDismissRequest = { showErrorDialog = false },
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(24.dp),
                 icon = {
                     Box(
                         modifier = Modifier
                             .size(80.dp)
                             .background(
-                                color = ErrorRed.copy(alpha = 0.1f),
+                                color = MaterialTheme.colorScheme.errorContainer,
                                 shape = RoundedCornerShape(40.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -342,7 +333,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         Icon(
                             Icons.Default.Error,
                             contentDescription = null,
-                            tint = ErrorRed,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(48.dp)
                         )
                     }
@@ -353,7 +344,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         fontWeight = FontWeight.Bold,
                         fontSize = 22.sp,
                         textAlign = TextAlign.Center,
-                        color = DarkGray
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 text = {
@@ -361,7 +352,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         errorMessage,
                         textAlign = TextAlign.Center,
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 20.sp
                     )
                 },
@@ -372,7 +363,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     ) {
                         Text(
                             "Intentar nuevamente",
-                            color = PrimaryBlue,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 16.sp
                         )
@@ -400,18 +391,18 @@ fun ModernEmailField(
                 Icon(
                     imageVector = Icons.Default.Email,
                     contentDescription = null,
-                    tint = if (isError) ErrorRed else PrimaryBlue
+                    tint = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                 )
             },
             isError = isError,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryBlue,
-                unfocusedBorderColor = Color.LightGray,
-                errorBorderColor = ErrorRed,
-                focusedLabelColor = PrimaryBlue,
-                errorLabelColor = ErrorRed
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                errorLabelColor = MaterialTheme.colorScheme.error
             ),
             singleLine = true,
             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
@@ -431,13 +422,13 @@ fun ModernEmailField(
                 Icon(
                     Icons.Default.Error,
                     contentDescription = null,
-                    tint = ErrorRed,
+                    tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = errorMessage ?: "",
-                    color = ErrorRed,
+                    color = MaterialTheme.colorScheme.error,
                     fontSize = 12.sp
                 )
             }
@@ -467,8 +458,8 @@ fun RecoveryButton(
         enabled = enabled && !loading,
         shape = RoundedCornerShape(26.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = PrimaryBlue,
-            disabledContainerColor = PrimaryBlue.copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.primary,
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         )
     ) {
         if (loading) {

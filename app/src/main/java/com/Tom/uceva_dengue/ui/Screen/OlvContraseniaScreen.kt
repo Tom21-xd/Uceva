@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.ui.Components.AnimatedButton
 import com.Tom.uceva_dengue.ui.Components.AnimatedTextField
-import com.Tom.uceva_dengue.ui.theme.fondo
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,9 +43,9 @@ fun OlvContraseniaScreen(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF5E81F4),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -54,7 +53,7 @@ fun OlvContraseniaScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(fondo)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
         ) {
             Column(
@@ -70,7 +69,7 @@ fun OlvContraseniaScreen(navController: NavController) {
                     imageVector = Icons.Default.Email,
                     contentDescription = null,
                     modifier = Modifier.size(80.dp),
-                    tint = Color(0xFF5E81F4)
+                    tint = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -79,7 +78,7 @@ fun OlvContraseniaScreen(navController: NavController) {
                     text = "¿Olvidaste tu contraseña?",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -87,7 +86,7 @@ fun OlvContraseniaScreen(navController: NavController) {
                 Text(
                     text = "Ingresa tu correo electrónico y te enviaremos una nueva contraseña temporal.",
                     fontSize = 14.sp,
-                    color = Color(0xFF757575),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
@@ -153,7 +152,7 @@ fun OlvContraseniaScreen(navController: NavController) {
                 TextButton(onClick = { navController.navigateUp() }) {
                     Text(
                         "Volver al inicio de sesión",
-                        color = Color(0xFF5E81F4),
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -171,7 +170,7 @@ fun OlvContraseniaScreen(navController: NavController) {
                     Icon(
                         Icons.Default.Email,
                         contentDescription = null,
-                        tint = Color(0xFF4CAF50),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(48.dp)
                     )
                 },
@@ -194,7 +193,7 @@ fun OlvContraseniaScreen(navController: NavController) {
                             navController.navigateUp()
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF5E81F4)
+                            containerColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Text("Entendido")

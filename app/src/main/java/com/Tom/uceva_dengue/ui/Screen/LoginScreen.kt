@@ -68,7 +68,6 @@ import com.Tom.uceva_dengue.R
 import com.Tom.uceva_dengue.ui.Components.Campo
 import com.Tom.uceva_dengue.ui.Components.ComboBox
 import com.Tom.uceva_dengue.ui.Navigation.Rout
-import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import java.time.Instant
 import java.time.ZoneId
@@ -79,7 +78,7 @@ import java.util.Calendar
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
-    Box(Modifier.background(color = fondo)) {
+    Box(Modifier.background(color = MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -99,7 +98,7 @@ fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
                         text = "Iniciar sesión",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF000000),
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier
                             .clickable { viewModel.log_regis.value = false }
                             .padding(10.dp)
@@ -107,7 +106,7 @@ fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
                     HorizontalDivider(
                         modifier = Modifier.fillMaxWidth(0.34f),
                         thickness = 2.dp,
-                        color = Color(0xFF000000)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -118,7 +117,7 @@ fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
                         text = "Crear cuenta",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF000000),
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier
                             .clickable { viewModel.log_regis.value = true }
                             .padding(10.dp)
@@ -126,7 +125,7 @@ fun LoginScreen (viewModel: AuthViewModel, navController: NavController){
                     HorizontalDivider(
                         modifier = Modifier.fillMaxWidth(0.66f),
                         thickness = 2.dp,
-                        color = Color(0xFF000000)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -231,8 +230,8 @@ fun BotonInicio(
             .height(52.dp)
             .alpha(animatedAlpha.value),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF5E81F4),
-            disabledContainerColor = Color(0xFF5E81F4).copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.primary,
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         ),
         enabled = loginEnabled && !loading,
         elevation = ButtonDefaults.buttonElevation(
@@ -282,7 +281,7 @@ fun OlvContra(modifier: Modifier) {
         modifier = modifier.clickable {},
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
-        color = Color(0xFF666057)
+        color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
 
@@ -398,7 +397,7 @@ fun Registro(modifier: Modifier, viewModel: AuthViewModel, navController: NavCon
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = message,
-                    color = Color(0xFF2E7D32),
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier

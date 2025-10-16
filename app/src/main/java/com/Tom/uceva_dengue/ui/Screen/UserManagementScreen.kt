@@ -58,57 +58,6 @@ fun UserManagementScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            // Header compacto
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Gestión de Usuarios",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "${state.filteredUsers.size} usuarios encontrados",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        // Estadísticas compactas en horizontal
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            CompactStat(
-                                count = state.filteredUsers.count { it.FK_ID_ROL == 1 },
-                                color = Color(0xFF2196F3)
-                            )
-                            CompactStat(
-                                count = state.filteredUsers.count { it.FK_ID_ROL == 2 },
-                                color = Color(0xFFFF9800)
-                            )
-                            CompactStat(
-                                count = state.filteredUsers.count { it.FK_ID_ROL == 3 },
-                                color = Color(0xFF4CAF50)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
             // Campo de búsqueda
             AnimatedTextField(
                 value = state.searchQuery,
@@ -279,7 +228,7 @@ fun UserManagementScreen(
                         UserCard(
                             user = user,
                             onEdit = {
-                                navController.navigate("${Rout.EditUserScreen.name}/${user.ID_USUARIO}")
+                                navController.navigate("${Rout.EditUserScreen.name}?userId=${user.ID_USUARIO}")
                             },
                             onDelete = {
                                 userToDelete = user
@@ -375,27 +324,6 @@ fun UserManagementScreen(
                     Text("Cancelar")
                 }
             }
-        )
-    }
-}
-
-@Composable
-private fun CompactStat(
-    count: Int,
-    color: Color
-) {
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .clip(CircleShape)
-            .background(color.copy(alpha = 0.15f)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = count.toString(),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = color
         )
     }
 }

@@ -44,9 +44,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.Tom.uceva_dengue.Data.Service.AuthRepository
 import com.Tom.uceva_dengue.ui.Components.BottomNavigationBar
 import com.Tom.uceva_dengue.ui.Components.MenuLateral
@@ -268,8 +270,17 @@ fun NavigationCon(context: Context) {
                         viewModel = UserManagementViewModel()
                     )
                 }
-                composable("${Rout.EditUserScreen.name}/{userId}") { backStackEntry ->
-                    val userId = backStackEntry.arguments?.getString("userId") ?: "0"
+                composable(
+                    route = "${Rout.EditUserScreen.name}?userId={userId}",
+                    arguments = listOf(
+                        navArgument("userId") {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        }
+                    )
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getString("userId")
                     EditUserScreenFunctional(
                         userId = userId,
                         navController = navController,

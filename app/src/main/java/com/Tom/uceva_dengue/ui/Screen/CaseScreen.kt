@@ -106,7 +106,7 @@
                                 Text(
                                     text = estado,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (selectedEstadoIndex == index) Color(0xFF00796B) else Color.Gray
+                                    color = if (selectedEstadoIndex == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         )
@@ -131,12 +131,12 @@
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(10.dp),
-                    containerColor = Color(0xFF92C5FC)
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = "Crear publicación",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
 
@@ -151,9 +151,9 @@
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 8.dp)
                 .clip(MaterialTheme.shapes.medium),
-            border = BorderStroke(1.dp, Color(0xFFDDDDDD)),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -176,36 +176,35 @@
                     ) {
                         Text(
                             text = case.NOMBRE_PACIENTE.take(2).uppercase(),
-                            fontSize = 24.sp,
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
                     }
-
+                    
                     Spacer(modifier = Modifier.width(16.dp))
-
+                    
                     Column {
                         Text(
                             text = case.NOMBRE_PACIENTE,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = Color(0xFF333333)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Estado: ${case.NOMBRE_ESTADOCASO}",
                             fontSize = 14.sp,
-                            color = Color(0xFF00796B),
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
                             text = "Fecha: ${case.FECHA_CASOREPORTADO}",
                             fontSize = 12.sp,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = "Dirección: ${case.DIRECCION_CASOREPORTADO}",
                             fontSize = 12.sp,
-                            color = Color(0xFF666666)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }

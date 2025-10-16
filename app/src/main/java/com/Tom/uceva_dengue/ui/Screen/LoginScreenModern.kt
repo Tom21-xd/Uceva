@@ -44,15 +44,6 @@ import com.Tom.uceva_dengue.ui.Components.ComboBox
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 
-// Colores modernos
-private val PrimaryBlue = Color(0xFF5E81F4)
-private val SecondaryBlue = Color(0xFF667EEA)
-private val AccentPurple = Color(0xFF764BA2)
-private val LightGray = Color(0xFFF5F7FA)
-private val DarkGray = Color(0xFF2D3748)
-private val SuccessGreen = Color(0xFF48BB78)
-private val ErrorRed = Color(0xFFE53E3E)
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
@@ -62,8 +53,8 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF667EEA),
-                        Color(0xFF764BA2)
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
                     )
                 )
             )
@@ -83,7 +74,7 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                     .shadow(12.dp, RoundedCornerShape(24.dp)),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Column(
@@ -105,7 +96,7 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                         text = "Bienvenido",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = DarkGray
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -113,7 +104,7 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                     Text(
                         text = "Sistema de Monitoreo de Dengue",
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
 
@@ -151,7 +142,7 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
             Text(
                 text = "© 2025 UCEVA - Todos los derechos reservados",
                 fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
             )
         }
     }
@@ -166,7 +157,7 @@ fun ModernTabs(viewModel: AuthViewModel) {
             .fillMaxWidth()
             .height(50.dp)
             .clip(RoundedCornerShape(25.dp))
-            .background(LightGray),
+            .background(MaterialTheme.colorScheme.surfaceVariant),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         // Tab Iniciar Sesión
@@ -175,13 +166,13 @@ fun ModernTabs(viewModel: AuthViewModel) {
                 .weight(1f)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(25.dp))
-                .background(if (!logRegis) PrimaryBlue else Color.Transparent)
+                .background(if (!logRegis) MaterialTheme.colorScheme.primary else Color.Transparent)
                 .clickable { viewModel.log_regis.value = false },
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "Iniciar Sesión",
-                color = if (!logRegis) Color.White else DarkGray,
+                color = if (!logRegis) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
@@ -193,13 +184,13 @@ fun ModernTabs(viewModel: AuthViewModel) {
                 .weight(1f)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(25.dp))
-                .background(if (logRegis) PrimaryBlue else Color.Transparent)
+                .background(if (logRegis) MaterialTheme.colorScheme.primary else Color.Transparent)
                 .clickable { viewModel.log_regis.value = true },
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "Registrarse",
-                color = if (logRegis) Color.White else DarkGray,
+                color = if (logRegis) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
@@ -249,7 +240,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
             Text(
                 text = "¿Olvidaste tu contraseña?",
                 fontSize = 13.sp,
-                color = PrimaryBlue,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.clickable {
                     navController.navigate(Rout.OlvContraseniaScreen.name)
@@ -277,7 +268,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
                 onDismissRequest = { viewModel.clearLoginError() },
                 confirmButton = {
                     TextButton(onClick = { viewModel.clearLoginError() }) {
-                        Text("Aceptar", color = PrimaryBlue)
+                        Text("Aceptar", color = MaterialTheme.colorScheme.primary)
                     }
                 },
                 title = {
@@ -285,7 +276,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
                         Icon(
                             Icons.Default.Warning,
                             contentDescription = null,
-                            tint = ErrorRed,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -339,7 +330,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
             text = "Crear cuenta nueva",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = DarkGray
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -445,13 +436,13 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
                 checked = esPersonalMedico,
                 onCheckedChange = { esPersonalMedico = it },
                 colors = CheckboxDefaults.colors(
-                    checkedColor = PrimaryBlue
+                    checkedColor = MaterialTheme.colorScheme.primary
                 )
             )
             Text(
                 text = "Soy personal médico",
                 fontSize = 14.sp,
-                color = DarkGray
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -479,7 +470,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = ErrorRed.copy(alpha = 0.1f)
+                    containerColor = MaterialTheme.colorScheme.errorContainer
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -490,14 +481,14 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
                     Icon(
                         Icons.Default.Error,
                         contentDescription = null,
-                        tint = ErrorRed,
+                        tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = error,
                         fontSize = 13.sp,
-                        color = ErrorRed
+                        color = MaterialTheme.colorScheme.onErrorContainer
                     )
                 }
             }
@@ -523,7 +514,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = SuccessGreen.copy(alpha = 0.1f)
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -534,14 +525,14 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = SuccessGreen,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = message,
                         fontSize = 13.sp,
-                        color = SuccessGreen
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }
@@ -566,15 +557,15 @@ fun ModernTextField(
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = null,
-                tint = PrimaryBlue
+                tint = MaterialTheme.colorScheme.primary
             )
         },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = PrimaryBlue,
-            unfocusedBorderColor = Color.LightGray,
-            focusedLabelColor = PrimaryBlue
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedLabelColor = MaterialTheme.colorScheme.primary
         ),
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
@@ -598,7 +589,7 @@ fun ModernPasswordField(
             Icon(
                 imageVector = Icons.Default.Lock,
                 contentDescription = null,
-                tint = PrimaryBlue
+                tint = MaterialTheme.colorScheme.primary
             )
         },
         trailingIcon = {
@@ -606,7 +597,7 @@ fun ModernPasswordField(
                 Icon(
                     imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                     contentDescription = "Toggle visibility",
-                    tint = Color.Gray
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         },
@@ -614,9 +605,9 @@ fun ModernPasswordField(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = PrimaryBlue,
-            unfocusedBorderColor = Color.LightGray,
-            focusedLabelColor = PrimaryBlue
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedLabelColor = MaterialTheme.colorScheme.primary
         ),
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
@@ -646,8 +637,8 @@ fun ModernButton(
         enabled = enabled && !loading,
         shape = RoundedCornerShape(26.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = PrimaryBlue,
-            disabledContainerColor = PrimaryBlue.copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.primary,
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         )
     ) {
         if (loading) {

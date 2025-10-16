@@ -45,14 +45,6 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
-// Colores modernos
-private val PrimaryBlue = Color(0xFF5E81F4)
-private val SecondaryBlue = Color(0xFF667EEA)
-private val AccentPurple = Color(0xFF764BA2)
-private val SuccessGreen = Color(0xFF48BB78)
-private val BackgroundGray = Color(0xFFF8F9FA)
-private val CardWhite = Color(0xFFFFFFFF)
-
 @Composable
 fun CreateCaseScreenModern(
     viewModel: CreateCaseViewModel,
@@ -61,6 +53,14 @@ fun CreateCaseScreenModern(
     user: String?,
     navController: NavHostController
 ) {
+    // Colores del tema
+    val PrimaryBlue = MaterialTheme.colorScheme.primary
+    val SecondaryBlue = MaterialTheme.colorScheme.primaryContainer
+    val AccentPurple = MaterialTheme.colorScheme.secondary
+    val SuccessGreen = MaterialTheme.colorScheme.tertiary
+    val BackgroundColor = MaterialTheme.colorScheme.background
+    val CardColor = MaterialTheme.colorScheme.surface
+
     var isPatientSectionExpanded by remember { mutableStateOf(true) }
     var isDengueSectionExpanded by remember { mutableStateOf(false) }
     var isLocationSectionExpanded by remember { mutableStateOf(false) }
@@ -68,14 +68,15 @@ fun CreateCaseScreenModern(
     val context = LocalContext.current
     val isExistingUser by viewModel.isExistingUser.collectAsState()
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundGray)
+            .background(BackgroundColor)
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
@@ -86,15 +87,19 @@ fun CreateCaseScreenModern(
                         .shadow(8.dp, RoundedCornerShape(20.dp)),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = CardWhite
-                    )
+                        containerColor = CardColor
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
                                 brush = Brush.horizontalGradient(
-                                    colors = listOf(SecondaryBlue, AccentPurple)
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.secondary
+                                    )
                                 )
                             )
                             .padding(20.dp)
@@ -121,12 +126,12 @@ fun CreateCaseScreenModern(
                                     text = "Reportar Caso",
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Text(
                                     text = "Nuevo caso de dengue",
                                     fontSize = 14.sp,
-                                    color = Color.White.copy(alpha = 0.9f)
+                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                                 )
                             }
                         }
@@ -241,12 +246,15 @@ fun ModernSectionCard(
     onExpandChanged: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    val cardColor = MaterialTheme.colorScheme.surface
+    val primaryColor = MaterialTheme.colorScheme.primary
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(4.dp, RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite)
+        colors = CardDefaults.cardColors(containerColor = cardColor)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // Header clickable
@@ -254,7 +262,7 @@ fun ModernSectionCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onExpandChanged() }
-                    .background(PrimaryBlue.copy(alpha = 0.05f))
+                    .background(primaryColor.copy(alpha = 0.05f))
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -266,13 +274,13 @@ fun ModernSectionCard(
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .background(PrimaryBlue.copy(alpha = 0.1f), CircleShape),
+                            .background(primaryColor.copy(alpha = 0.1f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = PrimaryBlue,
+                            tint = primaryColor,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -280,13 +288,13 @@ fun ModernSectionCard(
                         text = title,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2D3748)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Icon(
                     imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = PrimaryBlue
+                    tint = primaryColor
                 )
             }
 
@@ -309,6 +317,9 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
     val isExistingUser by viewModel.isExistingUser.collectAsState()
     val users by viewModel.users.collectAsState()
     val selectedUser by viewModel.selectedUser.collectAsState()
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
     var searchQuery by remember { mutableStateOf("") }
     var filteredUsers by remember { mutableStateOf(users) }
@@ -319,7 +330,7 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(PrimaryBlue.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+                .background(primaryColor.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
                 .padding(12.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
@@ -331,9 +342,16 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
                         showDropdown = false
                         searchQuery = ""
                     },
-                    colors = RadioButtonDefaults.colors(selectedColor = PrimaryBlue)
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = primaryColor,
+                        unselectedColor = onSurfaceColor.copy(alpha = 0.6f)
+                    )
                 )
-                Text("Usuario Existente", fontSize = 14.sp)
+                Text(
+                    text = "Usuario Existente",
+                    fontSize = 14.sp,
+                    color = onSurfaceColor
+                )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
@@ -342,9 +360,16 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
                         viewModel.setExistingUser(false)
                         showDropdown = false
                     },
-                    colors = RadioButtonDefaults.colors(selectedColor = PrimaryBlue)
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = primaryColor,
+                        unselectedColor = onSurfaceColor.copy(alpha = 0.6f)
+                    )
                 )
-                Text("Nuevo Usuario", fontSize = 14.sp)
+                Text(
+                    text = "Nuevo Usuario",
+                    fontSize = 14.sp,
+                    color = onSurfaceColor
+                )
             }
         }
 
@@ -366,10 +391,10 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
                     label = { Text("Buscar Usuario") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = PrimaryBlue) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = primaryColor) },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryBlue,
-                        unfocusedBorderColor = Color.LightGray
+                        focusedBorderColor = primaryColor,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
 
@@ -407,26 +432,50 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
 
 @Composable
 fun SelectedUserCardModern(user: UserModel) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = PrimaryBlue.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(
+            containerColor = primaryColor.copy(alpha = 0.05f)
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = user.NOMBRE_USUARIO.toString(),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
-                color = Color(0xFF2D3748)
+                color = onSurfaceColor
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row {
-                Text("Género: ", fontWeight = FontWeight.Medium, fontSize = 14.sp)
-                Text(user.NOMBRE_GENERO ?: "Sin género", fontSize = 14.sp, color = Color(0xFF718096))
+                Text(
+                    text = "Género: ", 
+                    fontWeight = FontWeight.Medium, 
+                    fontSize = 14.sp,
+                    color = onSurfaceColor
+                )
+                Text(
+                    text = user.NOMBRE_GENERO ?: "Sin género", 
+                    fontSize = 14.sp, 
+                    color = onSurfaceVariantColor
+                )
             }
             Row {
-                Text("Dirección: ", fontWeight = FontWeight.Medium, fontSize = 14.sp)
-                Text(user.DIRECCION_USUARIO ?: "Sin dirección", fontSize = 14.sp, color = Color(0xFF718096))
+                Text(
+                    text = "Dirección: ", 
+                    fontWeight = FontWeight.Medium, 
+                    fontSize = 14.sp,
+                    color = onSurfaceColor
+                )
+                Text(
+                    text = user.DIRECCION_USUARIO ?: "Sin dirección", 
+                    fontSize = 14.sp, 
+                    color = onSurfaceVariantColor
+                )
             }
         }
     }
@@ -438,13 +487,17 @@ fun DengueSectionModern(viewModel: CreateCaseViewModel) {
     val selectedSymptoms by viewModel.selectedSymptoms.collectAsState()
     val typesOfDengue by viewModel.typesOfDengue.collectAsState()
     val selectedDengueType by viewModel.selectedDengueType.collectAsState()
+    
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val outlineColor = MaterialTheme.colorScheme.outline
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(
             text = "Síntomas Presentados",
             fontWeight = FontWeight.Bold,
             fontSize = 15.sp,
-            color = Color(0xFF2D3748)
+            color = onSurfaceColor
         )
 
         val columnCount = 2
@@ -463,11 +516,15 @@ fun DengueSectionModern(viewModel: CreateCaseViewModel) {
                         Checkbox(
                             checked = selectedSymptoms.contains(symptom.ID_SINTOMA),
                             onCheckedChange = { viewModel.toggleSymptom(symptom.ID_SINTOMA) },
-                            colors = CheckboxDefaults.colors(checkedColor = PrimaryBlue)
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = primaryColor,
+                                uncheckedColor = outlineColor
+                            )
                         )
                         Text(
                             text = symptom.NOMBRE_SINTOMA ?: "Sin Nombre",
                             fontSize = 14.sp,
+                            color = onSurfaceColor,
                             modifier = Modifier.padding(start = 4.dp)
                         )
                     }
@@ -478,7 +535,10 @@ fun DengueSectionModern(viewModel: CreateCaseViewModel) {
             }
         }
 
-        Divider(color = Color(0xFFE2E8F0), modifier = Modifier.padding(vertical = 8.dp))
+        Divider(
+            color = outlineColor.copy(alpha = 0.3f), 
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
 
         ComboBox(
             selectedValue = selectedDengueType,
@@ -500,6 +560,10 @@ fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewM
     val cityName: String by viewModel.cityName.observeAsState(initial = "")
     val selectedHospital by viewModel.selectedHospital.observeAsState(initial = "")
     val department: String by viewModel.department.observeAsState(initial = "")
+    
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+    val outlineColor = MaterialTheme.colorScheme.outline
 
     var searchText by remember { mutableStateOf("") }
     var searchLocation by remember { mutableStateOf<LatLng?>(null) }
@@ -579,8 +643,8 @@ fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewM
             shape = RoundedCornerShape(12.dp),
             maxLines = 4,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryBlue,
-                unfocusedBorderColor = Color.LightGray
+                focusedBorderColor = primaryColor,
+                unfocusedBorderColor = outlineColor
             )
         )
 
@@ -599,8 +663,8 @@ fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewM
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryBlue,
-                    unfocusedBorderColor = Color.LightGray
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = outlineColor
                 )
             )
 
@@ -615,9 +679,9 @@ fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewM
                 },
                 modifier = Modifier
                     .size(56.dp)
-                    .background(PrimaryBlue, RoundedCornerShape(12.dp))
+                    .background(primaryColor, RoundedCornerShape(12.dp))
             ) {
-                Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.White)
+                Icon(Icons.Default.Search, contentDescription = "Buscar", tint = onPrimaryColor)
             }
         }
 
@@ -661,8 +725,8 @@ fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewM
                             locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                         }
                     },
-                    containerColor = PrimaryBlue,
-                    contentColor = Color.White,
+                    containerColor = primaryColor,
+                    contentColor = onPrimaryColor,
                     shape = CircleShape,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
