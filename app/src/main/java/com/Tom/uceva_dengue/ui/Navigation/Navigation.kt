@@ -76,18 +76,6 @@ import com.Tom.uceva_dengue.ui.Screen.SettingsScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
-import com.Tom.uceva_dengue.ui.viewModel.CaseViewModel
-import com.Tom.uceva_dengue.ui.viewModel.CreateCaseViewModel
-import com.Tom.uceva_dengue.ui.viewModel.CreatePublicationViewModel
-import com.Tom.uceva_dengue.ui.viewModel.CreateHospitalViewModel
-import com.Tom.uceva_dengue.ui.viewModel.HospitalViewModel
-import com.Tom.uceva_dengue.ui.viewModel.MapViewModel
-import com.Tom.uceva_dengue.ui.viewModel.NotificationViewModel
-import com.Tom.uceva_dengue.ui.viewModel.ProfileViewModel
-import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
-import com.Tom.uceva_dengue.ui.viewModel.UserManagementViewModel
-import com.Tom.uceva_dengue.ui.viewModel.EditUserViewModel
-import com.Tom.uceva_dengue.ui.viewModel.SettingsViewModel
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -205,17 +193,17 @@ fun NavigationCon(context: Context) {
                 }
                 composable(Rout.HomeScreen.name) {
                     HomeScreen(
-                        viewModel = PublicacionViewModel(),
+                        viewModel = viewModel(),
                         role = role,
                         userId = user?.toIntOrNull(),
                         navController = navController
                     )
                 }
                 composable(Rout.MapScreen.name) {
-                    MapScreenModern(viewModel = MapViewModel())
+                    MapScreenModern(viewModel = viewModel())
                 }
                 composable(Rout.NotificationScreen.name) {
-                    NotificationScreen(navController, NotificationViewModel())
+                    NotificationScreen(navController, viewModel())
                 }
                 composable(Rout.ProfileScreen.name) {
                     ProfileScreenModern(viewModel = viewModel(), userId = user)
@@ -227,17 +215,17 @@ fun NavigationCon(context: Context) {
                     InfoScreen()
                 }
                 composable(Rout.CreatePublicationScreen.name) {
-                    CreatePublicationScreen(viewModel = CreatePublicationViewModel(),role,user,navController)
+                    CreatePublicationScreen(viewModel = viewModel(),role,user,navController)
                 }
                 composable("${Rout.UpdatePublicationScreen.name}/{publicationId}") { backStackEntry ->
                     val publicationId = backStackEntry.arguments?.getString("publicationId")?.toIntOrNull() ?: 0
                     UpdatePublicationScreen(publicationId = publicationId, navController = navController)
                 }
                 composable(Rout.CaseScreen.name){
-                    CaseScreen(caseViewModel = CaseViewModel(),role,navController)
+                    CaseScreen(caseViewModel = viewModel(),role,navController)
                 }
                 composable(Rout.CreateCaseScreen.name) {
-                    CreateCaseScreenModern(CreateCaseViewModel(), viewModel<AuthViewModel>(), role, user, navController)
+                    CreateCaseScreenModern(viewModel(), viewModel<AuthViewModel>(), role, user, navController)
                 }
                 composable("${Rout.CaseDetailsScreen.name}/{id}") { backStackEntry ->
                     val id = backStackEntry.arguments?.getString("id") ?: ""
@@ -247,14 +235,14 @@ fun NavigationCon(context: Context) {
                 composable(Rout.HospitalScreen.name){
                     HospitalScreen(
                         navController = navController,
-                        viewModel = HospitalViewModel(),
+                        viewModel = viewModel(),
                         role = role
                     )
                 }
                 composable(Rout.CreateHospitalScreen.name) {
                     CreateHospitalScreen(
                         navController = navController,
-                        viewModel = CreateHospitalViewModel()
+                        viewModel = viewModel()
                     )
                 }
                 composable("${Rout.UpdateHospitalScreen.name}/{hospitalId}") { backStackEntry ->
@@ -267,7 +255,7 @@ fun NavigationCon(context: Context) {
                 composable(Rout.UserManagementScreen.name) {
                     UserManagementScreen(
                         navController = navController,
-                        viewModel = UserManagementViewModel()
+                        viewModel = viewModel()
                     )
                 }
                 composable(
@@ -284,7 +272,7 @@ fun NavigationCon(context: Context) {
                     EditUserScreenFunctional(
                         userId = userId,
                         navController = navController,
-                        viewModel = EditUserViewModel()
+                        viewModel = viewModel()
                     )
                 }
                 composable(Rout.OlvContraseniaScreen.name) {
