@@ -1,6 +1,7 @@
 package com.Tom.uceva_dengue.ui.Screen
 
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,21 +11,67 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
+import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 
 @Composable
-fun PostDetailScreen(publicacion: PublicationModel) {
-    val imageUrl = if (!publicacion.IMAGEN_PUBLICACION.isNullOrBlank()) {
-        "https://api.prometeondev.com/Image/getImage/${publicacion.IMAGEN_PUBLICACION}"
+fun PostDetailScreen(
+    publicationId: Int,
+    viewModel: PublicacionViewModel,
+    navController: NavController
+) {
+    var publicacion by remember { mutableStateOf<PublicationModel?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+
+    LaunchedEffect(publicationId) {
+        viewModel.getPublicationById(
+            id = publicationId,
+            onSuccess = { publication ->
+                publicacion = publication
+                isLoading = false
+            },
+            onError = { error ->
+                Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
+                isLoading = false
+                navController.popBackStack()
+            }
+        )
+    }
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    if (publicacion == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No se encontró la publicación")
+        }
+        return
+    }
+
+    val imageUrl = if (!publicacion!!.IMAGEN_PUBLICACION.isNullOrBlank()) {
+        "https://api.prometeondev.com/Image/getImage/${publicacion!!.IMAGEN_PUBLICACION}"
     } else {
         null
     }
@@ -137,7 +184,7 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text(
-                            text = publicacion.TITULO_PUBLICACION,
+                            text = publicacion!!.TITULO_PUBLICACION,
                             fontSize = 24.sp,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -147,7 +194,7 @@ fun PostDetailScreen(publicacion: PublicationModel) {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = publicacion.DESCRIPCION_PUBLICACION,
+                            text = publicacion!!.DESCRIPCION_PUBLICACION,
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurface,
                             lineHeight = 24.sp
@@ -191,13 +238,13 @@ fun PostDetailScreen(publicacion: PublicationModel) {
 
                             Column {
                                 Text(
-                                    text = publicacion.USUARIO?.NOMBRE_USUARIO ?: publicacion.NOMBRE_USUARIO ?: "Usuario desconocido",
+                                    text = publicacion!!.USUARIO?.NOMBRE_USUARIO ?: publicacion!!.NOMBRE_USUARIO ?: "Usuario desconocido",
                                     fontSize = 16.sp,
                                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = publicacion.FECHA_PUBLICACION,
+                                    text = publicacion!!.FECHA_PUBLICACION,
                                     fontSize = 13.sp,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )

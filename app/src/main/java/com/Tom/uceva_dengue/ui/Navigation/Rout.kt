@@ -1,4 +1,4 @@
-package com.Tom.uceva_dengue.ui.Navigation
+﻿package com.Tom.uceva_dengue.ui.Navigation
 
 enum class Rout {
     LoginScreen,
@@ -19,5 +19,6 @@ enum class Rout {
     OlvContraseniaScreen,
     CaseDetailsScreen,
     UserManagementScreen,
-    EditUserScreen
+    EditUserScreen,
+    PostDetailScreen
 }

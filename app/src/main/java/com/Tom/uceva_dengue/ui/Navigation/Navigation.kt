@@ -74,9 +74,11 @@ import com.Tom.uceva_dengue.ui.Screen.ProfileScreenModern
 import com.Tom.uceva_dengue.ui.Screen.UserManagementScreen
 import com.Tom.uceva_dengue.ui.Screen.EditUserScreenFunctional
 import com.Tom.uceva_dengue.ui.Screen.SettingsScreen
+import com.Tom.uceva_dengue.ui.Screen.PostDetailScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
+import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -279,6 +281,11 @@ fun NavigationCon(context: Context) {
                         viewModel = viewModel()
                     )
                 }
+                composable("${Rout.PostDetailScreen.name}/{publicationId}") { backStackEntry ->
+                    val publicationId = backStackEntry.arguments?.getString("publicationId")?.toIntOrNull() ?: 0
+                    val viewModel: PublicacionViewModel = viewModel()
+                    PostDetailScreen(publicationId = publicationId, viewModel = viewModel, navController = navController)
+                }
                 composable(Rout.OlvContraseniaScreen.name) {
                     ForgotPasswordScreenModern(navController = navController)
                 }
@@ -308,6 +315,7 @@ fun getTopBarTitle(route: String): String {
         Rout.UpdateHospitalScreen.name -> "Editar Hospital"
         Rout.UserManagementScreen.name -> "Gestión de Usuarios"
         Rout.EditUserScreen.name -> "Editar Usuario"
+        Rout.PostDetailScreen.name -> "Detalle de Publicación"
         else -> "Mi Aplicación"
     }
 }

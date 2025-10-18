@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
 import com.Tom.uceva_dengue.ui.Components.PostCard
+import com.Tom.uceva_dengue.ui.Components.EnhancedPostCard
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import kotlinx.coroutines.launch
@@ -111,10 +112,30 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(publicaciones) { publicacion ->
-                        PostCard(
+                        EnhancedPostCard(
                             publicacion = publicacion,
                             currentUserId = userId,
                             role = role,
+                            onCardClick = {
+                                // Navegar a detalle de publicación
+                                navController.navigate("${Rout.PostDetailScreen.name}/${it.ID_PUBLICACION}")
+                            },
+                            onReactionClick = {
+                                // TODO: Implementar lógica de reacción cuando exista el endpoint
+                                Toast.makeText(context, "Reacción registrada", Toast.LENGTH_SHORT).show()
+                            },
+                            onCommentClick = {
+                                // TODO: Navegar a pantalla de comentarios
+                                Toast.makeText(context, "Próximamente: Comentarios", Toast.LENGTH_SHORT).show()
+                            },
+                            onSaveClick = {
+                                // TODO: Implementar lógica de guardar cuando exista el endpoint
+                                Toast.makeText(context, "Publicación guardada", Toast.LENGTH_SHORT).show()
+                            },
+                            onTagClick = { tag ->
+                                // TODO: Filtrar por tag
+                                Toast.makeText(context, "Buscando: $tag", Toast.LENGTH_SHORT).show()
+                            },
                             onEdit = {
                                 navController.navigate("${Rout.UpdatePublicationScreen.name}/${it.ID_PUBLICACION}")
                             },

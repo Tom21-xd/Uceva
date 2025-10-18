@@ -53,13 +53,16 @@ fun RegistrationForm(
     var numeroDocumento by remember { mutableStateOf("") }
     var contrasenaVisible by remember { mutableStateOf(false) }
     var esPersonalMedico by remember { mutableStateOf(false) }
+    var aceptaTerminos by remember { mutableStateOf(false) }
+    var mostrarDialogoTerminos by remember { mutableStateOf(false) }
 
     // Actualizar el estado externo cuando cambien los datos
-    LaunchedEffect(esPersonalMedico, tipoDocumentoSeleccionado, numeroDocumento) {
+    LaunchedEffect(esPersonalMedico, tipoDocumentoSeleccionado, numeroDocumento, aceptaTerminos) {
         medicalPersonnelData?.value = MedicalPersonnelData(
             isMedicalPersonnel = esPersonalMedico,
             documentType = tipoDocumentoSeleccionado,
-            documentNumber = numeroDocumento
+            documentNumber = numeroDocumento,
+            acceptedTerms = aceptaTerminos
         )
     }
 
@@ -158,7 +161,7 @@ fun RegistrationForm(
                     onCheckedChange = { esPersonalMedico = it }
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Personal Médico", fontSize = 14.sp, color = Color.Black)
+                Text(text = "Personal Médico", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
             }
 
             if (esPersonalMedico) {
@@ -178,21 +181,173 @@ fun RegistrationForm(
             }
         }
 
+        // Espaciador antes del checkbox de términos
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Checkbox de Protección de Datos Personales - Ley 1581 de 2012
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            ),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Checkbox(
+                        checked = aceptaTerminos,
+                        onCheckedChange = { aceptaTerminos = it },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = "He leído y acepto la Política de Tratamiento de Datos Personales",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            lineHeight = 18.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Autorizo el tratamiento de mis datos de salud con fines de vigilancia epidemiológica del dengue, conforme a la Ley 1581 de 2012.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextButton(
+                            onClick = { mostrarDialogoTerminos = true }
+                        ) {
+                            Text(
+                                text = "Leer Política Completa",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!aceptaTerminos) {
+            Text(
+                text = "Debe aceptar la Política de Tratamiento de Datos para continuar",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+
         registerError?.let { message ->
             Text(
                 text = message,
-                color = Color(0xFFD32F2F),
+                color = MaterialTheme.colorScheme.error,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             )
         }
     }
+
+    // Diálogo con Política de Privacidad Completa
+    if (mostrarDialogoTerminos) {
+        PrivacyPolicyDialog(
+            onDismiss = { mostrarDialogoTerminos = false },
+            onAccept = {
+                aceptaTerminos = true
+                mostrarDialogoTerminos = false
+            }
+        )
+    }
 }
 
-// Exponer las variables del personal médico para que puedan ser accedidas desde fuera
+@Composable
+fun PrivacyPolicyDialog(
+    onDismiss: () -> Unit,
+    onAccept: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Política de Tratamiento de Datos Personales",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+            ) {
+                Text(
+                    text = """
+                    Universidad Central del Valle del Cauca (UCEVA)
+
+                    FINALIDAD DEL TRATAMIENTO
+                    Sus datos serán utilizados para:
+                    • Vigilancia epidemiológica del dengue
+                    • Atención y seguimiento médico
+                    • Generación de estadísticas anonimizadas
+                    • Investigación en salud pública
+
+                    DATOS RECOLECTADOS
+                    • Identificación: nombre, documento, contacto
+                    • Datos de salud: síntomas, diagnóstico, evolución clínica
+                    • Ubicación: dirección, geolocalización de casos
+                    • Datos demográficos: edad, género, tipo de sangre
+
+                    SUS DERECHOS (Ley 1581 de 2012)
+                    • Acceder, conocer, actualizar y rectificar sus datos
+                    • Solicitar supresión de datos
+                    • Revocar autorización
+                    • Presentar quejas ante la SIC
+
+                    MEDIDAS DE SEGURIDAD
+                    • Encriptación de datos en tránsito (HTTPS)
+                    • Control de acceso basado en roles
+                    • Auditoría de accesos
+                    • Respaldo periódico de información
+
+                    VIGENCIA
+                    Los datos se conservarán durante el tiempo necesario para cumplir las finalidades establecidas. Los datos clínicos se conservarán mínimo 5 años conforme a la Resolución 1995 de 1999.
+
+                    CONTACTO
+                    Para ejercer sus derechos o presentar consultas:
+                    Email: protecciondatos@uceva.edu.co
+
+                    Al aceptar, usted otorga su consentimiento previo, expreso e informado para el tratamiento de sus datos personales y datos sensibles de salud.
+                    """.trimIndent(),
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = onAccept) {
+                Text("Aceptar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
+}
+
+// Exponer las variables del personal médico y aceptación de términos
 data class MedicalPersonnelData(
     val isMedicalPersonnel: Boolean,
     val documentType: String,
-    val documentNumber: String
+    val documentNumber: String,
+    val acceptedTerms: Boolean = false  // Aceptación Ley 1581 de 2012
 )

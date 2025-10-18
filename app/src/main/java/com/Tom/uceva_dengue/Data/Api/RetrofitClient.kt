@@ -3,6 +3,7 @@ package com.Tom.uceva_dengue.Data.Api
 import com.Tom.uceva_dengue.Data.Service.AuthService
 import com.Tom.uceva_dengue.Data.Service.BloodTypeService
 import com.Tom.uceva_dengue.Data.Service.CaseService
+import com.Tom.uceva_dengue.Data.Service.CaseEvolutionService
 import com.Tom.uceva_dengue.Data.Service.CityService
 import com.Tom.uceva_dengue.Data.Service.DengueService
 import com.Tom.uceva_dengue.Data.Service.DepartmentService
@@ -12,6 +13,8 @@ import com.Tom.uceva_dengue.Data.Service.GenreService
 import com.Tom.uceva_dengue.Data.Service.HospitalService
 import com.Tom.uceva_dengue.Data.Service.NotificationService
 import com.Tom.uceva_dengue.Data.Service.PublicationService
+import com.Tom.uceva_dengue.Data.Service.PublicationCategoryService
+import com.Tom.uceva_dengue.Data.Service.PublicationTagService
 import com.Tom.uceva_dengue.Data.Service.StatisticsService
 import com.Tom.uceva_dengue.Data.Service.UserService
 import okhttp3.OkHttpClient
@@ -93,6 +96,15 @@ object RetrofitClient {
     }
     val fcmService : FCMService by lazy {
         retrofit.create(FCMService::class.java)
+    }
+    val publicationCategoryService : PublicationCategoryService by lazy {
+        retrofit.create(PublicationCategoryService::class.java)
+    }
+    val publicationTagService : PublicationTagService by lazy {
+        retrofit.create(PublicationTagService::class.java)
+    }
+    val caseEvolutionService : CaseEvolutionService by lazy {
+        retrofit.create(CaseEvolutionService::class.java)
     }
 
 
