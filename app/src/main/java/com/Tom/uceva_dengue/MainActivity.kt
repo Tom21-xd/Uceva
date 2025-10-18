@@ -20,18 +20,12 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Habilitar edge-to-edge para que la app use toda la pantalla
-        // El TopAppBar respetará el status bar automáticamente
         enableEdgeToEdge()
-
         Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
             Log.e("APP_CRASH", "Error inesperado", throwable)
         }
-
         // Inicializar Firebase Cloud Messaging y obtener el token
         initializeFCM()
-
         setContent {
             val userPreferences = UserPreferences(applicationContext)
             val settings by userPreferences.appSettings.collectAsState(initial = com.Tom.uceva_dengue.utils.AppSettings())
@@ -58,12 +52,8 @@ class MainActivity : ComponentActivity() {
                 return@addOnCompleteListener
             }
 
-            // Obtener el token FCM
             val token = task.result
             Log.d("FCM", "FCM Token obtenido: $token")
-
-            // El token se guardará y enviará automáticamente al servidor
-            // mediante MyFirebaseMessagingService.onNewToken()
         }
     }
 }

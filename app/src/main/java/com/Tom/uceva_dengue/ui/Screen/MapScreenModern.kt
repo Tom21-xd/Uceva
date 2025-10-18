@@ -26,12 +26,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.Tom.uceva_dengue.ui.viewModel.MapViewModel
 import com.Tom.uceva_dengue.utils.geocodeAddress
 import com.Tom.uceva_dengue.utils.moveToUserLocation
 import com.Tom.uceva_dengue.utils.parseLatLngFromString
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -51,7 +53,8 @@ data class HospitalMarkerItem(
     val latLng: LatLng,
     val nombre: String,
     val direccion: String,
-    val hospitalId: Int
+    val hospitalId: Int,
+    val casosCount: Int = 0
 )
 
 @Composable
@@ -115,7 +118,32 @@ fun MapScreenModern(viewModel: MapViewModel) {
         }
     }
 
-    val hospitalMarkers = remember(hospitals) {
+    // Contar casos por hospital (basado en proximidad de coordenadas)
+    val casesPerHospital = remember(cases, hospitals) {
+        val casesMap = mutableMapOf<Int, Int>()
+        hospitals.forEach { hospital ->
+            val hospitalLat = hospital.LATITUD_HOSPITAL?.toDoubleOrNull()
+            val hospitalLng = hospital.LONGITUD_HOSPITAL?.toDoubleOrNull()
+
+            if (hospitalLat != null && hospitalLng != null) {
+                val casosEnHospital = cases.count { caso ->
+                    val casoLatLng = caso.DIRECCION_CASOREPORTADO?.let { parseLatLngFromString(it) }
+                    if (casoLatLng != null) {
+                        // Calcular distancia aproximada (0.01 grados ≈ 1 km)
+                        val distance = Math.sqrt(
+                            Math.pow(hospitalLat - casoLatLng.latitude, 2.0) +
+                            Math.pow(hospitalLng - casoLatLng.longitude, 2.0)
+                        )
+                        distance < 0.05 // Casos dentro de ~5km del hospital
+                    } else false
+                }
+                casesMap[hospital.ID_HOSPITAL] = casosEnHospital
+            }
+        }
+        casesMap
+    }
+
+    val hospitalMarkers = remember(hospitals, casesPerHospital) {
         hospitals.mapNotNull { hospital ->
             val latitud = hospital.LATITUD_HOSPITAL?.toDoubleOrNull()
             val longitud = hospital.LONGITUD_HOSPITAL?.toDoubleOrNull()
@@ -125,9 +153,23 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     latLng = LatLng(latitud, longitud),
                     nombre = hospital.NOMBRE_HOSPITAL ?: "Hospital",
                     direccion = hospital.DIRECCION_HOSPITAL ?: "",
-                    hospitalId = hospital.ID_HOSPITAL
+                    hospitalId = hospital.ID_HOSPITAL,
+                    casosCount = casesPerHospital[hospital.ID_HOSPITAL] ?: 0
                 )
             } else null
+        }
+    }
+
+    // Crear icono de hospital personalizado
+    val hospitalIcon = remember {
+        try {
+            val drawable = ContextCompat.getDrawable(context, com.Tom.uceva_dengue.R.drawable.ic_hospital)
+            drawable?.let {
+                val bitmap = it.toBitmap(width = 120, height = 120)
+                BitmapDescriptorFactory.fromBitmap(bitmap)
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 
@@ -135,8 +177,6 @@ fun MapScreenModern(viewModel: MapViewModel) {
         if (heatmapPoints.isNotEmpty()) {
             HeatmapTileProvider.Builder()
                 .data(heatmapPoints)
-                .radius(50)
-                .opacity(0.7)
                 .build()
         } else {
             null
@@ -232,10 +272,9 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 hospitalMarkers.forEach { hospital ->
                     Marker(
                         state = MarkerState(position = hospital.latLng),
-                        title = hospital.nombre,
-                        snippet = hospital.direccion,
-                        icon = com.google.android.gms.maps.model.BitmapDescriptorFactory
-                            .defaultMarker(com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_GREEN)
+                        title = "🏥 ${hospital.nombre}",
+                        snippet = "${hospital.direccion}\n📊 Casos cercanos: ${hospital.casosCount}",
+                        icon = hospitalIcon ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
                     )
                 }
 

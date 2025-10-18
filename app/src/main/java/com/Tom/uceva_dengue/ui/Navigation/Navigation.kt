@@ -63,6 +63,7 @@ import com.Tom.uceva_dengue.ui.Screen.HospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.CreateHospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.UpdateHospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.InfoScreen
+import com.Tom.uceva_dengue.ui.Screen.PreventionGuideScreen
 import com.Tom.uceva_dengue.ui.Screen.LoginScreen
 import com.Tom.uceva_dengue.ui.Screen.LoginScreenModern
 import com.Tom.uceva_dengue.ui.Screen.ForgotPasswordScreenModern
@@ -214,6 +215,9 @@ fun NavigationCon(context: Context) {
                 composable(Rout.InfoScreen.name) {
                     InfoScreen()
                 }
+                composable(Rout.PreventionGuideScreen.name) {
+                    PreventionGuideScreen()
+                }
                 composable(Rout.CreatePublicationScreen.name) {
                     CreatePublicationScreen(viewModel = viewModel(),role,user,navController)
                 }
@@ -293,6 +297,7 @@ fun getTopBarTitle(route: String): String {
         Rout.ProfileScreen.name -> "Perfil"
         Rout.OptionScreen.name -> "Opciones"
         Rout.InfoScreen.name -> "Información"
+        Rout.PreventionGuideScreen.name -> "Guía de Prevención"
         Rout.CreatePublicationScreen.name -> "Crear Publicación"
         Rout.UpdatePublicationScreen.name -> "Editar Publicación"
         Rout.CaseScreen.name -> "Casos de dengue"

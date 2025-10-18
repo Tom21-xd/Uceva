@@ -43,6 +43,7 @@ fun MenuLateral(
                 Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
                 Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
                 Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
+                Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
                 Items_Menu_lateral.Item_Menu_Lateral3, // Información
                 Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
             )
@@ -52,6 +53,7 @@ fun MenuLateral(
                 Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
                 Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
                 Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios (Solo Admin)
+                Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
                 Items_Menu_lateral.Item_Menu_Lateral3, // Información
                 Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
             )
@@ -61,11 +63,13 @@ fun MenuLateral(
                 Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
                 Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
                 Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios (Personal Médico)
+                Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
                 Items_Menu_lateral.Item_Menu_Lateral3, // Información
                 Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
             )
             else -> listOf(
                 Items_Menu_lateral.Item_Menu_Lateral1,
+                Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
                 Items_Menu_lateral.Item_Menu_Lateral3,
                 Items_Menu_lateral.Item_Menu_Lateral4
             )

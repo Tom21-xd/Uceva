@@ -8,6 +8,7 @@ enum class Rout {
     ProfileScreen,
     OptionScreen,
     InfoScreen,
+    PreventionGuideScreen,
     CreatePublicationScreen,
     UpdatePublicationScreen,
     CaseScreen,
