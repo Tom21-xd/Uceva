@@ -74,6 +74,7 @@ import com.Tom.uceva_dengue.ui.Screen.UserManagementScreen
 import com.Tom.uceva_dengue.ui.Screen.EditUserScreenFunctional
 import com.Tom.uceva_dengue.ui.Screen.SettingsScreen
 import com.Tom.uceva_dengue.ui.Screen.PostDetailScreen
+import com.Tom.uceva_dengue.ui.Screen.SavedPublicationsScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
@@ -285,6 +286,10 @@ fun NavigationCon(context: Context) {
                     val viewModel: PublicacionViewModel = viewModel()
                     PostDetailScreen(publicationId = publicationId, viewModel = viewModel, navController = navController)
                 }
+                composable(Rout.SavedPublicationsScreen.name) {
+                    val viewModel: PublicacionViewModel = viewModel()
+                    SavedPublicationsScreen(navController = navController, viewModel = viewModel)
+                }
                 composable(Rout.OlvContraseniaScreen.name) {
                     ForgotPasswordScreenModern(navController = navController)
                 }
@@ -315,6 +320,7 @@ fun getTopBarTitle(route: String): String {
         Rout.UserManagementScreen.name -> "Gestión de Usuarios"
         Rout.EditUserScreen.name -> "Editar Usuario"
         Rout.PostDetailScreen.name -> "Detalle de Publicación"
+        Rout.SavedPublicationsScreen.name -> "Mis Guardados"
         else -> "Mi Aplicación"
     }
 }

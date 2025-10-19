@@ -20,5 +20,6 @@ enum class Rout {
     CaseDetailsScreen,
     UserManagementScreen,
     EditUserScreen,
-    PostDetailScreen
+    PostDetailScreen,
+    SavedPublicationsScreen
 }

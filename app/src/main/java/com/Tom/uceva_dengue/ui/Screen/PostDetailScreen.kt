@@ -23,6 +23,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
+import com.Tom.uceva_dengue.Data.Model.PublicationCommentModel
+import com.Tom.uceva_dengue.Data.Service.AuthRepository
+import com.Tom.uceva_dengue.ui.Components.CommentSection
+import com.Tom.uceva_dengue.ui.Components.EnhancedReactionBar
+import com.Tom.uceva_dengue.ui.Components.FloatingHeartAnimation
+import com.Tom.uceva_dengue.ui.Components.BookmarkSaveAnimation
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 
 @Composable
@@ -33,7 +39,49 @@ fun PostDetailScreen(
 ) {
     var publicacion by remember { mutableStateOf<PublicationModel?>(null) }
     var isLoading by remember { mutableStateOf(true) }
+    var comments by remember { mutableStateOf<List<PublicationCommentModel>>(emptyList()) }
+    var isLoadingComments by remember { mutableStateOf(false) }
+    var isSendingComment by remember { mutableStateOf(false) }
+    var showHeartAnimation by remember { mutableStateOf(false) }
+    var showBookmarkAnimation by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
+    val authRepository = AuthRepository(context)
+    val currentUserId = authRepository.getUser()?.toIntOrNull()
+
+    // Función para cargar comentarios
+    fun loadComments() {
+        if (currentUserId != null) {
+            viewModel.loadComments(
+                publicationId = publicationId,
+                onSuccess = { loadedComments ->
+                    comments = loadedComments
+                    isLoadingComments = false
+                },
+                onError = { error ->
+                    Toast.makeText(context, "Error al cargar comentarios: $error", Toast.LENGTH_SHORT).show()
+                    isLoadingComments = false
+                }
+            )
+        }
+    }
+
+    // Función para cargar interacciones del usuario
+    fun loadUserInteractions() {
+        if (currentUserId != null) {
+            viewModel.loadUserInteractions(
+                publicationId = publicationId,
+                userId = currentUserId,
+                onSuccess = { hasReacted, hasSaved ->
+                    publicacion = publicacion?.copy(
+                        USUARIO_HA_REACCIONADO = hasReacted,
+                        USUARIO_HA_GUARDADO = hasSaved
+                    )
+                },
+                onError = { }
+            )
+        }
+    }
 
     LaunchedEffect(publicationId) {
         viewModel.getPublicationById(
@@ -41,6 +89,9 @@ fun PostDetailScreen(
             onSuccess = { publication ->
                 publicacion = publication
                 isLoading = false
+                // Cargar comentarios y interacciones
+                loadComments()
+                loadUserInteractions()
             },
             onError = { error ->
                 Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
@@ -253,8 +304,145 @@ fun PostDetailScreen(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Barra de reacciones mejorada
+                EnhancedReactionBar(
+                    totalReacciones = publicacion!!.TOTAL_REACCIONES ?: 0,
+                    totalComentarios = publicacion!!.TOTAL_COMENTARIOS ?: 0,
+                    totalVistas = publicacion!!.TOTAL_VISTAS ?: 0,
+                    totalGuardados = publicacion!!.TOTAL_GUARDADOS ?: 0,
+                    usuarioHaReaccionado = publicacion!!.USUARIO_HA_REACCIONADO ?: false,
+                    usuarioHaGuardado = publicacion!!.USUARIO_HA_GUARDADO ?: false,
+                    onReactionClick = {
+                        if (currentUserId != null) {
+                            viewModel.toggleReaction(
+                                publicationId = publicationId,
+                                userId = currentUserId,
+                                onSuccess = { hasReacted ->
+                                    publicacion = publicacion?.copy(
+                                        USUARIO_HA_REACCIONADO = hasReacted,
+                                        TOTAL_REACCIONES = (publicacion?.TOTAL_REACCIONES ?: 0) + if (hasReacted) 1 else -1
+                                    )
+                                    if (hasReacted) {
+                                        showHeartAnimation = true
+                                    }
+                                },
+                                onError = { error ->
+                                    Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                    },
+                    onCommentClick = {
+                        Toast.makeText(context, "Ver comentarios abajo", Toast.LENGTH_SHORT).show()
+                    },
+                    onSaveClick = {
+                        if (currentUserId != null) {
+                            viewModel.toggleSave(
+                                publicationId = publicationId,
+                                userId = currentUserId,
+                                onSuccess = { isSaved ->
+                                    publicacion = publicacion?.copy(
+                                        USUARIO_HA_GUARDADO = isSaved,
+                                        TOTAL_GUARDADOS = (publicacion?.TOTAL_GUARDADOS ?: 0) + if (isSaved) 1 else -1
+                                    )
+                                    if (isSaved) {
+                                        showBookmarkAnimation = true
+                                    }
+                                },
+                                onError = { error ->
+                                    Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                    },
+                    onShareClick = {
+                        Toast.makeText(context, "Compartir próximamente", Toast.LENGTH_SHORT).show()
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Sección de comentarios
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                CommentSection(
+                    comments = comments,
+                    isLoading = isSendingComment,
+                    onSendComment = { commentText ->
+                        if (currentUserId != null) {
+                            isSendingComment = true
+                            viewModel.createComment(
+                                publicationId = publicationId,
+                                userId = currentUserId,
+                                content = commentText,
+                                parentCommentId = null,
+                                onSuccess = { newComment ->
+                                    comments = comments + newComment
+                                    publicacion = publicacion?.copy(
+                                        TOTAL_COMENTARIOS = (publicacion?.TOTAL_COMENTARIOS ?: 0) + 1
+                                    )
+                                    Toast.makeText(context, "Comentario agregado", Toast.LENGTH_SHORT).show()
+                                    isSendingComment = false
+                                },
+                                onError = { error ->
+                                    Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
+                                    isSendingComment = false
+                                }
+                            )
+                        }
+                    },
+                    onReplyToComment = { commentId, replyText ->
+                        if (currentUserId != null) {
+                            viewModel.createComment(
+                                publicationId = publicationId,
+                                userId = currentUserId,
+                                content = replyText,
+                                parentCommentId = commentId,
+                                onSuccess = { newComment ->
+                                    loadComments() // Recargar comentarios para mostrar la respuesta
+                                    Toast.makeText(context, "Respuesta agregada", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { error ->
+                                    Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                    },
+                    onDeleteComment = { commentId ->
+                        viewModel.deleteComment(
+                            commentId = commentId,
+                            onSuccess = {
+                                comments = comments.filter { it.ID_COMENTARIO != commentId }
+                                publicacion = publicacion?.copy(
+                                    TOTAL_COMENTARIOS = (publicacion?.TOTAL_COMENTARIOS ?: 1) - 1
+                                )
+                                Toast.makeText(context, "Comentario eliminado", Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { error ->
+                                Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    },
+                    currentUserId = currentUserId
+                )
+
                 Spacer(modifier = Modifier.height(80.dp))
             }
         }
+
+        // Animaciones flotantes
+        FloatingHeartAnimation(
+            show = showHeartAnimation,
+            onComplete = { showHeartAnimation = false }
+        )
+
+        BookmarkSaveAnimation(
+            show = showBookmarkAnimation,
+            onComplete = { showBookmarkAnimation = false }
+        )
     }
 }

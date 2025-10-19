@@ -1,6 +1,7 @@
 package com.Tom.uceva_dengue.ui.Menus
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Cases
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HealthAndSafety
@@ -57,6 +58,11 @@ sealed  class Items_Menu_lateral (
         Icons.Default.HealthAndSafety,
         "Guía de Prevención",
         Rout.PreventionGuideScreen.name
+    )
+    object Item_Menu_Lateral9: Items_Menu_lateral(
+        Icons.Default.Bookmark,
+        "Mis Guardados",
+        Rout.SavedPublicationsScreen.name
     )
 
 

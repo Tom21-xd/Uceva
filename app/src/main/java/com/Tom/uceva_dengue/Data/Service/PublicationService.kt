@@ -205,4 +205,74 @@ interface PublicationService{
         @Query("limit") limit: Int = 10,
         @Query("days") days: Int = 7
     ): Response<List<PublicationModel>>
+
+    // ===== ENDPOINTS IMPLEMENTADOS EN BACKEND =====
+
+    /**
+     * Toggle reaction (add/remove) - IMPLEMENTADO
+     */
+    @POST("Publication/toggleReaction/{publicationId}/{userId}")
+    suspend fun toggleReaction(
+        @Path("publicationId") publicationId: Int,
+        @Path("userId") userId: Int,
+        @Body reactionType: String? = null
+    ): Response<Map<String, Any>>
+
+    /**
+     * Get reactions for publication - IMPLEMENTADO
+     */
+    @GET("Publication/getReactions/{publicationId}")
+    suspend fun getReactions(@Path("publicationId") publicationId: Int): Response<Map<String, Any>>
+
+    /**
+     * Get comments for publication - IMPLEMENTADO
+     */
+    @GET("Publication/getComments/{publicationId}")
+    suspend fun getComments(@Path("publicationId") publicationId: Int): Response<List<PublicationCommentModel>>
+
+    /**
+     * Create comment - IMPLEMENTADO
+     */
+    @POST("Publication/createComment/{publicationId}/{userId}")
+    suspend fun createComment(
+        @Path("publicationId") publicationId: Int,
+        @Path("userId") userId: Int,
+        @Body comment: CreateCommentRequest
+    ): Response<Map<String, Any>>
+
+    /**
+     * Delete comment - IMPLEMENTADO
+     */
+    @DELETE("Publication/deleteComment/{commentId}")
+    suspend fun deleteComment(@Path("commentId") commentId: Int): Response<Map<String, String>>
+
+    /**
+     * Toggle save publication - IMPLEMENTADO
+     */
+    @POST("Publication/toggleSave/{publicationId}/{userId}")
+    suspend fun toggleSave(
+        @Path("publicationId") publicationId: Int,
+        @Path("userId") userId: Int
+    ): Response<Map<String, Any>>
+
+    /**
+     * Get saved publications for user - IMPLEMENTADO
+     */
+    @GET("Publication/getSavedPublications/{userId}")
+    suspend fun getSavedPublications(@Path("userId") userId: Int): Response<List<SavedPublicationModel>>
+
+    /**
+     * Get publication stats - IMPLEMENTADO
+     */
+    @GET("Publication/getStats/{publicationId}")
+    suspend fun getStats(@Path("publicationId") publicationId: Int): Response<Map<String, Int>>
+
+    /**
+     * Get user interactions with publication - IMPLEMENTADO
+     */
+    @GET("Publication/getUserInteractions/{publicationId}/{userId}")
+    suspend fun getUserInteractions(
+        @Path("publicationId") publicationId: Int,
+        @Path("userId") userId: Int
+    ): Response<Map<String, Boolean>>
 }
