@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
 import com.Tom.uceva_dengue.ui.Components.EnhancedPostCard
+import com.Tom.uceva_dengue.ui.Components.ModernPublicationCard
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import kotlinx.coroutines.launch
@@ -110,7 +111,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(publicaciones) { publicacion ->
-                        EnhancedPostCard(
+                        ModernPublicationCard(
                             publicacion = publicacion,
                             currentUserId = userId,
                             role = role,
@@ -159,10 +160,6 @@ fun HomeScreen(
                                         }
                                     )
                                 }
-                            },
-                            onTagClick = { tag ->
-                                // TODO: Filtrar por tag
-                                Toast.makeText(context, "Buscando: $tag", Toast.LENGTH_SHORT).show()
                             },
                             onEdit = {
                                 navController.navigate("${Rout.UpdatePublicationScreen.name}/${it.ID_PUBLICACION}")

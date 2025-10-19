@@ -59,6 +59,7 @@ import com.Tom.uceva_dengue.ui.Screen.CreateCaseScreenModern
 import com.Tom.uceva_dengue.ui.Screen.CreatePublicationScreen
 import com.Tom.uceva_dengue.ui.Screen.UpdatePublicationScreen
 import com.Tom.uceva_dengue.ui.Screen.HomeScreen
+import com.Tom.uceva_dengue.ui.Screen.ModernHomeScreen
 import com.Tom.uceva_dengue.ui.Screen.HospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.CreateHospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.UpdateHospitalScreen

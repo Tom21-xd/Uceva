@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
 import com.Tom.uceva_dengue.Data.Service.AuthRepository
-import com.Tom.uceva_dengue.ui.Components.EnhancedPostCard
+import com.Tom.uceva_dengue.ui.Components.ModernPublicationCard
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,7 +129,7 @@ fun SavedPublicationsScreen(
                         }
 
                         items(savedPublications) { publicacion ->
-                            EnhancedPostCard(
+                            ModernPublicationCard(
                                 publicacion = publicacion,
                                 currentUserId = currentUserId,
                                 role = userRole,
@@ -153,6 +153,9 @@ fun SavedPublicationsScreen(
                                             }
                                         )
                                     }
+                                },
+                                onCommentClick = { pub ->
+                                    navController.navigate("postDetail/${pub.ID_PUBLICACION}")
                                 },
                                 onSaveClick = { pub ->
                                     if (currentUserId != null) {

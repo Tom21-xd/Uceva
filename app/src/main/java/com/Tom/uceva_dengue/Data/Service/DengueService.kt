@@ -13,7 +13,7 @@
 
     interface DengueService {
 
-        @GET("Dengue/getSymptoms")
+        @GET("Symptom/getSymptoms")
         suspend fun getSymptoms(): Response<List<SymptomModel>>
 
         @GET("Dengue/getTypesOfDengue")

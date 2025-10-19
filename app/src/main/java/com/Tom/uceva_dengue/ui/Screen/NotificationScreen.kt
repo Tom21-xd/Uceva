@@ -129,7 +129,7 @@ fun NotificationCard(notification: NotificationModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = notification.NOMBRE_TIPONOTIFICACION ?: "Sin título",
+                        text = "Notificación",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -140,7 +140,7 @@ fun NotificationCard(notification: NotificationModel) {
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
-                            text = notification.FECHA_NOTIFICACION ?: "",
+                            text = formatNotificationDate(notification.FECHA_NOTIFICACION),
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -152,7 +152,7 @@ fun NotificationCard(notification: NotificationModel) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = notification.DESCRIPCION_TIPONOTIFICACION ?: "Sin contenido",
+                    text = notification.CONTENIDO_NOTIFICACION.ifEmpty { "Sin contenido" },
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp
@@ -162,3 +162,31 @@ fun NotificationCard(notification: NotificationModel) {
     }
 }
 
+private fun formatNotificationDate(dateString: String): String {
+    if (dateString.isEmpty()) return ""
+
+    try {
+        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+        val date = formatter.parse(dateString) ?: return dateString
+        val now = java.util.Date()
+        val diffInMillis = now.time - date.time
+
+        val seconds = diffInMillis / 1000
+        val minutes = seconds / 60
+        val hours = minutes / 60
+        val days = hours / 24
+
+        return when {
+            seconds < 60 -> "Ahora"
+            minutes < 60 -> "${minutes}m"
+            hours < 24 -> "${hours}h"
+            days < 7 -> "${days}d"
+            else -> {
+                val displayFormatter = java.text.SimpleDateFormat("dd MMM", java.util.Locale("es", "ES"))
+                displayFormatter.format(date)
+            }
+        }
+    } catch (e: Exception) {
+        return dateString
+    }
+}

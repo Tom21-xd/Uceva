@@ -3,7 +3,6 @@ package com.Tom.uceva_dengue.ui.Screen
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,37 +23,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Colores para tema claro
-private val PrimaryBlueDark = Color(0xFF4169E1)
-private val PrimaryBlueLight = Color(0xFF5E81F4)
-private val DangerRedDark = Color(0xFFFF6B7A)
-private val DangerRedLight = Color(0xFFFF4757)
-private val WarningOrangeDark = Color(0xFFFFC966)
-private val WarningOrangeLight = Color(0xFFFFB946)
-private val SuccessGreenDark = Color(0xFF46E89B)
-private val SuccessGreenLight = Color(0xFF26DE81)
-private val InfoCyanDark = Color(0xFF68EBFF)
-private val InfoCyanLight = Color(0xFF48DBF8)
-
-@Composable
-private fun getAccentColors(isDark: Boolean): AccentColors {
-    return AccentColors(
-        primaryBlue = if (isDark) PrimaryBlueDark else PrimaryBlueLight,
-        dangerRed = if (isDark) DangerRedDark else DangerRedLight,
-        warningOrange = if (isDark) WarningOrangeDark else WarningOrangeLight,
-        successGreen = if (isDark) SuccessGreenDark else SuccessGreenLight,
-        infoCyan = if (isDark) InfoCyanDark else InfoCyanLight
-    )
-}
-
-data class AccentColors(
-    val primaryBlue: Color,
-    val dangerRed: Color,
-    val warningOrange: Color,
-    val successGreen: Color,
-    val infoCyan: Color
-)
-
 data class SectionData(
     val title: String,
     val icon: ImageVector,
@@ -72,8 +40,6 @@ data class InfoItem(
 @Composable
 fun PreventionGuideScreen() {
     var expandedSections by remember { mutableStateOf(setOf<Int>()) }
-    val isDark = isSystemInDarkTheme()
-    val accentColors = getAccentColors(isDark)
 
     val sections = listOf(
         SectionData(
@@ -226,7 +192,6 @@ fun PreventionGuideScreen() {
             items(sections.size) { index ->
                 ExpandableSection(
                     section = sections[index],
-                    accentColors = accentColors,
                     isExpanded = expandedSections.contains(index),
                     onToggle = {
                         expandedSections = if (expandedSections.contains(index)) {
@@ -248,9 +213,6 @@ fun PreventionGuideScreen() {
 
 @Composable
 private fun HeaderCard() {
-    val isDark = isSystemInDarkTheme()
-    val accentColors = getAccentColors(isDark)
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -259,60 +221,65 @@ private fun HeaderCard() {
         ),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
-        Box {
-            // Fondo con gradiente
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                accentColors.primaryBlue,
-                                accentColors.primaryBlue.copy(alpha = 0.7f)
-                            )
-                        )
-                    )
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Icono principal
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // Header con gradiente
+            Box {
+                // Fondo con gradiente usando colores del tema
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .matchParentSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.secondary
+                                )
+                            )
+                        )
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Icono principal
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🛡️",
+                            fontSize = 48.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Text(
-                        text = "🛡️",
-                        fontSize = 48.sp
+                        text = "Guía de Prevención",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Todo lo que necesitas saber para protegerte del dengue",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        textAlign = TextAlign.Center
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Guía de Prevención",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Todo lo que necesitas saber para protegerte del dengue",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.9f),
-                    textAlign = TextAlign.Center
-                )
             }
         }
     }
@@ -322,17 +289,16 @@ private fun HeaderCard() {
 @Composable
 private fun ExpandableSection(
     section: SectionData,
-    accentColors: AccentColors,
     isExpanded: Boolean,
     onToggle: () -> Unit
 ) {
     val sectionColor = when (section.colorKey) {
-        "primary" -> accentColors.primaryBlue
-        "danger" -> accentColors.dangerRed
-        "warning" -> accentColors.warningOrange
-        "success" -> accentColors.successGreen
-        "info" -> accentColors.infoCyan
-        else -> accentColors.primaryBlue
+        "primary" -> MaterialTheme.colorScheme.primary
+        "danger" -> MaterialTheme.colorScheme.error
+        "warning" -> Color(0xFFFFA726) // Orange para warnings
+        "success" -> MaterialTheme.colorScheme.tertiary
+        "info" -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.primary
     }
 
     Card(
@@ -408,16 +374,13 @@ private fun ExpandableSection(
 
 @Composable
 private fun InfoItemCard(item: InfoItem, accentColor: Color) {
-    val isDark = isSystemInDarkTheme()
-
-    Surface(
+    Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        color = if (isDark)
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        else
-            Color(0xFFF7FAFC),
-        tonalElevation = 2.dp
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        ),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -445,7 +408,7 @@ private fun InfoItemCard(item: InfoItem, accentColor: Color) {
                 Text(
                     text = item.description,
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f),
                     lineHeight = 18.sp
                 )
             }
@@ -455,17 +418,11 @@ private fun InfoItemCard(item: InfoItem, accentColor: Color) {
 
 @Composable
 private fun FooterCard() {
-    val isDark = isSystemInDarkTheme()
-    val accentColors = getAccentColors(isDark)
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDark)
-                MaterialTheme.colorScheme.surfaceVariant
-            else
-                Color(0xFFFFF5F5)
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
         ),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
@@ -484,23 +441,23 @@ private fun FooterCard() {
                 text = "Recuerda",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = accentColors.dangerRed
+                color = MaterialTheme.colorScheme.error
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "La prevención del dengue es responsabilidad de todos. Eliminar los criaderos del mosquito es la forma más efectiva de combatir la enfermedad.",
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f),
                 textAlign = TextAlign.Center,
                 lineHeight = 20.sp
             )
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = accentColors.dangerRed.copy(alpha = 0.3f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.error.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "Información basada en fuentes oficiales: OMS, OPS, CDC",
                 fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
             )

@@ -228,18 +228,20 @@ class CreateCaseViewModel : ViewModel() {
         }
     }
 
-    fun toggleSymptom(symptomId: Int) {
+    fun toggleSymptom(symptomId: Int, enableAutoDiagnosis: Boolean = true) {
         _selectedSymptoms.value = if (_selectedSymptoms.value.contains(symptomId)) {
             _selectedSymptoms.value - symptomId
         } else {
             _selectedSymptoms.value + symptomId
         }
 
-        // Automatically diagnose when symptoms change
-        if (_selectedSymptoms.value.isNotEmpty()) {
-            diagnoseDengue()
-        } else {
-            _diagnosisResult.value = null
+        // Automatically diagnose when symptoms change (only if enabled)
+        if (enableAutoDiagnosis) {
+            if (_selectedSymptoms.value.isNotEmpty()) {
+                diagnoseDengue()
+            } else {
+                _diagnosisResult.value = null
+            }
         }
     }
 

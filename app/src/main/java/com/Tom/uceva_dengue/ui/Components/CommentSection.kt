@@ -318,16 +318,18 @@ fun CommentItem(
 
                     Column {
                         Text(
-                            text = comment.USUARIO?.NOMBRE_USUARIO ?: "Usuario",
+                            text = comment.USUARIO?.NOMBRE_USUARIO ?: "Usuario #${comment.FK_ID_USUARIO}",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Text(
-                            text = comment.FECHA_COMENTARIO,
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        if (comment.FECHA_COMENTARIO.isNotBlank()) {
+                            Text(
+                                text = formatCommentDate(comment.FECHA_COMENTARIO),
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
 
@@ -451,5 +453,40 @@ fun EmptyCommentsPlaceholder() {
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
+    }
+}
+
+/**
+ * Formatea la fecha del comentario de manera legible
+ */
+private fun formatCommentDate(dateString: String): String {
+    if (dateString.isBlank()) return ""
+    return try {
+        val inputFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+        val now = java.util.Date()
+        val commentDate = inputFormat.parse(dateString)
+
+        if (commentDate != null) {
+            val diff = now.time - commentDate.time
+            val seconds = diff / 1000
+            val minutes = seconds / 60
+            val hours = minutes / 60
+            val days = hours / 24
+
+            when {
+                seconds < 60 -> "Ahora"
+                minutes < 60 -> "${minutes}m"
+                hours < 24 -> "${hours}h"
+                days < 7 -> "${days}d"
+                else -> {
+                    val outputFormat = java.text.SimpleDateFormat("dd MMM", java.util.Locale("es", "ES"))
+                    outputFormat.format(commentDate)
+                }
+            }
+        } else {
+            dateString
+        }
+    } catch (e: Exception) {
+        dateString
     }
 }

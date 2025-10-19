@@ -53,7 +53,7 @@ fun EnhancedReactionBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
+                .padding(horizontal = 2.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -281,7 +281,7 @@ fun AnimatedInteractionButton(
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 onClick()
             }
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .padding(horizontal = 8.dp, vertical = 8.dp)
             .scale(scale)
     ) {
         Icon(
@@ -291,18 +291,12 @@ fun AnimatedInteractionButton(
             modifier = Modifier.size(24.dp)
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
-
+        // Solo mostrar contador si existe
         if (count != null && count > 0) {
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = formatCount(count),
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        } else {
-            Text(
-                text = label,
-                fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

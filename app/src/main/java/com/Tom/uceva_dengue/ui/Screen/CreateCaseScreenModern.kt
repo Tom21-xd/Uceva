@@ -481,63 +481,384 @@ fun SelectedUserCardModern(user: UserModel) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DengueSectionModern(viewModel: CreateCaseViewModel) {
     val symptoms by viewModel.symptoms.collectAsState()
     val selectedSymptoms by viewModel.selectedSymptoms.collectAsState()
     val typesOfDengue by viewModel.typesOfDengue.collectAsState()
     val selectedDengueType by viewModel.selectedDengueType.collectAsState()
-    
+    val diagnosisResult by viewModel.diagnosisResult.collectAsState()
+    val isLoadingDiagnosis by viewModel.isLoadingDiagnosis.collectAsState()
+
+    var searchQuery by remember { mutableStateOf("") }
+    var isSymptomsExpanded by remember { mutableStateOf(false) }
+    var isAutoDiagnosisEnabled by remember { mutableStateOf(true) }
+
+    val filteredSymptoms = remember(symptoms, searchQuery) {
+        if (searchQuery.isBlank()) {
+            symptoms
+        } else {
+            symptoms.filter {
+                it.NOMBRE_SINTOMA?.contains(searchQuery, ignoreCase = true) == true
+            }
+        }
+    }
+
     val primaryColor = MaterialTheme.colorScheme.primary
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val outlineColor = MaterialTheme.colorScheme.outline
+    val errorColor = MaterialTheme.colorScheme.error
+    val successColor = MaterialTheme.colorScheme.tertiary
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text(
-            text = "Síntomas Presentados",
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            color = onSurfaceColor
-        )
-
-        val columnCount = 2
-        val rows = symptoms.chunked(columnCount)
-
-        rows.forEach { rowSymptoms ->
+        // Header with counter and expand button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isSymptomsExpanded = !isSymptomsExpanded }
+                .background(primaryColor.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                rowSymptoms.forEach { symptom ->
+                Icon(
+                    imageVector = if (isSymptomsExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = primaryColor
+                )
+                Text(
+                    text = "Síntomas",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = onSurfaceColor
+                )
+            }
+
+            if (selectedSymptoms.isNotEmpty()) {
+                Card(
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = primaryColor
+                    )
+                ) {
+                    Text(
+                        text = "${selectedSymptoms.size}",
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        AnimatedVisibility(visible = isSymptomsExpanded) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Auto-diagnosis toggle
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            if (isAutoDiagnosisEnabled) successColor.copy(alpha = 0.1f)
+                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Checkbox(
-                            checked = selectedSymptoms.contains(symptom.ID_SINTOMA),
-                            onCheckedChange = { viewModel.toggleSymptom(symptom.ID_SINTOMA) },
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = primaryColor,
-                                uncheckedColor = outlineColor
-                            )
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (isAutoDiagnosisEnabled) successColor else onSurfaceColor.copy(alpha = 0.5f),
+                            modifier = Modifier.size(20.dp)
                         )
+                        Column {
+                            Text(
+                                text = "Asistencia de Diagnóstico",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp,
+                                color = onSurfaceColor
+                            )
+                            Text(
+                                text = if (isAutoDiagnosisEnabled) "Recomendación automática activada" else "Selección manual",
+                                fontSize = 11.sp,
+                                color = onSurfaceColor.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = isAutoDiagnosisEnabled,
+                        onCheckedChange = { isAutoDiagnosisEnabled = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = successColor
+                        )
+                    )
+                }
+
+                // Search bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Buscar síntoma...") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Buscar",
+                            tint = primaryColor
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Limpiar",
+                                    tint = onSurfaceColor.copy(alpha = 0.6f)
+                                )
+                            }
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = primaryColor,
+                        unfocusedBorderColor = outlineColor
+                    ),
+                    singleLine = true
+                )
+
+        // Symptom chips with FlowRow
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            )
+        ) {
+            androidx.compose.foundation.layout.FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                filteredSymptoms.forEach { symptom ->
+                    val isSelected = selectedSymptoms.contains(symptom.ID_SINTOMA)
+
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { viewModel.toggleSymptom(symptom.ID_SINTOMA, isAutoDiagnosisEnabled) },
+                        label = {
+                            Text(
+                                text = symptom.NOMBRE_SINTOMA ?: "Sin nombre",
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                maxLines = 1
+                            )
+                        },
+                        leadingIcon = if (isSelected) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        } else null,
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = primaryColor,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = isSelected,
+                            borderColor = outlineColor,
+                            selectedBorderColor = primaryColor,
+                            borderWidth = 1.dp,
+                            selectedBorderWidth = 1.5.dp
+                        ),
+                        modifier = Modifier
+                            .height(28.dp)
+                            .padding(0.dp)
+                    )
+                }
+            }
+        }
+
+        if (filteredSymptoms.isEmpty() && searchQuery.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = null,
+                    tint = onSurfaceColor.copy(alpha = 0.4f),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "No se encontraron síntomas",
+                    color = onSurfaceColor.copy(alpha = 0.6f),
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+                // Diagnosis recommendation card (only show if auto-diagnosis is enabled)
+                if (isAutoDiagnosisEnabled && isLoadingDiagnosis) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = primaryColor.copy(alpha = 0.1f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = primaryColor
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Analizando síntomas...",
+                        fontSize = 14.sp,
+                        color = onSurfaceColor
+                    )
+                }
+            }
+        }
+
+                if (isAutoDiagnosisEnabled) {
+                    diagnosisResult?.let { diagnosis ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = when (diagnosis.confidence) {
+                        "Alta" -> successColor.copy(alpha = 0.15f)
+                        "Media" -> Color(0xFFFFA726).copy(alpha = 0.15f)
+                        else -> errorColor.copy(alpha = 0.15f)
+                    }
+                ),
+                border = androidx.compose.foundation.BorderStroke(
+                    2.dp,
+                    when (diagnosis.confidence) {
+                        "Alta" -> successColor
+                        "Media" -> Color(0xFFFFA726)
+                        else -> errorColor
+                    }
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = when (diagnosis.confidence) {
+                                "Alta" -> successColor
+                                "Media" -> Color(0xFFFFA726)
+                                else -> errorColor
+                            },
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = symptom.NOMBRE_SINTOMA ?: "Sin Nombre",
-                            fontSize = 14.sp,
-                            color = onSurfaceColor,
-                            modifier = Modifier.padding(start = 4.dp)
+                            text = "Diagnóstico Recomendado",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = onSurfaceColor
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = diagnosis.typeOfDengueName,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = primaryColor
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = "Coincidencia:",
+                                fontSize = 12.sp,
+                                color = onSurfaceColor.copy(alpha = 0.7f)
+                            )
+                            Text(
+                                text = "${diagnosis.matchPercentage.toInt()}%",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = onSurfaceColor
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "Confianza:",
+                                fontSize = 12.sp,
+                                color = onSurfaceColor.copy(alpha = 0.7f)
+                            )
+                            Text(
+                                text = diagnosis.confidence,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = when (diagnosis.confidence) {
+                                    "Alta" -> successColor
+                                    "Media" -> Color(0xFFFFA726)
+                                    else -> errorColor
+                                }
+                            )
+                        }
+                    }
                 }
-                if (rowSymptoms.size < columnCount) {
-                    Spacer(modifier = Modifier.weight(1f))
+            }
+                    }
                 }
             }
         }
 
         Divider(
-            color = outlineColor.copy(alpha = 0.3f), 
+            color = outlineColor.copy(alpha = 0.3f),
             modifier = Modifier.padding(vertical = 8.dp)
+        )
+
+        Text(
+            text = "Confirme o ajuste el tipo de dengue",
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            color = onSurfaceColor.copy(alpha = 0.8f)
         )
 
         ComboBox(
