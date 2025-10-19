@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 import kotlin.math.log
 
 class CreateCaseViewModel : ViewModel() {
@@ -115,6 +116,13 @@ class CreateCaseViewModel : ViewModel() {
     private val _locationCoordinates = MutableStateFlow<LatLng?>(null)
     val locationCoordinates: StateFlow<LatLng?> = _locationCoordinates.asStateFlow()
 
+    // Estado de carga consolidado
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _loadingError = MutableStateFlow<String?>(null)
+    val loadingError: StateFlow<String?> = _loadingError.asStateFlow()
+
     fun setLocationCoordinates(latLng: LatLng) {
         _locationCoordinates.value = latLng
     }
@@ -144,12 +152,65 @@ class CreateCaseViewModel : ViewModel() {
 
 
     init {
-        fetchUsers()
-        fetchGenres()
-        fetchBloodType()
-        fetchSymptoms()
-        fetchTypesOfDengue()
-        fetchDepartamentos()
+        loadInitialData()
+    }
+
+    /**
+     * Carga todos los datos iniciales en paralelo y solo marca como cargado cuando TODO está listo
+     * Esto evita el "flasheo" de la UI
+     */
+    fun loadInitialData() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _loadingError.value = null
+
+            try {
+                // Lanzar todas las peticiones en paralelo
+                val usersDeferred = async { RetrofitClient.userService.getUsers() }
+                val genresDeferred = async { RetrofitClient.genreService.getGenres() }
+                val bloodTypesDeferred = async { RetrofitClient.bloodTypeService.getBloodTypes() }
+                val symptomsDeferred = async { RetrofitClient.dengueService.getSymptoms() }
+                val dengueTypesDeferred = async { RetrofitClient.dengueService.getTypesOfDengue() }
+                val departmentsDeferred = async { RetrofitClient.departmentService.getDepartments() }
+
+                // Esperar a que todas completen
+                // userService.getUsers() retorna Response<List<UserModel>>
+                val usersResponse = usersDeferred.await()
+                _users.value = if (usersResponse.isSuccessful) {
+                    usersResponse.body() ?: emptyList()
+                } else emptyList()
+
+                // genreService.getGenres() retorna Response<List<GenreModel>>
+                val genresResponse = genresDeferred.await()
+                _genres.value = if (genresResponse.isSuccessful) {
+                    genresResponse.body() ?: emptyList()
+                } else emptyList()
+
+                // bloodTypeService.getBloodTypes() retorna List<BloodTypeModel> directamente
+                _typeofblood.value = bloodTypesDeferred.await()
+
+                // dengueService.getSymptoms() retorna Response<List<SymptomModel>>
+                val symptomsResponse = symptomsDeferred.await()
+                _symptoms.value = if (symptomsResponse.isSuccessful) {
+                    symptomsResponse.body() ?: emptyList()
+                } else emptyList()
+
+                // dengueService.getTypesOfDengue() retorna Response<List<TypeOfDengueModel>>
+                val dengueTypesResponse = dengueTypesDeferred.await()
+                _typesOfDengue.value = if (dengueTypesResponse.isSuccessful) {
+                    dengueTypesResponse.body() ?: emptyList()
+                } else emptyList()
+
+                // departmentService.getDepartments() retorna List<DepartmentModel> directamente
+                _departamentos.value = departmentsDeferred.await()
+
+                _isLoading.value = false
+            } catch (e: Exception) {
+                Log.e("CreateCaseViewModel", "Error al cargar datos iniciales", e)
+                _loadingError.value = "Error al cargar datos: ${e.localizedMessage}"
+                _isLoading.value = false
+            }
+        }
     }
 
 

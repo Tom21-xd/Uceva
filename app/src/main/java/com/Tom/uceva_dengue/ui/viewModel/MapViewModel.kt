@@ -9,6 +9,7 @@ import com.Tom.uceva_dengue.Data.Model.HospitalModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 
 
 class MapViewModel : ViewModel() {
@@ -18,6 +19,13 @@ class MapViewModel : ViewModel() {
 
     private val _hospitals = MutableStateFlow<List<HospitalModel>>(emptyList())
     val hospitals: StateFlow<List<HospitalModel>> = _hospitals
+
+    // Estado de carga consolidado
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _loadingError = MutableStateFlow<String?>(null)
+    val loadingError: StateFlow<String?> = _loadingError
 
     private var isCasesFetched = false
     private var isHospitalsFetched = false
@@ -62,7 +70,41 @@ class MapViewModel : ViewModel() {
     }
 
     init {
-        fetchCases()
-        fetchHospitals()
+        loadAllData()
+    }
+
+    /**
+     * Carga casos y hospitales en paralelo para evitar flasheo de UI
+     */
+    fun loadAllData() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _loadingError.value = null
+
+            try {
+                // Lanzar ambas peticiones en paralelo
+                val casesDeferred = async { RetrofitClient.caseService.getCases() }
+                val hospitalsDeferred = async { RetrofitClient.hospitalService.getHospitals() }
+
+                // Esperar a que ambas completen
+                val casesResponse = casesDeferred.await()
+                if (casesResponse.body() != null) {
+                    _cases.value = casesResponse.body()!!
+                    isCasesFetched = true
+                }
+
+                val hospitalsResponse = hospitalsDeferred.await()
+                if (hospitalsResponse.body() != null) {
+                    _hospitals.value = hospitalsResponse.body()!!
+                    isHospitalsFetched = true
+                }
+
+                _isLoading.value = false
+            } catch (e: Exception) {
+                Log.e("MapViewModel", "Error al cargar datos del mapa", e)
+                _loadingError.value = "Error al cargar datos: ${e.localizedMessage}"
+                _isLoading.value = false
+            }
+        }
     }
 }

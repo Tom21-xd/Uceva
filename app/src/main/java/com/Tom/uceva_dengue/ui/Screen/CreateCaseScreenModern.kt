@@ -64,9 +64,74 @@ fun CreateCaseScreenModern(
     var isPatientSectionExpanded by remember { mutableStateOf(true) }
     var isDengueSectionExpanded by remember { mutableStateOf(false) }
     var isLocationSectionExpanded by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
+    var isCreatingCase by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val isExistingUser by viewModel.isExistingUser.collectAsState()
+
+    // Observar estado de carga del ViewModel
+    val isLoadingData by viewModel.isLoading.collectAsState()
+    val loadingError by viewModel.loadingError.collectAsState()
+
+    // Mostrar loader mientras carga los datos iniciales
+    if (isLoadingData) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(48.dp),
+                    color = PrimaryBlue
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Cargando información...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        }
+        return
+    }
+
+    // Mostrar error si hubo problema al cargar
+    if (loadingError != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundColor)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Error,
+                    contentDescription = "Error",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = loadingError ?: "Error desconocido",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { viewModel.loadInitialData() }) {
+                    Text("Reintentar")
+                }
+            }
+        }
+        return
+    }
 
     Column(
         modifier = Modifier
@@ -176,19 +241,19 @@ fun CreateCaseScreenModern(
                 // Botón de submit
                 Button(
                     onClick = {
-                        isLoading = true
+                        isCreatingCase = true
                         if (!isExistingUser) {
                             // Primero registrar el nuevo usuario usando AuthViewModel
                             viewModel.createCaseWithNewUser(
                                 authViewModel = authViewModel,
                                 idPersonalMedico = user?.toInt() ?: 0,
                                 onSuccess = {
-                                    isLoading = false
+                                    isCreatingCase = false
                                     Toast.makeText(context, "Caso creado exitosamente", Toast.LENGTH_SHORT).show()
                                     navController.navigate(Rout.CaseScreen.name)
                                 },
                                 onError = { errorMsg ->
-                                    isLoading = false
+                                    isCreatingCase = false
                                     Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
                                 }
                             )
@@ -197,12 +262,12 @@ fun CreateCaseScreenModern(
                             viewModel.createCase(
                                 idPersonalMedico = user?.toInt() ?: 0,
                                 onSuccess = {
-                                    isLoading = false
+                                    isCreatingCase = false
                                     Toast.makeText(context, "Caso creado exitosamente", Toast.LENGTH_SHORT).show()
                                     navController.navigate(Rout.CaseScreen.name)
                                 },
                                 onError = { errorMsg ->
-                                    isLoading = false
+                                    isCreatingCase = false
                                     Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
                                 }
                             )
@@ -214,9 +279,9 @@ fun CreateCaseScreenModern(
                         .shadow(8.dp, RoundedCornerShape(28.dp)),
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
-                    enabled = !isLoading
+                    enabled = !isCreatingCase
                 ) {
-                    if (isLoading) {
+                    if (isCreatingCase) {
                         CircularProgressIndicator(
                             color = Color.White,
                             modifier = Modifier.size(24.dp),

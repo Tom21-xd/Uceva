@@ -10,6 +10,7 @@
     import androidx.compose.material.icons.Icons
     import androidx.compose.material.icons.filled.Add
     import androidx.compose.material.icons.filled.Edit
+    import androidx.compose.material.icons.filled.Error
     import androidx.compose.material.icons.filled.Search
     import androidx.compose.material3.*
     import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -31,12 +32,75 @@
         val cases by caseViewModel.filteredCases.collectAsState()
         val caseStates by caseViewModel.caseStates.collectAsState()
         val TypeOfDengue by caseViewModel.typeDengue.collectAsState()
+        val isLoading by caseViewModel.isLoading.collectAsState()
+        val loadingError by caseViewModel.loadingError.collectAsState()
 
         val estados = listOf("Todos") + caseStates.map { it.NOMBRE_ESTADOCASO }
         val tiposDengue = listOf("Todos")+TypeOfDengue.map { it.NOMBRE_TIPODENGUE }
         var selectedEstadoIndex by remember { mutableStateOf(0) }
         var selectedTipoDengueIndex by remember { mutableStateOf(0) }
         var searchQuery by remember { mutableStateOf("") }
+
+        // Mostrar loader mientras carga
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(48.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Cargando casos...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
+            return
+        }
+
+        // Mostrar error si lo hay
+        if (loadingError != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Error,
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = loadingError ?: "Error desconocido",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { caseViewModel.loadAllData() }) {
+                        Text("Reintentar")
+                    }
+                }
+            }
+            return
+        }
 
         Box(
             modifier = Modifier

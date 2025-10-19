@@ -10,6 +10,7 @@ import com.Tom.uceva_dengue.Data.Model.TypeOfDengueModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 
 class CaseViewModel : ViewModel() {
     private val _cases = MutableStateFlow<List<CaseModel>>(emptyList())
@@ -24,14 +25,63 @@ class CaseViewModel : ViewModel() {
     private val _typeDengue = MutableStateFlow<List<TypeOfDengueModel>>(emptyList())
     val typeDengue: StateFlow<List<TypeOfDengueModel>> = _typeDengue
 
+    // Estado de carga consolidado
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _loadingError = MutableStateFlow<String?>(null)
+    val loadingError: StateFlow<String?> = _loadingError
+
     private var isCasesFetched = false
     private var isCaseStatesFetched = false
     private var isTypeDengueFetched = false
 
     init {
-        fetchCases()
-        fetchCaseStates()
-        fetchTypeDengue()
+        loadAllData()
+    }
+
+    /**
+     * Carga todos los datos en paralelo para evitar flasheo de UI
+     */
+    fun loadAllData() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _loadingError.value = null
+
+            try {
+                // Lanzar todas las peticiones en paralelo
+                val casesDeferred = async { RetrofitClient.caseService.getCases() }
+                val statesDeferred = async { RetrofitClient.caseService.getCaseStates() }
+                val dengueTypesDeferred = async { RetrofitClient.dengueService.getTypesOfDengue() }
+
+                // Esperar a que todas completen
+                val casesResponse = casesDeferred.await()
+                if (casesResponse.isSuccessful && casesResponse.body() != null) {
+                    val cases = casesResponse.body()!!
+                    _cases.value = cases
+                    _filteredCases.value = cases
+                    isCasesFetched = true
+                }
+
+                val statesResponse = statesDeferred.await()
+                if (statesResponse.isSuccessful && statesResponse.body() != null) {
+                    _caseStates.value = statesResponse.body()!!
+                    isCaseStatesFetched = true
+                }
+
+                val dengueResponse = dengueTypesDeferred.await()
+                if (dengueResponse.isSuccessful && dengueResponse.body() != null) {
+                    _typeDengue.value = dengueResponse.body()!!
+                    isTypeDengueFetched = true
+                }
+
+                _isLoading.value = false
+            } catch (e: Exception) {
+                Log.e("CaseViewModel", "Error al cargar datos", e)
+                _loadingError.value = "Error al cargar datos: ${e.localizedMessage}"
+                _isLoading.value = false
+            }
+        }
     }
 
     fun fetchCases() {
