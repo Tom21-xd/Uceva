@@ -7,6 +7,7 @@ import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
 import com.Tom.uceva_dengue.Data.Model.PublicationCommentModel
 import com.Tom.uceva_dengue.Data.Model.CreateCommentRequest
+import com.Tom.uceva_dengue.Data.Model.UserInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -19,10 +20,10 @@ class PublicacionViewModel : ViewModel() {
         obtenerPublicaciones()
     }
 
-    fun obtenerPublicaciones() {
+    fun obtenerPublicaciones(userId: Int? = null) {
         viewModelScope.launch {
             try {
-                _publicaciones.value = RetrofitClient.publicationService.getPublications()
+                _publicaciones.value = RetrofitClient.publicationService.getPublications(userId)
             } catch (e: Exception) {
                 Log.e("PublicacionViewModel", "Error al obtener publicaciones", e)
             }
@@ -168,6 +169,7 @@ class PublicacionViewModel : ViewModel() {
         userId: Int,
         content: String,
         parentCommentId: Int?,
+        userName: String? = null,
         onSuccess: (PublicationCommentModel) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -182,7 +184,16 @@ class PublicacionViewModel : ViewModel() {
                     val commentMap = response.body()?.get("comment") as? Map<*, *>
                     if (commentMap != null) {
                         // Parse the comment from the response
-                        // For now, create a simple comment object
+                        // Create comment object with user info
+                        val userInfo = if (userName != null) {
+                            UserInfo(
+                                ID_USUARIO = userId,
+                                NOMBRE_USUARIO = userName,
+                                CORREO_USUARIO = "",
+                                NOMBRE_ROL = null
+                            )
+                        } else null
+
                         val newComment = PublicationCommentModel(
                             ID_COMENTARIO = (commentMap["ID_COMENTARIO"] as? Double)?.toInt() ?: 0,
                             FK_ID_PUBLICACION = publicationId,
@@ -191,7 +202,7 @@ class PublicacionViewModel : ViewModel() {
                             FK_ID_COMENTARIO_PADRE = parentCommentId,
                             FECHA_COMENTARIO = "",
                             ESTADO_COMENTARIO = true,
-                            USUARIO = null,
+                            USUARIO = userInfo,
                             RESPUESTAS = null
                         )
                         onSuccess(newComment)
@@ -295,6 +306,51 @@ class PublicacionViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("PublicacionViewModel", "Error al cargar publicaciones guardadas", e)
                 onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Actualiza el estado local de una publicación sin recargar toda la lista
+     * SOLO actualiza el estado de interacción del usuario.
+     * Los contadores se actualizarán en la próxima recarga.
+     */
+    fun updatePublicationState(
+        publicationId: Int,
+        updateReaction: Boolean = false,
+        hasReacted: Boolean = false,
+        updateSave: Boolean = false,
+        hasSaved: Boolean = false,
+        userId: Int? = null
+    ) {
+        _publicaciones.value = _publicaciones.value.map { publication ->
+            if (publication.ID_PUBLICACION == publicationId) {
+                publication.copy(
+                    USUARIO_HA_REACCIONADO = if (updateReaction) hasReacted else publication.USUARIO_HA_REACCIONADO,
+                    USUARIO_HA_GUARDADO = if (updateSave) hasSaved else publication.USUARIO_HA_GUARDADO
+                )
+            } else {
+                publication
+            }
+        }
+
+        // Recargar la publicación específica del backend para obtener contadores actualizados
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.getPublicationById(publicationId, userId)
+                if (response.isSuccessful && response.body() != null) {
+                    val updatedPublication = response.body()!!
+                    // Actualizar solo esta publicación en la lista
+                    _publicaciones.value = _publicaciones.value.map { publication ->
+                        if (publication.ID_PUBLICACION == publicationId) {
+                            updatedPublication
+                        } else {
+                            publication
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al actualizar publicación", e)
             }
         }
     }

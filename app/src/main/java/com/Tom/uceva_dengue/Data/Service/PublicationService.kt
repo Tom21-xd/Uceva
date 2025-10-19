@@ -10,7 +10,7 @@ interface PublicationService{
     // ===== ENDPOINTS BÁSICOS =====
 
     @GET("Publication/getPublications")
-    suspend fun getPublications(): List<PublicationModel>
+    suspend fun getPublications(@Query("userId") userId: Int? = null): List<PublicationModel>
 
     @GET("Publication/getPublication")
     suspend fun getPublication(@Query("nombre") nombre: String): List<PublicationModel>
@@ -25,7 +25,7 @@ interface PublicationService{
     ): Response<String>
 
     @GET("Publication/getPublicationById/{id}")
-    suspend fun getPublicationById(@Path("id") id: Int): Response<PublicationModel>
+    suspend fun getPublicationById(@Path("id") id: Int, @Query("userId") userId: Int? = null): Response<PublicationModel>
 
     @PUT("Publication/updatePublication/{id}")
     suspend fun updatePublication(

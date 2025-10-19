@@ -48,6 +48,7 @@ fun PostDetailScreen(
     val context = LocalContext.current
     val authRepository = AuthRepository(context)
     val currentUserId = authRepository.getUser()?.toIntOrNull()
+    val currentUserName = authRepository.getUserDisplayName()
 
     // Función para cargar comentarios
     fun loadComments() {
@@ -316,6 +317,9 @@ fun PostDetailScreen(
                     usuarioHaGuardado = publicacion!!.USUARIO_HA_GUARDADO ?: false,
                     onReactionClick = {
                         if (currentUserId != null) {
+                            // Solo mostrar animación si NO había reaccionado (está dando like)
+                            val shouldAnimate = publicacion?.USUARIO_HA_REACCIONADO != true
+
                             viewModel.toggleReaction(
                                 publicationId = publicationId,
                                 userId = currentUserId,
@@ -324,7 +328,7 @@ fun PostDetailScreen(
                                         USUARIO_HA_REACCIONADO = hasReacted,
                                         TOTAL_REACCIONES = (publicacion?.TOTAL_REACCIONES ?: 0) + if (hasReacted) 1 else -1
                                     )
-                                    if (hasReacted) {
+                                    if (hasReacted && shouldAnimate) {
                                         showHeartAnimation = true
                                     }
                                 },
@@ -339,6 +343,9 @@ fun PostDetailScreen(
                     },
                     onSaveClick = {
                         if (currentUserId != null) {
+                            // Solo mostrar animación si NO había guardado (está guardando)
+                            val shouldAnimate = publicacion?.USUARIO_HA_GUARDADO != true
+
                             viewModel.toggleSave(
                                 publicationId = publicationId,
                                 userId = currentUserId,
@@ -347,7 +354,7 @@ fun PostDetailScreen(
                                         USUARIO_HA_GUARDADO = isSaved,
                                         TOTAL_GUARDADOS = (publicacion?.TOTAL_GUARDADOS ?: 0) + if (isSaved) 1 else -1
                                     )
-                                    if (isSaved) {
+                                    if (isSaved && shouldAnimate) {
                                         showBookmarkAnimation = true
                                     }
                                 },
@@ -380,6 +387,7 @@ fun PostDetailScreen(
                                 userId = currentUserId,
                                 content = commentText,
                                 parentCommentId = null,
+                                userName = currentUserName,
                                 onSuccess = { newComment ->
                                     comments = comments + newComment
                                     publicacion = publicacion?.copy(
@@ -402,6 +410,7 @@ fun PostDetailScreen(
                                 userId = currentUserId,
                                 content = replyText,
                                 parentCommentId = commentId,
+                                userName = currentUserName,
                                 onSuccess = { newComment ->
                                     loadComments() // Recargar comentarios para mostrar la respuesta
                                     Toast.makeText(context, "Respuesta agregada", Toast.LENGTH_SHORT).show()

@@ -63,6 +63,11 @@ fun ModernHomeScreen(
 
     val allPublications by viewModel.publicaciones.collectAsState()
 
+    // Load publications with userId to get user-specific interactions
+    LaunchedEffect(userId) {
+        viewModel.obtenerPublicaciones(userId)
+    }
+
     // Filtrar publicaciones según el filtro seleccionado
     val filteredPublications = remember(allPublications, selectedFilter, searchText) {
         var filtered = allPublications
@@ -417,12 +422,13 @@ private fun handleReaction(
             publicationId = publication.ID_PUBLICACION,
             userId = userId,
             onSuccess = { hasReacted ->
-                Toast.makeText(
-                    context,
-                    if (hasReacted) "¡Me gusta!" else "Reacción removida",
-                    Toast.LENGTH_SHORT
-                ).show()
-                viewModel.obtenerPublicaciones()
+                // Actualizar estado local en lugar de recargar
+                viewModel.updatePublicationState(
+                    publicationId = publication.ID_PUBLICACION,
+                    updateReaction = true,
+                    hasReacted = hasReacted,
+                    userId = userId
+                )
             },
             onError = { error ->
                 Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
@@ -445,12 +451,13 @@ private fun handleSave(
             publicationId = publication.ID_PUBLICACION,
             userId = userId,
             onSuccess = { isSaved ->
-                Toast.makeText(
-                    context,
-                    if (isSaved) "Guardado" else "Removido de guardados",
-                    Toast.LENGTH_SHORT
-                ).show()
-                viewModel.obtenerPublicaciones()
+                // Actualizar estado local en lugar de recargar
+                viewModel.updatePublicationState(
+                    publicationId = publication.ID_PUBLICACION,
+                    updateSave = true,
+                    hasSaved = isSaved,
+                    userId = userId
+                )
             },
             onError = { error ->
                 Toast.makeText(context, error, Toast.LENGTH_SHORT).show()

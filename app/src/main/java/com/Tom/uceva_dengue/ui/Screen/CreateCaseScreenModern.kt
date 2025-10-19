@@ -418,7 +418,6 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
 
             selectedUser?.let { SelectedUserCardModern(it) }
         } else {
-            // Usar el formulario de registro completo sin campo de contraseña
             com.Tom.uceva_dengue.ui.Components.RegistrationForm(
                 viewModel = authViewModel,
                 showMedicalPersonnelOption = false,

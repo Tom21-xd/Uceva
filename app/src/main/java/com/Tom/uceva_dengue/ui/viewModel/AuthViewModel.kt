@@ -87,14 +87,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     val userId = response.body()?.ID_USUARIO
                     val user = userId.toString()
                     val role = response.body()?.FK_ID_ROL
+                    val displayName = response.body()?.NOMBRE_USUARIO
 
 
                     val authRepository = AuthRepository(context)
 
                     user?.let {
-                        authRepository.saveUserAndRole(it, role ?: 2)
+                        authRepository.saveUserAndRole(it, role ?: 2, displayName)
                     }
-                    Log.d("NavigationCon", "Inicio de sesión exitoso. Usuario: $user, Rol: $role")
+                    Log.d("NavigationCon", "Inicio de sesión exitoso. Usuario: $user, Rol: $role, Nombre: $displayName")
 
                     // Send FCM token to backend after successful login
                     userId?.let {
@@ -379,9 +380,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         val authRepository = AuthRepository(getApplication<Application>().applicationContext)
                         authRepository.saveUserAndRole(
                             usuario.ID_USUARIO.toString(),
-                            usuario.FK_ID_ROL
+                            usuario.FK_ID_ROL,
+                            usuario.NOMBRE_USUARIO
                         )
-                        Log.d("Registro", "Sesión iniciada automáticamente. Usuario: ${usuario.ID_USUARIO}, Rol: ${usuario.FK_ID_ROL}")
+                        Log.d("Registro", "Sesión iniciada automáticamente. Usuario: ${usuario.ID_USUARIO}, Rol: ${usuario.FK_ID_ROL}, Nombre: ${usuario.NOMBRE_USUARIO}")
 
                         // Send FCM token to backend after successful registration
                         sendFCMTokenToServer(usuario.ID_USUARIO)

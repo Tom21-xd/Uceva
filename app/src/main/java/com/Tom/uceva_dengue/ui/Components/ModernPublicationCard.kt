@@ -58,6 +58,10 @@ fun ModernPublicationCard(
     var showMenu by remember { mutableStateOf(false) }
     val canEdit = (role == 2 || role == 3) || (currentUserId == publicacion.FK_ID_USUARIO)
 
+    // Estados para las animaciones
+    var showHeartAnimation by remember { mutableStateOf(false) }
+    var showBookmarkAnimation by remember { mutableStateOf(false) }
+
     // Animación de pulsación para publicaciones urgentes
     val infiniteTransition = rememberInfiniteTransition(label = "urgent")
     val urgentScale by infiniteTransition.animateFloat(
@@ -74,24 +78,25 @@ fun ModernPublicationCard(
         "https://api.prometeondev.com/Image/getImage/${publicacion.IMAGEN_PUBLICACION}"
     } else null
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .scale(urgentScale)
-            .then(
-                if (onCardClick != null) {
-                    Modifier.clickable { onCardClick(publicacion) }
-                } else Modifier
+    Box(modifier = modifier) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .scale(urgentScale)
+                .then(
+                    if (onCardClick != null) {
+                        Modifier.clickable { onCardClick(publicacion) }
+                    } else Modifier
+                ),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
             ),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (priority == PriorityLevel.URGENTE) 8.dp else 4.dp
-        )
-    ) {
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = if (priority == PriorityLevel.URGENTE) 8.dp else 4.dp
+            )
+        ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // ===== ENCABEZADO CON GRADIENTE =====
             Box(
@@ -363,12 +368,36 @@ fun ModernPublicationCard(
                     totalGuardados = publicacion.TOTAL_GUARDADOS ?: 0,
                     usuarioHaReaccionado = publicacion.USUARIO_HA_REACCIONADO ?: false,
                     usuarioHaGuardado = publicacion.USUARIO_HA_GUARDADO ?: false,
-                    onReactionClick = { onReactionClick?.invoke(publicacion) },
+                    onReactionClick = {
+                        // Solo mostrar animación si NO había reaccionado (está dando like)
+                        if (publicacion.USUARIO_HA_REACCIONADO != true) {
+                            showHeartAnimation = true
+                        }
+                        onReactionClick?.invoke(publicacion)
+                    },
                     onCommentClick = { onCommentClick?.invoke(publicacion) },
-                    onSaveClick = { onSaveClick?.invoke(publicacion) }
+                    onSaveClick = {
+                        // Solo mostrar animación si NO había guardado (está guardando)
+                        if (publicacion.USUARIO_HA_GUARDADO != true) {
+                            showBookmarkAnimation = true
+                        }
+                        onSaveClick?.invoke(publicacion)
+                    }
                 )
             }
         }
+        }
+
+        // Animaciones flotantes (versión compacta para tarjetas)
+        CompactHeartAnimation(
+            show = showHeartAnimation,
+            onComplete = { showHeartAnimation = false }
+        )
+
+        CompactBookmarkAnimation(
+            show = showBookmarkAnimation,
+            onComplete = { showBookmarkAnimation = false }
+        )
     }
 }
 

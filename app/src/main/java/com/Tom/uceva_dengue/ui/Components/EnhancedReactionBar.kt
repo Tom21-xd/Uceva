@@ -65,7 +65,8 @@ fun EnhancedReactionBar(
                 isActive = usuarioHaReaccionado,
                 onClick = onReactionClick,
                 label = "Me gusta",
-                activeColor = Color(0xFFE91E63) // Rosa para corazón
+                activeColor = Color(0xFFE91E63), // Rosa para corazón
+                alwaysShowCount = true
             )
 
             VerticalDivider(
@@ -73,12 +74,13 @@ fun EnhancedReactionBar(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
 
-            // Comentarios
+            // Comentarios (siempre mostrar contador)
             AnimatedInteractionButton(
                 icon = Icons.Outlined.ChatBubbleOutline,
                 count = totalComentarios,
                 onClick = onCommentClick,
-                label = "Comentar"
+                label = "Comentar",
+                alwaysShowCount = true
             )
 
             VerticalDivider(
@@ -90,11 +92,12 @@ fun EnhancedReactionBar(
             AnimatedReactionButton(
                 icon = if (usuarioHaGuardado) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
                 filledIcon = Icons.Filled.Bookmark,
-                count = if (totalGuardados > 0) totalGuardados else null,
+                count = totalGuardados,
                 isActive = usuarioHaGuardado,
                 onClick = onSaveClick,
                 label = if (usuarioHaGuardado) "Guardado" else "Guardar",
-                activeColor = MaterialTheme.colorScheme.primary
+                activeColor = MaterialTheme.colorScheme.primary,
+                alwaysShowCount = true
             )
 
             if (onShareClick != null) {
@@ -150,7 +153,8 @@ fun AnimatedReactionButton(
     isActive: Boolean,
     onClick: () -> Unit,
     label: String,
-    activeColor: Color = MaterialTheme.colorScheme.primary
+    activeColor: Color = MaterialTheme.colorScheme.primary,
+    alwaysShowCount: Boolean = false
 ) {
     val haptic = LocalHapticFeedback.current
     var isPressed by remember { mutableStateOf(false) }
@@ -208,11 +212,12 @@ fun AnimatedReactionButton(
             )
         }
 
+        Spacer(modifier = Modifier.height(4.dp))
+
         // Contador animado
-        if (count != null && count > 0) {
-            Spacer(modifier = Modifier.height(4.dp))
+        if (alwaysShowCount || (count != null && count > 0)) {
             AnimatedContent(
-                targetState = count,
+                targetState = count ?: 0,
                 transitionSpec = {
                     if (targetState > initialState) {
                         slideInVertically { -it } + fadeIn() togetherWith
@@ -232,7 +237,6 @@ fun AnimatedReactionButton(
                 )
             }
         } else {
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
                 fontSize = 11.sp,
@@ -258,7 +262,8 @@ fun AnimatedInteractionButton(
     icon: ImageVector,
     count: Int?,
     onClick: () -> Unit,
-    label: String
+    label: String,
+    alwaysShowCount: Boolean = false
 ) {
     val haptic = LocalHapticFeedback.current
     var isPressed by remember { mutableStateOf(false) }
@@ -291,14 +296,30 @@ fun AnimatedInteractionButton(
             modifier = Modifier.size(24.dp)
         )
 
-        // Solo mostrar contador si existe
-        if (count != null && count > 0) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = formatCount(count),
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Mostrar contador siempre si alwaysShowCount es true, sino solo si count > 0
+        if (alwaysShowCount || (count != null && count > 0)) {
+            AnimatedContent(
+                targetState = count ?: 0,
+                transitionSpec = {
+                    if (targetState > initialState) {
+                        slideInVertically { -it } + fadeIn() togetherWith
+                                slideOutVertically { it } + fadeOut()
+                    } else {
+                        slideInVertically { it } + fadeIn() togetherWith
+                                slideOutVertically { -it } + fadeOut()
+                    }
+                },
+                label = "count_animation"
+            ) { animatedCount ->
+                Text(
+                    text = formatCount(animatedCount),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 

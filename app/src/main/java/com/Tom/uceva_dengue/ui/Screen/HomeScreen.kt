@@ -40,6 +40,11 @@ fun HomeScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    // Load publications with userId to get user-specific interactions
+    LaunchedEffect(userId) {
+        viewModel.obtenerPublicaciones(userId)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -125,12 +130,13 @@ fun HomeScreen(
                                         publicationId = pub.ID_PUBLICACION,
                                         userId = userId,
                                         onSuccess = { hasReacted ->
-                                            Toast.makeText(
-                                                context,
-                                                if (hasReacted) "¡Me gusta!" else "Reacción removida",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            viewModel.obtenerPublicaciones()
+                                            // Actualizar estado local en lugar de recargar
+                                            viewModel.updatePublicationState(
+                                                publicationId = pub.ID_PUBLICACION,
+                                                updateReaction = true,
+                                                hasReacted = hasReacted,
+                                                userId = userId
+                                            )
                                         },
                                         onError = { error ->
                                             Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
@@ -148,12 +154,13 @@ fun HomeScreen(
                                         publicationId = pub.ID_PUBLICACION,
                                         userId = userId,
                                         onSuccess = { isSaved ->
-                                            Toast.makeText(
-                                                context,
-                                                if (isSaved) "¡Guardado!" else "Removido de guardados",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            viewModel.obtenerPublicaciones()
+                                            // Actualizar estado local en lugar de recargar
+                                            viewModel.updatePublicationState(
+                                                publicationId = pub.ID_PUBLICACION,
+                                                updateSave = true,
+                                                hasSaved = isSaved,
+                                                userId = userId
+                                            )
                                         },
                                         onError = { error ->
                                             Toast.makeText(context, error, Toast.LENGTH_SHORT).show()

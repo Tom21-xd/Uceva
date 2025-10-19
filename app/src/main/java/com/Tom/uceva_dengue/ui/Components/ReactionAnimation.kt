@@ -109,7 +109,7 @@ private fun AnimatedParticle(particle: Particle) {
 }
 
 /**
- * Animación de corazón flotante
+ * Animación de corazón flotante (para pantallas completas)
  */
 @Composable
 fun FloatingHeartAnimation(
@@ -149,6 +149,48 @@ fun FloatingHeartAnimation(
 }
 
 /**
+ * Animación de corazón flotante compacta (para tarjetas en listas)
+ */
+@Composable
+fun CompactHeartAnimation(
+    show: Boolean,
+    onComplete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var shouldShow by remember { mutableStateOf(false) }
+
+    LaunchedEffect(show) {
+        if (show) {
+            shouldShow = true
+            delay(1000)
+            shouldShow = false
+            onComplete()
+        }
+    }
+
+    AnimatedVisibility(
+        visible = shouldShow,
+        enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.3f, animationSpec = tween(300)),
+        exit = fadeOut(tween(300)) + scaleOut(targetScale = 1.8f, animationSpec = tween(400)) + slideOutVertically(tween(400)) { -it / 2 },
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = null,
+                tint = Color(0xFFE91E63),
+                modifier = Modifier.size(60.dp)
+            )
+        }
+    }
+}
+
+/**
  * Animación de confeti
  */
 @Composable
@@ -178,7 +220,7 @@ fun ConfettiAnimation(
 }
 
 /**
- * Animación de guardado con bookmark
+ * Animación de guardado con bookmark (para pantallas completas)
  */
 @Composable
 fun BookmarkSaveAnimation(
@@ -244,6 +286,70 @@ fun BookmarkSaveAnimation(
                                 scaleX = scale,
                                 scaleY = scale,
                                 rotationZ = rotation
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Animación de guardado con bookmark compacta (para tarjetas en listas)
+ */
+@Composable
+fun CompactBookmarkAnimation(
+    show: Boolean,
+    onComplete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var shouldShow by remember { mutableStateOf(false) }
+
+    LaunchedEffect(show) {
+        if (show) {
+            shouldShow = true
+            delay(800)
+            shouldShow = false
+            onComplete()
+        }
+    }
+
+    val scale by animateFloatAsState(
+        targetValue = if (shouldShow) 1.1f else 0.9f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "bookmark_scale"
+    )
+
+    AnimatedVisibility(
+        visible = shouldShow,
+        enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.4f, animationSpec = tween(300)),
+        exit = fadeOut(tween(300)) + slideOutVertically(tween(400)) { -it / 3 },
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                shape = androidx.compose.foundation.shape.CircleShape,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
+                modifier = Modifier.size(50.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Filled.Bookmark,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .graphicsLayer(
+                                scaleX = scale,
+                                scaleY = scale
                             )
                     )
                 }
