@@ -149,32 +149,6 @@ interface PublicationService{
     suspend fun getPublicationComments(@Path("id") publicationId: Int): Response<List<PublicationCommentModel>>
 
     /**
-     * Eliminar comentario
-     */
-    @DELETE("Comment/{id}")
-    suspend fun deleteComment(@Path("id") commentId: Int): Response<Map<String, String>>
-
-    // ===== GUARDADOS =====
-
-    /**
-     * Guardar/marcar como favorita una publicación
-     */
-    @POST("Publication/{id}/save")
-    suspend fun savePublication(@Path("id") publicationId: Int): Response<Map<String, String>>
-
-    /**
-     * Quitar de guardados
-     */
-    @DELETE("Publication/{id}/save")
-    suspend fun unsavePublication(@Path("id") publicationId: Int): Response<Map<String, String>>
-
-    /**
-     * Obtener publicaciones guardadas del usuario
-     */
-    @GET("User/{userId}/saved")
-    suspend fun getSavedPublications(@Path("userId") userId: Int): Response<List<SavedPublicationModel>>
-
-    /**
      * Contador de cuántos usuarios guardaron la publicación
      */
     @GET("Publication/{id}/saves/count")
@@ -210,12 +184,12 @@ interface PublicationService{
 
     /**
      * Toggle reaction (add/remove) - IMPLEMENTADO
+     * El reactionType se envía como query parameter para evitar problemas con el body
      */
     @POST("Publication/toggleReaction/{publicationId}/{userId}")
     suspend fun toggleReaction(
         @Path("publicationId") publicationId: Int,
-        @Path("userId") userId: Int,
-        @Body reactionType: String? = null
+        @Path("userId") userId: Int
     ): Response<Map<String, Any>>
 
     /**

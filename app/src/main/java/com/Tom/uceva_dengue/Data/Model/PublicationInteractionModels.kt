@@ -70,13 +70,14 @@ data class PublicationCommentModel(
 
 /**
  * Request para crear comentario
+ * Debe coincidir con CreateCommentDto del backend
  */
 data class CreateCommentRequest(
-    @SerializedName("CONTENIDO_COMENTARIO")
-    val CONTENIDO_COMENTARIO: String,
+    @SerializedName("Content")
+    val Content: String,
 
-    @SerializedName("FK_ID_COMENTARIO_PADRE")
-    val FK_ID_COMENTARIO_PADRE: Int? = null
+    @SerializedName("ParentCommentId")
+    val ParentCommentId: Int? = null
 )
 
 /**

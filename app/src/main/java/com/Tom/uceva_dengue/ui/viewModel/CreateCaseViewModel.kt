@@ -78,6 +78,12 @@ class CreateCaseViewModel : ViewModel() {
     private var _selectedDengueTypeID = MutableStateFlow<Int>(0)
     val selectedDengueTypeID: StateFlow<Int> = _selectedDengueTypeID.asStateFlow()
 
+    private val _diagnosisResult = MutableStateFlow<com.Tom.uceva_dengue.Data.Model.MostLikelyDiagnosis?>(null)
+    val diagnosisResult: StateFlow<com.Tom.uceva_dengue.Data.Model.MostLikelyDiagnosis?> = _diagnosisResult.asStateFlow()
+
+    private val _isLoadingDiagnosis = MutableStateFlow(false)
+    val isLoadingDiagnosis: StateFlow<Boolean> = _isLoadingDiagnosis.asStateFlow()
+
 
     private val _departamentos = MutableStateFlow<List<DepartmentModel>>(emptyList())
     val departamentos = _departamentos.asStateFlow()
@@ -228,12 +234,53 @@ class CreateCaseViewModel : ViewModel() {
         } else {
             _selectedSymptoms.value + symptomId
         }
+
+        // Automatically diagnose when symptoms change
+        if (_selectedSymptoms.value.isNotEmpty()) {
+            diagnoseDengue()
+        } else {
+            _diagnosisResult.value = null
+        }
     }
 
     fun setDengueType(typeName: String) {
         _selectedDengueType.value = typeName
         val selected = _typesOfDengue.value.firstOrNull { it.NOMBRE_TIPODENGUE == typeName }
         _selectedDengueTypeID.value = selected?.ID_TIPODENGUE ?: 0
+    }
+
+    fun diagnoseDengue() {
+        viewModelScope.launch {
+            try {
+                _isLoadingDiagnosis.value = true
+                val symptomIds = _selectedSymptoms.value.toList()
+
+                if (symptomIds.isEmpty()) {
+                    _diagnosisResult.value = null
+                    return@launch
+                }
+
+                val response = RetrofitClient.dengueService.diagnoseDengue(symptomIds)
+                if (response.isSuccessful) {
+                    val diagnosis = response.body()
+                    _diagnosisResult.value = diagnosis?.mostLikelyDiagnosis
+
+                    // Auto-select the recommended dengue type
+                    diagnosis?.mostLikelyDiagnosis?.let { result ->
+                        _selectedDengueType.value = result.typeOfDengueName
+                        _selectedDengueTypeID.value = result.typeOfDengueId
+                    }
+                } else {
+                    Log.e("CreateCaseViewModel", "Error al diagnosticar: ${response.message()}")
+                    _diagnosisResult.value = null
+                }
+            } catch (e: Exception) {
+                Log.e("CreateCaseViewModel", "Error al diagnosticar", e)
+                _diagnosisResult.value = null
+            } finally {
+                _isLoadingDiagnosis.value = false
+            }
+        }
     }
 
 

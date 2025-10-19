@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
-import com.Tom.uceva_dengue.ui.Components.PostCard
 import com.Tom.uceva_dengue.ui.Components.EnhancedPostCard
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
@@ -39,7 +38,6 @@ fun HomeScreen(
     var publicationToDelete by remember { mutableStateOf<PublicationModel?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -120,17 +118,47 @@ fun HomeScreen(
                                 // Navegar a detalle de publicación
                                 navController.navigate("${Rout.PostDetailScreen.name}/${it.ID_PUBLICACION}")
                             },
-                            onReactionClick = {
-                                // TODO: Implementar lógica de reacción cuando exista el endpoint
-                                Toast.makeText(context, "Reacción registrada", Toast.LENGTH_SHORT).show()
+                            onReactionClick = { pub ->
+                                if (userId != null) {
+                                    viewModel.toggleReaction(
+                                        publicationId = pub.ID_PUBLICACION,
+                                        userId = userId,
+                                        onSuccess = { hasReacted ->
+                                            Toast.makeText(
+                                                context,
+                                                if (hasReacted) "¡Me gusta!" else "Reacción removida",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            viewModel.obtenerPublicaciones()
+                                        },
+                                        onError = { error ->
+                                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                }
                             },
-                            onCommentClick = {
-                                // TODO: Navegar a pantalla de comentarios
-                                Toast.makeText(context, "Próximamente: Comentarios", Toast.LENGTH_SHORT).show()
+                            onCommentClick = { pub ->
+                                // Navegar al detalle donde están los comentarios
+                                navController.navigate("${Rout.PostDetailScreen.name}/${pub.ID_PUBLICACION}")
                             },
-                            onSaveClick = {
-                                // TODO: Implementar lógica de guardar cuando exista el endpoint
-                                Toast.makeText(context, "Publicación guardada", Toast.LENGTH_SHORT).show()
+                            onSaveClick = { pub ->
+                                if (userId != null) {
+                                    viewModel.toggleSave(
+                                        publicationId = pub.ID_PUBLICACION,
+                                        userId = userId,
+                                        onSuccess = { isSaved ->
+                                            Toast.makeText(
+                                                context,
+                                                if (isSaved) "¡Guardado!" else "Removido de guardados",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            viewModel.obtenerPublicaciones()
+                                        },
+                                        onError = { error ->
+                                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                }
                             },
                             onTagClick = { tag ->
                                 // TODO: Filtrar por tag

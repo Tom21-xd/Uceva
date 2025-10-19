@@ -127,7 +127,7 @@ class PublicacionViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
-                val response = RetrofitClient.publicationService.toggleReaction(publicationId, userId, null)
+                val response = RetrofitClient.publicationService.toggleReaction(publicationId, userId)
                 if (response.isSuccessful) {
                     val hasReaction = response.body()?.get("hasReaction") as? Boolean ?: false
                     onSuccess(hasReaction)
@@ -174,8 +174,8 @@ class PublicacionViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val commentRequest = CreateCommentRequest(
-                    CONTENIDO_COMENTARIO = content,
-                    FK_ID_COMENTARIO_PADRE = parentCommentId
+                    Content = content,
+                    ParentCommentId = parentCommentId
                 )
                 val response = RetrofitClient.publicationService.createComment(publicationId, userId, commentRequest)
                 if (response.isSuccessful) {

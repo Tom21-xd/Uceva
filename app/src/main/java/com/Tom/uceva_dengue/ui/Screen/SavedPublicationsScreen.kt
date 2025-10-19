@@ -31,7 +31,7 @@ fun SavedPublicationsScreen(
     val context = LocalContext.current
     val authRepository = AuthRepository(context)
     val currentUserId = authRepository.getUser()?.toIntOrNull()
-    val userRole = authRepository.getUserRole()?.toIntOrNull() ?: 0
+    val userRole = authRepository.getRole()
 
     // Cargar publicaciones guardadas
     LaunchedEffect(Unit) {
@@ -52,27 +52,9 @@ fun SavedPublicationsScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Mis Guardados",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
             when {
                 isLoading -> {
                     // Estado de carga
@@ -207,7 +189,6 @@ fun SavedPublicationsScreen(
             }
         }
     }
-}
 
 @Composable
 fun EmptySavedPublicationsPlaceholder() {
