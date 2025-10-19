@@ -17,7 +17,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.Tom.uceva_dengue.ui.Screen.TipoDocumento
+import com.Tom.uceva_dengue.ui.Screen.TipoIdentificacion
 import com.Tom.uceva_dengue.ui.Screen.tipoIdentificaciones
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 

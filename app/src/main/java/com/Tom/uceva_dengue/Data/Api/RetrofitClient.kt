@@ -4,6 +4,7 @@ import com.Tom.uceva_dengue.Data.Service.AuthService
 import com.Tom.uceva_dengue.Data.Service.BloodTypeService
 import com.Tom.uceva_dengue.Data.Service.CaseService
 import com.Tom.uceva_dengue.Data.Service.CaseEvolutionService
+import com.Tom.uceva_dengue.Data.Service.CaseStateService
 import com.Tom.uceva_dengue.Data.Service.CityService
 import com.Tom.uceva_dengue.Data.Service.DengueService
 import com.Tom.uceva_dengue.Data.Service.DepartmentService
@@ -15,7 +16,9 @@ import com.Tom.uceva_dengue.Data.Service.NotificationService
 import com.Tom.uceva_dengue.Data.Service.PublicationService
 import com.Tom.uceva_dengue.Data.Service.PublicationCategoryService
 import com.Tom.uceva_dengue.Data.Service.PublicationTagService
+import com.Tom.uceva_dengue.Data.Service.RoleService
 import com.Tom.uceva_dengue.Data.Service.StatisticsService
+import com.Tom.uceva_dengue.Data.Service.SymptomService
 import com.Tom.uceva_dengue.Data.Service.UserService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -106,6 +109,13 @@ object RetrofitClient {
     val caseEvolutionService : CaseEvolutionService by lazy {
         retrofit.create(CaseEvolutionService::class.java)
     }
-
-
+    val caseStateService : CaseStateService by lazy {
+        retrofit.create(CaseStateService::class.java)
+    }
+    val roleService : RoleService by lazy {
+        retrofit.create(RoleService::class.java)
+    }
+    val symptomService : SymptomService by lazy {
+        retrofit.create(SymptomService::class.java)
+    }
 }

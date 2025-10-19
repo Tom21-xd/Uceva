@@ -64,7 +64,6 @@ import com.Tom.uceva_dengue.ui.Screen.CreateHospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.UpdateHospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.InfoScreen
 import com.Tom.uceva_dengue.ui.Screen.PreventionGuideScreen
-import com.Tom.uceva_dengue.ui.Screen.LoginScreen
 import com.Tom.uceva_dengue.ui.Screen.LoginScreenModern
 import com.Tom.uceva_dengue.ui.Screen.ForgotPasswordScreenModern
 import com.Tom.uceva_dengue.ui.Screen.MapScreen

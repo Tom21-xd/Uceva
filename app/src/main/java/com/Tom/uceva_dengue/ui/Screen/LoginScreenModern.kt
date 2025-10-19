@@ -1,4 +1,4 @@
-package com.Tom.uceva_dengue.ui.Screen
+﻿package com.Tom.uceva_dengue.ui.Screen
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -318,6 +318,8 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
     var esPersonalMedico by remember { mutableStateOf(false) }
     var tipoDocumentoSeleccionado by remember { mutableStateOf(tipoIdentificaciones.first().codigo) }
     var numeroDocumento by remember { mutableStateOf("") }
+    var acceptedTerms by remember { mutableStateOf(false) }
+    var showPrivacyDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -429,7 +431,6 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
             viewModel.setGenderName(seleccion)
         }
 
-        // Personal Médico checkbox
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -462,7 +463,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
             ModernTextField(
                 value = numeroDocumento,
                 onValueChange = { numeroDocumento = it },
-                label = "Número de Documento",
+                label = "Numero de Documento",
                 leadingIcon = Icons.Default.Badge,
                 keyboardType = KeyboardType.Number
             )
@@ -533,11 +534,68 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
             }
         }
 
+
+        // Checkbox de Protección de Datos Personales (Ley 1581 de 2012)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Checkbox(
+                        checked = acceptedTerms,
+                        onCheckedChange = { acceptedTerms = it },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "He leído y acepto la Política de Tratamiento de Datos Personales",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Autorizo el tratamiento de mis datos de salud con fines de vigilancia epidemiológica del dengue, conforme a la Ley 1581 de 2012.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            lineHeight = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Leer Política Completa",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable { showPrivacyDialog = true }
+                        )
+                    }
+                }
+            }
+        }
+
+        if (!acceptedTerms) {
+            Text(
+                text = "Debe aceptar la Política de Tratamiento de Datos para continuar",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
         Spacer(modifier = Modifier.height(8.dp))
 
         ModernButton(
             text = "Registrarme",
-            enabled = !isLoading && !isValidatingRethus,
+            enabled = !isLoading && !isValidatingRethus && acceptedTerms,
             loading = isLoading,
             onClick = {
                 viewModel.registrarUsuario(
@@ -575,6 +633,52 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
                     )
                 }
             }
+        }
+
+        // Diálogo de Política de Privacidad Completa
+        if (showPrivacyDialog) {
+            AlertDialog(
+                onDismissRequest = { showPrivacyDialog = false },
+                title = {
+                    Text(
+                        "Política de Tratamiento de Datos Personales",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                },
+                text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 400.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Text(text = "Ley 1581 de 2012 - Protección de Datos Personales", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(text = "Finalidad del Tratamiento:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text(text = "Los datos personales recolectados serán utilizados para:", fontSize = 12.sp, lineHeight = 18.sp)
+                        Text(text = "• Vigilancia epidemiológica del dengue\n• Notificaciones sobre casos y prevención\n• Gestión de información de salud pública\n• Análisis estadísticos de salud", fontSize = 11.sp, lineHeight = 16.sp, modifier = Modifier.padding(start = 8.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(text = "Datos Recolectados:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text(text = "Nombres, apellidos, correo, dirección, tipo de sangre, género, ubicación y datos de salud relacionados con dengue.", fontSize = 11.sp, lineHeight = 16.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(text = "Sus Derechos:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text(text = "Conforme a la Ley 1581 de 2012, usted tiene derecho a conocer, actualizar, rectificar y suprimir sus datos personales, así como revocar la autorización otorgada.", fontSize = 11.sp, lineHeight = 16.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(text = "Medidas de Seguridad:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text(text = "UCEVA implementa medidas técnicas y organizativas para proteger sus datos contra acceso no autorizado, pérdida o alteración.", fontSize = 11.sp, lineHeight = 16.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(text = "Vigencia y Contacto:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text(text = "Esta política está vigente desde su aceptación. Para ejercer sus derechos o consultas, contáctenos a través de la aplicación.", fontSize = 11.sp, lineHeight = 16.sp)
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showPrivacyDialog = false }) {
+                        Text("Cerrar", color = MaterialTheme.colorScheme.primary)
+                    }
+                },
+                shape = RoundedCornerShape(16.dp)
+            )
         }
     }
 }
@@ -708,3 +812,14 @@ fun ModernButton(
         }
     }
 }
+
+// Data class para tipos de identificación RETHUS
+data class TipoIdentificacion(val nombre: String, val codigo: String)
+
+// Lista de tipos de identificación según RETHUS
+val tipoIdentificaciones = listOf(
+    TipoIdentificacion("Cédula de Ciudadanía", "CC"),
+    TipoIdentificacion("Cédula de Extranjería", "CE"),
+    TipoIdentificacion("Pasaporte", "PA"),
+    TipoIdentificacion("Permiso Especial de Permanencia", "PE")
+)
