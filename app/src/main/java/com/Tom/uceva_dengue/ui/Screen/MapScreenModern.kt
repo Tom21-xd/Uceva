@@ -7,6 +7,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -15,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,6 +84,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
     var isMapLoading by remember { mutableStateOf(true) }
     var showSearchBar by remember { mutableStateOf(false) }
     var isLoadingLocation by remember { mutableStateOf(false) }
+    var hasInitialLocationSet by remember { mutableStateOf(false) }
 
     // Colores adaptativos según el tema
     val backgroundColor = if (isDarkTheme) Color(0xFF1A1A1A) else Color.White
@@ -97,7 +105,11 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 isLoadingLocation = true
                 moveToUserLocation(context, fusedLocationClient, cameraPositionState) {
                     userLocation = it
+                    viewModel.updateUserLocation(it)
                     isLoadingLocation = false
+                    if (!hasInitialLocationSet) {
+                        hasInitialLocationSet = true
+                    }
                 }
             }
         }
@@ -107,26 +119,33 @@ fun MapScreenModern(viewModel: MapViewModel) {
         context, Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 
-    val cases by viewModel.cases.collectAsState()
+    // Usar casos filtrados en lugar de todos los casos
+    val filteredCases by viewModel.filteredCases.collectAsState()
+    val filterRadiusKm by viewModel.filterRadiusKm.collectAsState()
     val hospitals by viewModel.hospitals.collectAsState()
+    val dengueTypes by viewModel.dengueTypes.collectAsState()
+    val selectedDengueTypeId by viewModel.selectedDengueTypeId.collectAsState()
 
-    val heatmapPoints = remember(cases) {
-        cases.mapNotNull {
+    var showFiltersPanel by remember { mutableStateOf(false) }
+
+    // Usar casos filtrados para el heatmap
+    val heatmapPoints = remember(filteredCases) {
+        filteredCases.mapNotNull {
             it.DIRECCION_CASOREPORTADO?.let { address ->
                 parseLatLngFromString(address)
             }
         }
     }
 
-    // Contar casos por hospital (basado en proximidad de coordenadas)
-    val casesPerHospital = remember(cases, hospitals) {
+    // Contar casos por hospital (basado en proximidad de coordenadas) - usar casos filtrados
+    val casesPerHospital = remember(filteredCases, hospitals) {
         val casesMap = mutableMapOf<Int, Int>()
         hospitals.forEach { hospital ->
             val hospitalLat = hospital.LATITUD_HOSPITAL?.toDoubleOrNull()
             val hospitalLng = hospital.LONGITUD_HOSPITAL?.toDoubleOrNull()
 
             if (hospitalLat != null && hospitalLng != null) {
-                val casosEnHospital = cases.count { caso ->
+                val casosEnHospital = filteredCases.count { caso ->
                     val casoLatLng = caso.DIRECCION_CASOREPORTADO?.let { parseLatLngFromString(it) }
                     if (casoLatLng != null) {
                         // Calcular distancia aproximada (0.01 grados ≈ 1 km)
@@ -186,15 +205,17 @@ fun MapScreenModern(viewModel: MapViewModel) {
     val tileOverlayState = rememberTileOverlayState()
 
     // Auto-obtener ubicación al cargar
-    LaunchedEffect(hasLocationPermission) {
+    LaunchedEffect(hasLocationPermission, hasInitialLocationSet) {
         kotlinx.coroutines.delay(500)
         isMapLoading = false
 
-        if (hasLocationPermission) {
+        if (hasLocationPermission && !hasInitialLocationSet) {
             isLoadingLocation = true
             moveToUserLocation(context, fusedLocationClient, cameraPositionState) {
                 userLocation = it
+                viewModel.updateUserLocation(it)
                 isLoadingLocation = false
+                hasInitialLocationSet = true
             }
         }
     }
@@ -376,6 +397,22 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Botón de filtros
+            FloatingActionButton(
+                onClick = { showFiltersPanel = !showFiltersPanel },
+                containerColor = if (showFiltersPanel) PrimaryBlue else Color.White,
+                contentColor = if (showFiltersPanel) Color.White else PrimaryBlue,
+                shape = CircleShape,
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(8.dp, CircleShape)
+            ) {
+                Icon(
+                    Icons.Default.FilterList,
+                    contentDescription = "Filtros"
+                )
+            }
+
             // Botón de búsqueda
             FloatingActionButton(
                 onClick = { showSearchBar = !showSearchBar },
@@ -399,6 +436,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         isLoadingLocation = true
                         moveToUserLocation(context, fusedLocationClient, cameraPositionState) {
                             userLocation = it
+                            viewModel.updateUserLocation(it)
                             isLoadingLocation = false
                         }
                     } else {
@@ -424,91 +462,288 @@ fun MapScreenModern(viewModel: MapViewModel) {
             }
         }
 
-        // Card de información inferior (compacto)
+        // Info compacta en la parte inferior
         Card(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(12.dp)
-                .shadow(8.dp, RoundedCornerShape(16.dp)),
-            shape = RoundedCornerShape(16.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .shadow(4.dp, RoundedCornerShape(20.dp)),
+            shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
         ) {
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Mapa de Calor",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor
-                    )
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = PrimaryBlue.copy(alpha = 0.15f)
+                        )
                     ) {
-                        Card(
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = PrimaryBlue.copy(alpha = 0.1f)
-                            )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
+                            Icon(
+                                Icons.Default.Circle,
+                                contentDescription = null,
+                                modifier = Modifier.size(8.dp),
+                                tint = PrimaryBlue
+                            )
                             Text(
-                                "${heatmapPoints.size} casos",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                fontSize = 10.sp,
+                                "${heatmapPoints.size}",
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryBlue
                             )
                         }
+                    }
 
-                        Card(
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = HospitalGreen.copy(alpha = 0.1f)
-                            )
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = HospitalGreen.copy(alpha = 0.15f)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
+                            Icon(
+                                Icons.Default.LocalHospital,
+                                contentDescription = null,
+                                modifier = Modifier.size(10.dp),
+                                tint = HospitalGreen
+                            )
                             Text(
-                                "${hospitalMarkers.size} hospitales",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                fontSize = 10.sp,
+                                "${hospitalMarkers.size}",
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = HospitalGreen
                             )
                         }
                     }
-                }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    LegendItem(
-                        color = SuccessGreen,
-                        label = "Bajo",
-                        modifier = Modifier.weight(1f)
-                    )
-                    LegendItem(
-                        color = WarningOrange,
-                        label = "Medio",
-                        modifier = Modifier.weight(1f)
-                    )
-                    LegendItem(
-                        color = DangerRed,
-                        label = "Alto",
-                        modifier = Modifier.weight(1f)
-                    )
+                    if (userLocation != null) {
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = WarningOrange.copy(alpha = 0.15f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.LocationOn,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(10.dp),
+                                    tint = WarningOrange
+                                )
+                                Text(
+                                    "${filterRadiusKm.toInt()}km",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = WarningOrange
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
+
+        // Panel de filtros desplegable
+        AnimatedVisibility(
+            visible = showFiltersPanel,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+                    .padding(bottom = 56.dp)
+                    .shadow(12.dp, RoundedCornerShape(20.dp)),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Título
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Filtros de búsqueda",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textColor
+                        )
+                        IconButton(
+                            onClick = { showFiltersPanel = false },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Cerrar",
+                                tint = textSecondaryColor
+                            )
+                        }
+                    }
+
+                    // Radio de búsqueda compacto
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Radio de distancia",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = textColor
+                            )
+                            Card(
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = PrimaryBlue.copy(alpha = 0.1f)
+                                )
+                            ) {
+                                Text(
+                                    "${filterRadiusKm.toInt()} km",
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = PrimaryBlue
+                                )
+                            }
+                        }
+                        Slider(
+                            value = filterRadiusKm,
+                            onValueChange = { viewModel.updateFilterRadius(it) },
+                            valueRange = 1f..50f,
+                            steps = 48,
+                            colors = SliderDefaults.colors(
+                                thumbColor = PrimaryBlue,
+                                activeTrackColor = PrimaryBlue,
+                                inactiveTrackColor = if (isDarkTheme) Color(0xFF505050) else Color.LightGray
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    // Filtro de tipo de dengue
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            "Tipo de dengue",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = textColor
+                        )
+
+                        // Chip "Todos"
+                        FilterChip(
+                            selected = selectedDengueTypeId == null,
+                            onClick = { viewModel.updateSelectedDengueType(null) },
+                            label = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    if (selectedDengueTypeId == null) {
+                                        Icon(
+                                            Icons.Default.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                    Text(
+                                        "Todos",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = PrimaryBlue,
+                                selectedLabelColor = Color.White
+                            )
+                        )
+
+                        // Chips de tipos de dengue
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            dengueTypes.forEach { dengueType ->
+                                FilterChip(
+                                    selected = selectedDengueTypeId == dengueType.ID_TIPODENGUE,
+                                    onClick = { viewModel.updateSelectedDengueType(dengueType.ID_TIPODENGUE) },
+                                    label = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                        ) {
+                                            if (selectedDengueTypeId == dengueType.ID_TIPODENGUE) {
+                                                Icon(
+                                                    Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                            }
+                                            Text(
+                                                dengueType.NOMBRE_TIPODENGUE ?: "Tipo ${dengueType.ID_TIPODENGUE}",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                maxLines = 1
+                                            )
+                                        }
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = getDengueTypeColor(dengueType.ID_TIPODENGUE),
+                                        selectedLabelColor = Color.White
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Función auxiliar para colores de tipo de dengue
+private fun getDengueTypeColor(typeId: Int): Color {
+    return when (typeId) {
+        1 -> Color(0xFFFF6B6B)  // Dengue Clásico - Rojo
+        2 -> Color(0xFFFF8C42)  // Dengue Hemorrágico - Naranja
+        3 -> Color(0xFFFFB74D)  // Dengue Grave - Naranja oscuro
+        4 -> Color(0xFFE53935)  // Otro tipo - Rojo oscuro
+        else -> Color(0xFF5E81F4) // Default - Azul
     }
 }
 
