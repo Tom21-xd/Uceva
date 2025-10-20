@@ -93,7 +93,8 @@ fun CreateHospitalScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .heightIn(max = 180.dp) // Reducido de 200dp y responsivo
+                    .aspectRatio(16f / 9f, matchHeightConstraintsFirst = false)
                     .clickable { imagePickerLauncher.launch("image/*") }
                     .then(
                         if (selectedImageUri == null) {
@@ -244,7 +245,8 @@ fun CreateHospitalScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
+                    .heightIn(max = 200.dp) // Reducido de 250dp y responsivo
+                    .aspectRatio(16f / 9f, matchHeightConstraintsFirst = false)
                     .clickable { showMapDialog = true },
                 shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)

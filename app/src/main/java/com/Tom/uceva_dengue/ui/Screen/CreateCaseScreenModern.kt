@@ -387,8 +387,21 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
     var searchQuery by remember { mutableStateOf("") }
-    var filteredUsers by remember { mutableStateOf(users) }
     var showDropdown by remember { mutableStateOf(false) }
+
+    val filteredUsers = remember(users, searchQuery) {
+        if (searchQuery.isNotBlank()) {
+            users.filter {
+                it.NOMBRE_USUARIO.toString().contains(searchQuery, ignoreCase = true)
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    LaunchedEffect(searchQuery, filteredUsers) {
+        showDropdown = searchQuery.isNotBlank() && filteredUsers.isNotEmpty()
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Toggle usuario existente
@@ -444,14 +457,6 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
                     value = searchQuery,
                     onValueChange = { query ->
                         searchQuery = query
-                        filteredUsers = if (query.isNotBlank()) {
-                            users.filter {
-                                it.NOMBRE_USUARIO.toString().contains(query, ignoreCase = true)
-                            }
-                        } else {
-                            emptyList()
-                        }
-                        showDropdown = filteredUsers.isNotEmpty()
                     },
                     label = { Text("Buscar Usuario") },
                     modifier = Modifier.fillMaxWidth(),

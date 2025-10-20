@@ -138,7 +138,8 @@ fun UpdatePublicationScreen(
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp),
+                                    .heightIn(max = 180.dp) // Reducido de 200dp y responsivo
+                                    .aspectRatio(16f / 9f, matchHeightConstraintsFirst = false),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
                             ) {

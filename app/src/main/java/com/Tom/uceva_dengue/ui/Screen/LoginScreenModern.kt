@@ -62,10 +62,12 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Spacer(modifier = Modifier.weight(1f, fill = false)) // Centra cuando hay espacio
             // Card contenedor con diseño moderno
             Card(
                 modifier = Modifier
@@ -80,21 +82,21 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(32.dp),
+                        .padding(20.dp), // Reducido de 32dp para pantallas pequeñas
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Logo y título
                     Image(
                         painter = painterResource(id = R.drawable.salud),
                         contentDescription = "Logo",
-                        modifier = Modifier.size(80.dp)
+                        modifier = Modifier.size(64.dp) // Reducido de 80dp
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp)) // Reducido de 16dp
 
                     Text(
                         text = "Bienvenido",
-                        fontSize = 28.sp,
+                        fontSize = 22.sp, // Reducido de 28sp para pantallas pequeñas
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -103,12 +105,12 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
 
                     Text(
                         text = "Sistema de Monitoreo de Dengue",
-                        fontSize = 14.sp,
+                        fontSize = 13.sp, // Reducido de 14sp
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(20.dp)) // Reducido de 32dp
 
                     // Tabs modernos
                     ModernTabs(viewModel)
@@ -136,7 +138,7 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.weight(1f, fill = false)) // Centra cuando hay espacio
 
             // Footer
             Text(
@@ -144,6 +146,8 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
             )
+
+            Spacer(modifier = Modifier.height(16.dp)) // Espacio inferior
         }
     }
 }

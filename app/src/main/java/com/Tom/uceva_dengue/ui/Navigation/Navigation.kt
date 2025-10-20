@@ -73,9 +73,12 @@ import com.Tom.uceva_dengue.ui.Screen.EditUserScreenFunctional
 import com.Tom.uceva_dengue.ui.Screen.SettingsScreen
 import com.Tom.uceva_dengue.ui.Screen.PostDetailScreen
 import com.Tom.uceva_dengue.ui.Screen.SavedPublicationsScreen
+import com.Tom.uceva_dengue.ui.Screen.CreateCaseEvolutionScreen
+import com.Tom.uceva_dengue.ui.Screen.CaseEvolutionHistoryScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
+import com.Tom.uceva_dengue.ui.viewModel.CaseEvolutionViewModel
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import kotlinx.coroutines.launch
 
@@ -290,6 +293,38 @@ fun NavigationCon(context: Context) {
                 }
                 composable(Rout.OlvContraseniaScreen.name) {
                     ForgotPasswordScreenModern(navController = navController)
+                }
+                composable(
+                    route = "${Rout.CreateCaseEvolutionScreen.name}/{caseId}/{typeOfDengueId}/{doctorId}",
+                    arguments = listOf(
+                        navArgument("caseId") { type = NavType.IntType },
+                        navArgument("typeOfDengueId") { type = NavType.IntType },
+                        navArgument("doctorId") { type = NavType.IntType }
+                    )
+                ) { backStackEntry ->
+                    val caseId = backStackEntry.arguments?.getInt("caseId") ?: 0
+                    val typeOfDengueId = backStackEntry.arguments?.getInt("typeOfDengueId") ?: 0
+                    val doctorId = backStackEntry.arguments?.getInt("doctorId") ?: 0
+                    val viewModel: CaseEvolutionViewModel = viewModel()
+                    CreateCaseEvolutionScreen(
+                        caseId = caseId,
+                        typeOfDengueId = typeOfDengueId,
+                        doctorId = doctorId,
+                        viewModel = viewModel,
+                        navController = navController
+                    )
+                }
+                composable(
+                    route = "${Rout.CaseEvolutionHistoryScreen.name}/{caseId}",
+                    arguments = listOf(navArgument("caseId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val caseId = backStackEntry.arguments?.getInt("caseId") ?: 0
+                    val viewModel: CaseEvolutionViewModel = viewModel()
+                    CaseEvolutionHistoryScreen(
+                        caseId = caseId,
+                        viewModel = viewModel,
+                        navController = navController
+                    )
                 }
 
             }

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +37,7 @@ fun HomeScreen(
 ) {
     var searchText by remember { mutableStateOf("") }
     val publicaciones by viewModel.publicaciones.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     var publicationToDelete by remember { mutableStateOf<PublicationModel?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -45,40 +47,45 @@ fun HomeScreen(
         viewModel.obtenerPublicaciones(userId)
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { viewModel.refreshData(userId) },
+        modifier = Modifier.fillMaxSize()
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // → Buscador idéntico al de HospitalScreen
-            OutlinedTextField(
-                value = searchText,
-                onValueChange = { query ->
-                    searchText = query
-                    if (query.isNotBlank()) viewModel.buscarPublicacion(query)
-                    else viewModel.obtenerPublicaciones()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                placeholder = { Text("Buscar título...") },
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Buscar",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                shape = RoundedCornerShape(24.dp)
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // → Buscador idéntico al de HospitalScreen
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = { query ->
+                        searchText = query
+                        if (query.isNotBlank()) viewModel.buscarPublicacion(query)
+                        else viewModel.obtenerPublicaciones()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    placeholder = { Text("Buscar título...") },
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Buscar",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    shape = RoundedCornerShape(24.dp)
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            // Estado de lista vacía
-            if (publicaciones.isEmpty()) {
+                // Estado de lista vacía
+                if (publicaciones.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -197,6 +204,7 @@ fun HomeScreen(
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
+        }
         }
     }
 

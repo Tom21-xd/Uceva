@@ -14,12 +14,17 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.*
@@ -64,6 +69,7 @@ data class HospitalMarkerItem(
     val casosCount: Int = 0
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreenModern(viewModel: MapViewModel) {
     val context = LocalContext.current
@@ -125,6 +131,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
     val hospitals by viewModel.hospitals.collectAsState()
     val dengueTypes by viewModel.dengueTypes.collectAsState()
     val selectedDengueTypeId by viewModel.selectedDengueTypeId.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     var showFiltersPanel by remember { mutableStateOf(false) }
 
@@ -220,43 +227,48 @@ fun MapScreenModern(viewModel: MapViewModel) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Mostrar indicador de carga mientras se inicializa el mapa
-        AnimatedVisibility(
-            visible = isMapLoading,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(backgroundColor),
-                contentAlignment = Alignment.Center
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { viewModel.refreshData() },
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Mostrar indicador de carga mientras se inicializa el mapa
+            AnimatedVisibility(
+                visible = isMapLoading,
+                enter = fadeIn(),
+                exit = fadeOut()
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(60.dp),
-                        color = PrimaryBlue,
-                        strokeWidth = 4.dp
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        "Cargando mapa de calor...",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = textSecondaryColor,
-                        fontWeight = FontWeight.Medium
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(backgroundColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(60.dp),
+                            color = PrimaryBlue,
+                            strokeWidth = 4.dp
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            "Cargando mapa de calor...",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = textSecondaryColor,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
-        }
 
-        // Mapa
-        AnimatedVisibility(
-            visible = !isMapLoading,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            GoogleMap(
+            // Mapa
+            AnimatedVisibility(
+                visible = !isMapLoading,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(
@@ -462,7 +474,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
             }
         }
 
-        // Info compacta en la parte inferior
+        // Info compacta en la parte inferior - scrollable horizontalmente
         Card(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -472,14 +484,14 @@ fun MapScreenModern(viewModel: MapViewModel) {
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
         ) {
-            Row(
+            // Usar LazyRow para scroll horizontal en pantallas pequeñas
+            LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
                     Card(
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
@@ -493,7 +505,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         ) {
                             Icon(
                                 Icons.Default.Circle,
-                                contentDescription = null,
+                                contentDescription = "Casos",
                                 modifier = Modifier.size(8.dp),
                                 tint = PrimaryBlue
                             )
@@ -505,7 +517,9 @@ fun MapScreenModern(viewModel: MapViewModel) {
                             )
                         }
                     }
+                }
 
+                item {
                     Card(
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
@@ -519,7 +533,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         ) {
                             Icon(
                                 Icons.Default.LocalHospital,
-                                contentDescription = null,
+                                contentDescription = "Hospitales",
                                 modifier = Modifier.size(10.dp),
                                 tint = HospitalGreen
                             )
@@ -531,8 +545,10 @@ fun MapScreenModern(viewModel: MapViewModel) {
                             )
                         }
                     }
+                }
 
-                    if (userLocation != null) {
+                if (userLocation != null) {
+                    item {
                         Card(
                             shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(
@@ -546,7 +562,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                             ) {
                                 Icon(
                                     Icons.Default.LocationOn,
-                                    contentDescription = null,
+                                    contentDescription = "Radio",
                                     modifier = Modifier.size(10.dp),
                                     tint = WarningOrange
                                 )
@@ -573,6 +589,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(max = 400.dp) // Altura máxima para pantallas pequeñas
                     .padding(12.dp)
                     .padding(bottom = 56.dp)
                     .shadow(12.dp, RoundedCornerShape(20.dp)),
@@ -582,6 +599,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()) // Hacer scrollable
                         .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -593,17 +611,18 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     ) {
                         Text(
                             "Filtros de búsqueda",
-                            fontSize = 18.sp,
+                            fontSize = 16.sp, // Reducido de 18sp
                             fontWeight = FontWeight.Bold,
                             color = textColor
                         )
                         IconButton(
                             onClick = { showFiltersPanel = false },
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(40.dp) // Área de toque más grande
                         ) {
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = "Cerrar",
+                                modifier = Modifier.size(20.dp),
                                 tint = textSecondaryColor
                             )
                         }
@@ -664,41 +683,44 @@ fun MapScreenModern(viewModel: MapViewModel) {
                             color = textColor
                         )
 
-                        // Chip "Todos"
-                        FilterChip(
-                            selected = selectedDengueTypeId == null,
-                            onClick = { viewModel.updateSelectedDengueType(null) },
-                            label = {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    if (selectedDengueTypeId == null) {
-                                        Icon(
-                                            Icons.Default.Check,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    }
-                                    Text(
-                                        "Todos",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = PrimaryBlue,
-                                selectedLabelColor = Color.White
-                            )
-                        )
-
-                        // Chips de tipos de dengue
-                        Row(
+                        // Chips en LazyRow horizontal scrollable
+                        LazyRow(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            dengueTypes.forEach { dengueType ->
+                            // Chip "Todos" al inicio
+                            item {
+                                FilterChip(
+                                    selected = selectedDengueTypeId == null,
+                                    onClick = { viewModel.updateSelectedDengueType(null) },
+                                    label = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            if (selectedDengueTypeId == null) {
+                                                Icon(
+                                                    Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                            }
+                                            Text(
+                                                "Todos",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = PrimaryBlue,
+                                        selectedLabelColor = Color.White
+                                    )
+                                )
+                            }
+
+                            // Chips de tipos de dengue
+                            items(dengueTypes) { dengueType ->
                                 FilterChip(
                                     selected = selectedDengueTypeId == dengueType.ID_TIPODENGUE,
                                     onClick = { viewModel.updateSelectedDengueType(dengueType.ID_TIPODENGUE) },
@@ -732,6 +754,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     }
                 }
             }
+        }
         }
     }
 }

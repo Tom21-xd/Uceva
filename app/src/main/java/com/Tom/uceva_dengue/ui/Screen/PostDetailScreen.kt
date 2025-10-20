@@ -138,11 +138,12 @@ fun PostDetailScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Imagen destacada con overlay
+            // Imagen destacada con overlay - altura responsiva
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(320.dp)
+                    .heightIn(max = 250.dp) // Reducido de 320dp a 250dp max
+                    .aspectRatio(16f / 9f, matchHeightConstraintsFirst = false) // Mantiene aspect ratio
             ) {
                 if (imageUrl != null) {
                     SubcomposeAsyncImage(
@@ -237,10 +238,10 @@ fun PostDetailScreen(
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text(
                             text = publicacion!!.TITULO_PUBLICACION,
-                            fontSize = 24.sp,
+                            fontSize = 20.sp, // Reducido de 24sp
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
-                            lineHeight = 30.sp
+                            lineHeight = 26.sp // Ajustado proporcionalmente
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))

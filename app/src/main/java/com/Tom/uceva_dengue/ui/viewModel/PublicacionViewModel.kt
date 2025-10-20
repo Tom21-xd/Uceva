@@ -16,6 +16,10 @@ class PublicacionViewModel : ViewModel() {
     private val _publicaciones = MutableStateFlow<List<PublicationModel>>(emptyList())
     val publicaciones = _publicaciones.asStateFlow()
 
+    // Estado de refresh para pull-to-refresh
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
+
     init {
         obtenerPublicaciones()
     }
@@ -41,6 +45,23 @@ class PublicacionViewModel : ViewModel() {
                 Log.d("PublicacionViewModel", "Publicaciones: ${_publicaciones.value}")
             } catch (e: Exception) {
                 Log.e("PublicacionViewModel", "Error al buscar publicaciones", e)
+            }
+        }
+    }
+
+    /**
+     * Recarga las publicaciones (para pull-to-refresh)
+     */
+    fun refreshData(userId: Int? = null) {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                _publicaciones.value = RetrofitClient.publicationService.getPublications(userId)
+                Log.d("PublicacionViewModel", "Publicaciones actualizadas correctamente")
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al actualizar publicaciones", e)
+            } finally {
+                _isRefreshing.value = false
             }
         }
     }

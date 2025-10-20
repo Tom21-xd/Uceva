@@ -17,6 +17,9 @@ class NotificationViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
@@ -31,17 +34,50 @@ class NotificationViewModel : ViewModel() {
         _isLoading.value = true
         _error.value = null
         try {
+            Log.d("NotificationVM", "Solicitando notificaciones al servidor...")
             val response = RetrofitClient.notificationService.getNotifications()
+            Log.d("NotificationVM", "Respuesta recibida - Código: ${response.code()}, Exitoso: ${response.isSuccessful}")
+
             if (response.isSuccessful && response.body() != null) {
-                _notifications.value = response.body()!!
+                val notificationsList = response.body()!!
+                _notifications.value = notificationsList
+                Log.d("NotificationVM", "Notificaciones cargadas: ${notificationsList.size} items")
+                notificationsList.forEachIndexed { index, notif ->
+                    Log.d("NotificationVM", "[$index] ID: ${notif.ID_NOTIFICACION}, Contenido: ${notif.CONTENIDO_NOTIFICACION}")
+                }
             } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("NotificationVM", "Error al cargar notificaciones - Mensaje: ${response.message()}, Body: $errorBody")
                 _error.value = "Error al cargar notificaciones: ${response.message()}"
             }
         } catch (e: Exception) {
-            Log.e("NotificationVM", "Error al obtener notificaciones", e)
+            Log.e("NotificationVM", "Excepción al obtener notificaciones: ${e.message}", e)
             _error.value = "Error de red: ${e.localizedMessage}"
         } finally {
             _isLoading.value = false
+        }
+    }
+
+    fun refreshData() = viewModelScope.launch {
+        _isRefreshing.value = true
+        _error.value = null
+        try {
+            Log.d("NotificationVM", "Refrescando notificaciones...")
+            val response = RetrofitClient.notificationService.getNotifications()
+
+            if (response.isSuccessful && response.body() != null) {
+                val notificationsList = response.body()!!
+                _notifications.value = notificationsList
+                Log.d("NotificationVM", "Notificaciones refrescadas: ${notificationsList.size} items")
+            } else {
+                Log.e("NotificationVM", "Error al refrescar notificaciones: ${response.message()}")
+                _error.value = "Error al actualizar: ${response.message()}"
+            }
+        } catch (e: Exception) {
+            Log.e("NotificationVM", "Error al refrescar notificaciones", e)
+            _error.value = "Error de red: ${e.localizedMessage}"
+        } finally {
+            _isRefreshing.value = false
         }
     }
 

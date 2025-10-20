@@ -153,7 +153,8 @@ fun CreatePublicationScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp)
+                                .heightIn(max = 180.dp) // Reducido de 200dp y responsivo
+                                .aspectRatio(16f / 9f, matchHeightConstraintsFirst = false)
                                 .background(
                                     color = if (selectedImageUri != null) Color.Transparent else MaterialTheme.colorScheme.surfaceVariant,
                                     shape = RoundedCornerShape(12.dp)

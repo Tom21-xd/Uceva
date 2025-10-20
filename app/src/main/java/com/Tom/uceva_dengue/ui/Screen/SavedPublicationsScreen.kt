@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,33 +29,50 @@ fun SavedPublicationsScreen(
 ) {
     var savedPublications by remember { mutableStateOf<List<PublicationModel>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var isRefreshing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val authRepository = AuthRepository(context)
     val currentUserId = authRepository.getUser()?.toIntOrNull()
     val userRole = authRepository.getRole()
 
-    // Cargar publicaciones guardadas
-    LaunchedEffect(Unit) {
+    // Función para cargar publicaciones guardadas
+    fun loadSavedPublications() {
         if (currentUserId != null) {
             viewModel.loadSavedPublications(
                 userId = currentUserId,
                 onSuccess = { publications ->
                     savedPublications = publications
                     isLoading = false
+                    isRefreshing = false
                 },
                 onError = { error ->
                     Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
                     isLoading = false
+                    isRefreshing = false
                 }
             )
         } else {
             isLoading = false
+            isRefreshing = false
         }
     }
 
-    Box(
+    // Cargar publicaciones guardadas al iniciar
+    LaunchedEffect(Unit) {
+        loadSavedPublications()
+    }
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            loadSavedPublications()
+        },
         modifier = Modifier.fillMaxSize()
     ) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
             when {
                 isLoading -> {
                     // Estado de carga
@@ -191,6 +209,7 @@ fun SavedPublicationsScreen(
                 }
             }
         }
+    }
     }
 
 @Composable

@@ -33,6 +33,10 @@ class MapViewModel : ViewModel() {
     private val _loadingError = MutableStateFlow<String?>(null)
     val loadingError: StateFlow<String?> = _loadingError
 
+    // Estado de refresh para pull-to-refresh
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
     // Filtro de distancia en kilómetros
     private val _filterRadiusKm = MutableStateFlow(10f) // Por defecto 10km
     val filterRadiusKm: StateFlow<Float> = _filterRadiusKm
@@ -141,6 +145,53 @@ class MapViewModel : ViewModel() {
                 Log.e("MapViewModel", "Error al cargar datos del mapa", e)
                 _loadingError.value = "Error al cargar datos: ${e.localizedMessage}"
                 _isLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * Recarga todos los datos del mapa (para pull-to-refresh)
+     * Fuerza la recarga incluso si ya se habían cargado antes
+     */
+    fun refreshData() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            _loadingError.value = null
+
+            try {
+                // Lanzar todas las peticiones en paralelo
+                val casesDeferred = async { RetrofitClient.caseService.getCases() }
+                val hospitalsDeferred = async { RetrofitClient.hospitalService.getHospitals() }
+                val dengueTypesDeferred = async { RetrofitClient.dengueService.getTypesOfDengue() }
+
+                // Esperar a que todas completen
+                val casesResponse = casesDeferred.await()
+                if (casesResponse.body() != null) {
+                    _cases.value = casesResponse.body()!!
+                    isCasesFetched = true
+                }
+
+                val hospitalsResponse = hospitalsDeferred.await()
+                if (hospitalsResponse.body() != null) {
+                    _hospitals.value = hospitalsResponse.body()!!
+                    isHospitalsFetched = true
+                }
+
+                val dengueTypesResponse = dengueTypesDeferred.await()
+                if (dengueTypesResponse.isSuccessful && dengueTypesResponse.body() != null) {
+                    _dengueTypes.value = dengueTypesResponse.body()!!
+                    isDengueTypesFetched = true
+                }
+
+                // Aplicar filtro después de cargar
+                filterCasesByProximity()
+
+                _isRefreshing.value = false
+                Log.d("MapViewModel", "Datos del mapa actualizados correctamente")
+            } catch (e: Exception) {
+                Log.e("MapViewModel", "Error al actualizar datos del mapa", e)
+                _loadingError.value = "Error al actualizar: ${e.localizedMessage}"
+                _isRefreshing.value = false
             }
         }
     }

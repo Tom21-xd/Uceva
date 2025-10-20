@@ -77,10 +77,11 @@ fun ForgotPasswordScreenModern(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
+                .padding(20.dp), // Reducido de 24dp
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(16.dp) // Cambiado de Center para evitar overflow
         ) {
+            Spacer(modifier = Modifier.weight(1f, fill = false)) // Centra cuando hay espacio
             // Card principal
             Card(
                 modifier = Modifier
@@ -95,7 +96,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(32.dp),
+                        .padding(20.dp), // Reducido de 32dp
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Icono animado

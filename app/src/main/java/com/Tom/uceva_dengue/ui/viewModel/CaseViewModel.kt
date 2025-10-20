@@ -32,6 +32,10 @@ class CaseViewModel : ViewModel() {
     private val _loadingError = MutableStateFlow<String?>(null)
     val loadingError: StateFlow<String?> = _loadingError
 
+    // Estado de refresh para pull-to-refresh
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
     private var isCasesFetched = false
     private var isCaseStatesFetched = false
     private var isTypeDengueFetched = false
@@ -80,6 +84,51 @@ class CaseViewModel : ViewModel() {
                 Log.e("CaseViewModel", "Error al cargar datos", e)
                 _loadingError.value = "Error al cargar datos: ${e.localizedMessage}"
                 _isLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * Recarga todos los datos (para pull-to-refresh)
+     */
+    fun refreshData() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            _loadingError.value = null
+
+            try {
+                // Lanzar todas las peticiones en paralelo
+                val casesDeferred = async { RetrofitClient.caseService.getCases() }
+                val statesDeferred = async { RetrofitClient.caseService.getCaseStates() }
+                val dengueTypesDeferred = async { RetrofitClient.dengueService.getTypesOfDengue() }
+
+                // Esperar a que todas completen
+                val casesResponse = casesDeferred.await()
+                if (casesResponse.isSuccessful && casesResponse.body() != null) {
+                    val cases = casesResponse.body()!!
+                    _cases.value = cases
+                    _filteredCases.value = cases
+                    isCasesFetched = true
+                }
+
+                val statesResponse = statesDeferred.await()
+                if (statesResponse.isSuccessful && statesResponse.body() != null) {
+                    _caseStates.value = statesResponse.body()!!
+                    isCaseStatesFetched = true
+                }
+
+                val dengueResponse = dengueTypesDeferred.await()
+                if (dengueResponse.isSuccessful && dengueResponse.body() != null) {
+                    _typeDengue.value = dengueResponse.body()!!
+                    isTypeDengueFetched = true
+                }
+
+                _isRefreshing.value = false
+                Log.d("CaseViewModel", "Datos actualizados correctamente")
+            } catch (e: Exception) {
+                Log.e("CaseViewModel", "Error al actualizar datos", e)
+                _loadingError.value = "Error al actualizar: ${e.localizedMessage}"
+                _isRefreshing.value = false
             }
         }
     }

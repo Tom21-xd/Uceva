@@ -15,6 +15,10 @@ class HospitalViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // Estado de refresh para pull-to-refresh
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     init { fetchHospitals() }
 
     fun fetchHospitals() = viewModelScope.launch {
@@ -35,6 +39,19 @@ class HospitalViewModel : ViewModel() {
             }
         } catch(_ : Exception) { }
         finally { _isLoading.value = false }
+    }
+
+    /**
+     * Recarga los hospitales (para pull-to-refresh)
+     */
+    fun refreshData() = viewModelScope.launch {
+        _isRefreshing.value = true
+        try {
+            RetrofitClient.hospitalService.getHospitals().let { r ->
+                if (r.isSuccessful) _hospitals.value = r.body() ?: emptyList()
+            }
+        } catch(_ : Exception) { }
+        finally { _isRefreshing.value = false }
     }
 
     // DELETE: Eliminar hospital

@@ -13,6 +13,7 @@
     import androidx.compose.material.icons.filled.Error
     import androidx.compose.material.icons.filled.Search
     import androidx.compose.material3.*
+    import androidx.compose.material3.pulltorefresh.PullToRefreshBox
     import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
     import androidx.compose.runtime.*
     import androidx.compose.ui.Alignment
@@ -27,6 +28,7 @@
     import com.Tom.uceva_dengue.ui.Navigation.Rout
     import com.Tom.uceva_dengue.ui.viewModel.CaseViewModel
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun CaseScreen(caseViewModel: CaseViewModel, role: Int, navController: NavHostController) {
         val cases by caseViewModel.filteredCases.collectAsState()
@@ -34,6 +36,7 @@
         val TypeOfDengue by caseViewModel.typeDengue.collectAsState()
         val isLoading by caseViewModel.isLoading.collectAsState()
         val loadingError by caseViewModel.loadingError.collectAsState()
+        val isRefreshing by caseViewModel.isRefreshing.collectAsState()
 
         val estados = listOf("Todos") + caseStates.map { it.NOMBRE_ESTADOCASO }
         val tiposDengue = listOf("Todos")+TypeOfDengue.map { it.NOMBRE_TIPODENGUE }
@@ -102,92 +105,97 @@
             return
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(bottom = 10.dp)
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { caseViewModel.refreshData() },
+            modifier = Modifier.fillMaxSize()
         ) {
-            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = {
-                        searchQuery = it
-                        caseViewModel.filterCasesByState(estados[selectedEstadoIndex])
-                    },
-                    placeholder = { Text("Buscar por nombre o ID") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = "Buscar")
-                    },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(bottom = 10.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = {
+                            searchQuery = it
+                            caseViewModel.filterCasesByState(estados[selectedEstadoIndex])
+                        },
+                        placeholder = { Text("Buscar por nombre o ID") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = "Buscar")
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                ScrollableTabRow(
-                    selectedTabIndex = selectedEstadoIndex,
-                    modifier = Modifier.fillMaxWidth(),
-                    edgePadding = 0.dp,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = Color(0xFF00796B),
-                    indicator = { tabPositions ->
-                        if (tabPositions.isNotEmpty() && selectedEstadoIndex < tabPositions.size) {
-                            TabRowDefaults.Indicator(
-                                Modifier
-                                    .tabIndicatorOffset(tabPositions[selectedEstadoIndex])
-                                    .background(Color(0xFF00796B))
-                                    .height(3.dp)
+                    ScrollableTabRow(
+                        selectedTabIndex = selectedEstadoIndex,
+                        modifier = Modifier.fillMaxWidth(),
+                        edgePadding = 0.dp,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = Color(0xFF00796B),
+                        indicator = { tabPositions ->
+                            if (tabPositions.isNotEmpty() && selectedEstadoIndex < tabPositions.size) {
+                                TabRowDefaults.Indicator(
+                                    Modifier
+                                        .tabIndicatorOffset(tabPositions[selectedEstadoIndex])
+                                        .background(Color(0xFF00796B))
+                                        .height(3.dp)
+                                )
+                            }
+                        }
+                    ) {
+                        /*tiposDengue.forEachIndexed { index, typeDengue ->
+                            Tab(
+                                selected = selectedTipoDengueIndex == index,
+                                onClick = {
+                                    selectedTipoDengueIndex = index
+                                    caseViewModel.filterCasesByTypeOfDengue(typeDengue)
+                                },
+                                text = {
+                                    Text(
+                                        text = typeDengue,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (selectedTipoDengueIndex == index) Color(0xFF00796B) else Color.Gray
+                                    )
+                                }
+                            )
+                        }*/
+
+                        estados.forEachIndexed { index, estado ->
+                            Tab(
+                                selected = selectedEstadoIndex == index,
+                                onClick = {
+                                    selectedEstadoIndex = index
+                                    caseViewModel.filterCasesByState(estado)
+                                },
+                                text = {
+                                    Text(
+                                        text = estado,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (selectedEstadoIndex == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             )
                         }
                     }
-                ) {
-                    /*tiposDengue.forEachIndexed { index, typeDengue ->
-                        Tab(
-                            selected = selectedTipoDengueIndex == index,
-                            onClick = {
-                                selectedTipoDengueIndex = index
-                                caseViewModel.filterCasesByTypeOfDengue(typeDengue)
-                            },
-                            text = {
-                                Text(
-                                    text = typeDengue,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (selectedTipoDengueIndex == index) Color(0xFF00796B) else Color.Gray
-                                )
-                            }
-                        )
-                    }*/
 
-                    estados.forEachIndexed { index, estado ->
-                        Tab(
-                            selected = selectedEstadoIndex == index,
-                            onClick = {
-                                selectedEstadoIndex = index
-                                caseViewModel.filterCasesByState(estado)
-                            },
-                            text = {
-                                Text(
-                                    text = estado,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (selectedEstadoIndex == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(cases) { case ->
+                            CasoDengueCard(case, role, navController)
+                        }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(cases) { case ->
-                        CasoDengueCard(case, role, navController)
-                    }
-                }
-            }
 
             // Solo Administrador (2) y Personal Médico (3) pueden crear casos
             if (role == 2 || role == 3) {
@@ -206,7 +214,7 @@
                     )
                 }
             }
-
+            }
         }
 
 
