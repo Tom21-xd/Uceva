@@ -225,25 +225,23 @@ class CaseEvolutionViewModel : ViewModel() {
 
             try {
                 val request = CreateCaseEvolutionRequest(
-                    FK_ID_CASO = caseId,
                     FK_ID_ESTADO_PACIENTE = _selectedPatientStateId.value,
-                    DIA_ENFERMEDAD = _dayOfIllness.value.toIntOrNull() ?: 0,
+                    FK_ID_TIPODENGUE = typeOfDengueId,
+                    FK_ID_MEDICO = doctorId,
+                    DIA_ENFERMEDAD = _dayOfIllness.value.toIntOrNull(),
+                    SINTOMAS_REPORTADOS = "[]", // TODO: Implement symptoms selection
                     TEMPERATURA = _temperature.value.toDoubleOrNull(),
                     PRESION_ARTERIAL_SISTOLICA = _systolicBP.value.toIntOrNull(),
                     PRESION_ARTERIAL_DIASTOLICA = _diastolicBP.value.toIntOrNull(),
                     FRECUENCIA_CARDIACA = _heartRate.value.toIntOrNull(),
                     FRECUENCIA_RESPIRATORIA = _respiratoryRate.value.toIntOrNull(),
-                    SATURACION_OXIGENO = _oxygenSaturation.value.toIntOrNull(),
+                    SATURACION_OXIGENO = _oxygenSaturation.value.toDoubleOrNull(),
                     PLAQUETAS = _platelets.value.toIntOrNull(),
                     HEMATOCRITO = _hematocrit.value.toDoubleOrNull(),
                     HEMOGLOBINA = _hemoglobin.value.toDoubleOrNull(),
                     LEUCOCITOS = _whiteBloodCells.value.toIntOrNull(),
-                    DOLOR_ABDOMINAL = _abdominalPain.value,
-                    VOMITO_PERSISTENTE = _persistentVomiting.value,
-                    SANGRADO_MUCOSAS = _mucosal_bleeding.value,
-                    LETARGIA = _lethargy.value,
                     OBSERVACIONES_CLINICAS = _clinicalObservations.value.ifEmpty { null },
-                    TRATAMIENTO_ADMINISTRADO = _prescribedTreatment.value.ifEmpty { null }
+                    TRATAMIENTO_INDICADO = _prescribedTreatment.value.ifEmpty { null }
                 )
 
                 Log.d("CaseEvolutionVM", "Creating evolution: $request")

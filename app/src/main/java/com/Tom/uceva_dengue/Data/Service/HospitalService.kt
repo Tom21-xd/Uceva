@@ -1,5 +1,6 @@
 package com.Tom.uceva_dengue.Data.Service
 
+import com.Tom.uceva_dengue.Data.Model.CreateHospitalResponse
 import com.Tom.uceva_dengue.Data.Model.HospitalModel
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -31,7 +32,7 @@ interface HospitalService {
         @Part("Longitud") longitud: RequestBody,
         @Part("IdMunicipio") idMunicipio: RequestBody,
         @Part imagen: MultipartBody.Part?
-    ): Response<Map<String, String>>
+    ): Response<CreateHospitalResponse>
 
     // HU-009: Actualizar hospital
     @PUT("Hospital/updateHospital/{id}")

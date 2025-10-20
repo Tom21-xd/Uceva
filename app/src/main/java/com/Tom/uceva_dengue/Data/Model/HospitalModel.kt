@@ -49,3 +49,42 @@ data class HospitalModel(
 }
 
 // Using shared CityInfo and DepartmentInfo from SharedModels.kt
+
+// Response model for createHospital endpoint
+data class CreateHospitalResponse(
+    @SerializedName("message")
+    val message: String,
+
+    @SerializedName("hospital")
+    val hospital: HospitalCreatedData?,
+
+    @SerializedName("imagenId")
+    val imagenId: String?
+)
+
+// Hospital data returned from backend on creation
+data class HospitalCreatedData(
+    @SerializedName("id")
+    val id: Int,
+
+    @SerializedName("name")
+    val name: String,
+
+    @SerializedName("address")
+    val address: String,
+
+    @SerializedName("latitude")
+    val latitude: String,
+
+    @SerializedName("longitude")
+    val longitude: String,
+
+    @SerializedName("cityId")
+    val cityId: Int,
+
+    @SerializedName("imageId")
+    val imageId: String?,
+
+    @SerializedName("isActive")
+    val isActive: Boolean
+)

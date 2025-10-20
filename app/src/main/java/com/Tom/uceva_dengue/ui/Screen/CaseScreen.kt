@@ -27,10 +27,14 @@
     import com.Tom.uceva_dengue.Data.Model.CaseModel
     import com.Tom.uceva_dengue.ui.Navigation.Rout
     import com.Tom.uceva_dengue.ui.viewModel.CaseViewModel
+    import com.Tom.uceva_dengue.utils.rememberAppDimensions
+    import com.Tom.uceva_dengue.utils.rememberWindowSize
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun CaseScreen(caseViewModel: CaseViewModel, role: Int, navController: NavHostController) {
+        val dimensions = rememberAppDimensions()
+        val windowSize = rememberWindowSize()
         val cases by caseViewModel.filteredCases.collectAsState()
         val caseStates by caseViewModel.caseStates.collectAsState()
         val TypeOfDengue by caseViewModel.typeDengue.collectAsState()
@@ -57,10 +61,10 @@
                     verticalArrangement = Arrangement.Center
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(dimensions.iconExtraLarge),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                     Text(
                         text = "Cargando casos...",
                         style = MaterialTheme.typography.bodyLarge,
@@ -77,7 +81,7 @@
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(16.dp),
+                    .padding(dimensions.paddingMedium),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -88,15 +92,15 @@
                         imageVector = Icons.Filled.Error,
                         contentDescription = "Error",
                         tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(dimensions.iconExtraLarge)
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                     Text(
                         text = loadingError ?: "Error desconocido",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                     Button(onClick = { caseViewModel.loadAllData() }) {
                         Text("Reintentar")
                     }
@@ -114,9 +118,9 @@
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(bottom = 10.dp)
+                    .padding(bottom = dimensions.paddingSmall)
             ) {
-                Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                Column(modifier = Modifier.fillMaxSize().padding(dimensions.paddingMedium)) {
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = {
@@ -131,7 +135,7 @@
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
                     ScrollableTabRow(
                         selectedTabIndex = selectedEstadoIndex,
@@ -185,14 +189,14 @@
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium),
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(cases) { case ->
-                            CasoDengueCard(case, role, navController)
+                            CasoDengueCard(case, role, navController, dimensions)
                         }
                     }
                 }
@@ -204,7 +208,7 @@
                     shape = RoundedCornerShape(50),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(10.dp),
+                        .padding(dimensions.paddingSmall),
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Icon(
@@ -220,11 +224,11 @@
 
     }
     @Composable
-    fun CasoDengueCard(case: CaseModel, role: Int, navController: NavHostController) {
+    fun CasoDengueCard(case: CaseModel, role: Int, navController: NavHostController, dimensions: com.Tom.uceva_dengue.utils.AppDimensions) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp)
+                .padding(horizontal = dimensions.paddingSmall, vertical = dimensions.paddingSmall)
                 .clip(MaterialTheme.shapes.medium),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
@@ -235,12 +239,12 @@
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(dimensions.paddingMedium)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(60.dp)
+                            .size(dimensions.iconExtraLarge)
                             .clip(CircleShape)
                             .background(
                                 brush = androidx.compose.ui.graphics.Brush.verticalGradient(
@@ -256,29 +260,29 @@
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(dimensions.spacingMedium))
 
                     Column {
                         Text(
                             text = case.NOMBRE_PACIENTE,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
+                            fontSize = dimensions.textSizeLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Estado: ${case.NOMBRE_ESTADOCASO}",
-                            fontSize = 14.sp,
+                            fontSize = dimensions.textSizeMedium,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
                             text = "Fecha: ${case.FECHA_CASOREPORTADO}",
-                            fontSize = 12.sp,
+                            fontSize = dimensions.textSizeSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = "Dirección: ${case.DIRECCION_CASOREPORTADO}",
-                            fontSize = 12.sp,
+                            fontSize = dimensions.textSizeSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -291,7 +295,7 @@
                             navController.navigate("${Rout.CaseDetailsScreen.name}/${case.ID_CASOREPORTADO}")
                         },
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(dimensions.iconExtraLarge)
                             .background(
                                 color = Color(0xFF00796B).copy(alpha = 0.1f),
                                 shape = CircleShape
@@ -301,7 +305,7 @@
                             Icons.Default.Edit,
                             contentDescription = "Ver/Editar caso",
                             tint = Color(0xFF00796B),
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(dimensions.iconLarge)
                         )
                     }
                 }

@@ -163,6 +163,8 @@ class CreateHospitalViewModel : ViewModel() {
                 )
 
                 if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    Log.d("CreateHospitalVM", "Hospital creado: ${responseBody?.message}")
                     onSuccess()
                 } else {
                     onError("Error al crear hospital: ${response.message()}")

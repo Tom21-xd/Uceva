@@ -50,6 +50,8 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.google.maps.android.heatmaps.HeatmapTileProvider
+import com.Tom.uceva_dengue.utils.rememberAppDimensions
+import com.Tom.uceva_dengue.utils.rememberWindowSize
 
 // Colores modernos
 private val PrimaryBlue = Color(0xFF5E81F4)
@@ -72,6 +74,8 @@ data class HospitalMarkerItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreenModern(viewModel: MapViewModel) {
+    val dimensions = rememberAppDimensions()
+    val windowSize = rememberWindowSize()
     val context = LocalContext.current
     // Detectar si estamos en tema oscuro comparando el color de fondo del tema
     // Un fondo oscuro tendrá valores RGB bajos (cercanos a 0)
@@ -247,11 +251,11 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(60.dp),
+                            modifier = Modifier.size(dimensions.iconExtraLarge),
                             color = PrimaryBlue,
                             strokeWidth = 4.dp
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                         Text(
                             "Cargando mapa de calor...",
                             style = MaterialTheme.typography.bodyLarge,
@@ -339,7 +343,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
-                .padding(16.dp)
+                .padding(dimensions.paddingMedium)
         ) {
             AnimatedVisibility(
                 visible = showSearchBar,
@@ -349,20 +353,20 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(8.dp, RoundedCornerShape(16.dp)),
-                    shape = RoundedCornerShape(16.dp),
+                        .shadow(8.dp, RoundedCornerShape(dimensions.cardCornerRadius)),
+                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
                     colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
+                            .padding(dimensions.paddingSmall),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         OutlinedTextField(
                             value = searchText,
                             onValueChange = { searchText = it },
-                            placeholder = { Text("Buscar dirección...", fontSize = 14.sp, color = textSecondaryColor) },
+                            placeholder = { Text("Buscar dirección...", fontSize = dimensions.textSizeMedium, color = textSecondaryColor) },
                             leadingIcon = {
                                 Icon(Icons.Default.Search, contentDescription = null, tint = PrimaryBlue)
                             },
@@ -387,7 +391,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(dimensions.paddingSmall),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = PrimaryBlue,
@@ -406,8 +410,8 @@ fun MapScreenModern(viewModel: MapViewModel) {
         Column(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(dimensions.paddingMedium),
+            verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
         ) {
             // Botón de filtros
             FloatingActionButton(
@@ -416,7 +420,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 contentColor = if (showFiltersPanel) Color.White else PrimaryBlue,
                 shape = CircleShape,
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(dimensions.iconExtraLarge)
                     .shadow(8.dp, CircleShape)
             ) {
                 Icon(
@@ -432,7 +436,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 contentColor = if (showSearchBar) Color.White else PrimaryBlue,
                 shape = CircleShape,
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(dimensions.iconExtraLarge)
                     .shadow(8.dp, CircleShape)
             ) {
                 Icon(
@@ -459,12 +463,12 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 contentColor = PrimaryBlue,
                 shape = CircleShape,
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(dimensions.iconExtraLarge)
                     .shadow(8.dp, CircleShape)
             ) {
                 if (isLoadingLocation) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(dimensions.iconLarge),
                         color = PrimaryBlue,
                         strokeWidth = 2.dp
                     )
@@ -479,39 +483,39 @@ fun MapScreenModern(viewModel: MapViewModel) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .shadow(4.dp, RoundedCornerShape(20.dp)),
-            shape = RoundedCornerShape(20.dp),
+                .padding(horizontal = dimensions.paddingSmall, vertical = dimensions.paddingSmall)
+                .shadow(4.dp, RoundedCornerShape(dimensions.paddingLarge)),
+            shape = RoundedCornerShape(dimensions.paddingLarge),
             colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
         ) {
             // Usar LazyRow para scroll horizontal en pantallas pequeñas
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = dimensions.paddingSmall, vertical = dimensions.paddingSmall),
+                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
             ) {
                 item {
                     Card(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(dimensions.paddingSmall),
                         colors = CardDefaults.cardColors(
                             containerColor = PrimaryBlue.copy(alpha = 0.15f)
                         )
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            modifier = Modifier.padding(horizontal = dimensions.paddingSmall, vertical = dimensions.paddingSmall),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
                                 Icons.Default.Circle,
                                 contentDescription = "Casos",
-                                modifier = Modifier.size(8.dp),
+                                modifier = Modifier.size(dimensions.paddingSmall),
                                 tint = PrimaryBlue
                             )
                             Text(
                                 "${heatmapPoints.size}",
-                                fontSize = 12.sp,
+                                fontSize = dimensions.textSizeSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryBlue
                             )
@@ -521,25 +525,25 @@ fun MapScreenModern(viewModel: MapViewModel) {
 
                 item {
                     Card(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(dimensions.paddingSmall),
                         colors = CardDefaults.cardColors(
                             containerColor = HospitalGreen.copy(alpha = 0.15f)
                         )
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            modifier = Modifier.padding(horizontal = dimensions.paddingSmall, vertical = dimensions.paddingSmall),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
                                 Icons.Default.LocalHospital,
                                 contentDescription = "Hospitales",
-                                modifier = Modifier.size(10.dp),
+                                modifier = Modifier.size(dimensions.paddingSmall),
                                 tint = HospitalGreen
                             )
                             Text(
                                 "${hospitalMarkers.size}",
-                                fontSize = 12.sp,
+                                fontSize = dimensions.textSizeSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = HospitalGreen
                             )
@@ -550,25 +554,25 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 if (userLocation != null) {
                     item {
                         Card(
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(dimensions.paddingSmall),
                             colors = CardDefaults.cardColors(
                                 containerColor = WarningOrange.copy(alpha = 0.15f)
                             )
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                modifier = Modifier.padding(horizontal = dimensions.paddingSmall, vertical = dimensions.paddingSmall),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Icon(
                                     Icons.Default.LocationOn,
                                     contentDescription = "Radio",
-                                    modifier = Modifier.size(10.dp),
+                                    modifier = Modifier.size(dimensions.paddingSmall),
                                     tint = WarningOrange
                                 )
                                 Text(
                                     "${filterRadiusKm.toInt()}km",
-                                    fontSize = 12.sp,
+                                    fontSize = dimensions.textSizeSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = WarningOrange
                                 )
@@ -590,18 +594,18 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 400.dp) // Altura máxima para pantallas pequeñas
-                    .padding(12.dp)
-                    .padding(bottom = 56.dp)
-                    .shadow(12.dp, RoundedCornerShape(20.dp)),
-                shape = RoundedCornerShape(20.dp),
+                    .padding(dimensions.paddingSmall)
+                    .padding(bottom = dimensions.iconExtraLarge)
+                    .shadow(12.dp, RoundedCornerShape(dimensions.paddingLarge)),
+                shape = RoundedCornerShape(dimensions.paddingLarge),
                 colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState()) // Hacer scrollable
-                        .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(dimensions.paddingLarge),
+                    verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
                 ) {
                     // Título
                     Row(
@@ -611,18 +615,18 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     ) {
                         Text(
                             "Filtros de búsqueda",
-                            fontSize = 16.sp, // Reducido de 18sp
+                            fontSize = dimensions.textSizeLarge,
                             fontWeight = FontWeight.Bold,
                             color = textColor
                         )
                         IconButton(
                             onClick = { showFiltersPanel = false },
-                            modifier = Modifier.size(40.dp) // Área de toque más grande
+                            modifier = Modifier.size(dimensions.iconLarge)
                         ) {
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = "Cerrar",
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(dimensions.iconMedium),
                                 tint = textSecondaryColor
                             )
                         }
@@ -630,7 +634,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
 
                     // Radio de búsqueda compacto
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -639,20 +643,20 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         ) {
                             Text(
                                 "Radio de distancia",
-                                fontSize = 13.sp,
+                                fontSize = dimensions.textSizeMedium,
                                 fontWeight = FontWeight.Medium,
                                 color = textColor
                             )
                             Card(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(dimensions.paddingSmall),
                                 colors = CardDefaults.cardColors(
                                     containerColor = PrimaryBlue.copy(alpha = 0.1f)
                                 )
                             ) {
                                 Text(
                                     "${filterRadiusKm.toInt()} km",
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                    fontSize = 13.sp,
+                                    modifier = Modifier.padding(horizontal = dimensions.paddingSmall, vertical = 4.dp),
+                                    fontSize = dimensions.textSizeMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = PrimaryBlue
                                 )
@@ -674,11 +678,11 @@ fun MapScreenModern(viewModel: MapViewModel) {
 
                     // Filtro de tipo de dengue
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
                     ) {
                         Text(
                             "Tipo de dengue",
-                            fontSize = 13.sp,
+                            fontSize = dimensions.textSizeMedium,
                             fontWeight = FontWeight.Medium,
                             color = textColor
                         )
@@ -686,7 +690,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         // Chips en LazyRow horizontal scrollable
                         LazyRow(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
                         ) {
                             // Chip "Todos" al inicio
                             item {
@@ -702,12 +706,12 @@ fun MapScreenModern(viewModel: MapViewModel) {
                                                 Icon(
                                                     Icons.Default.Check,
                                                     contentDescription = null,
-                                                    modifier = Modifier.size(14.dp)
+                                                    modifier = Modifier.size(dimensions.iconSmall)
                                                 )
                                             }
                                             Text(
                                                 "Todos",
-                                                fontSize = 12.sp,
+                                                fontSize = dimensions.textSizeSmall,
                                                 fontWeight = FontWeight.Medium
                                             )
                                         }
@@ -733,12 +737,12 @@ fun MapScreenModern(viewModel: MapViewModel) {
                                                 Icon(
                                                     Icons.Default.Check,
                                                     contentDescription = null,
-                                                    modifier = Modifier.size(14.dp)
+                                                    modifier = Modifier.size(dimensions.iconSmall)
                                                 )
                                             }
                                             Text(
                                                 dengueType.NOMBRE_TIPODENGUE ?: "Tipo ${dengueType.ID_TIPODENGUE}",
-                                                fontSize = 11.sp,
+                                                fontSize = dimensions.textSizeSmall,
                                                 fontWeight = FontWeight.Medium,
                                                 maxLines = 1
                                             )
@@ -772,6 +776,7 @@ private fun getDengueTypeColor(typeId: Int): Color {
 
 @Composable
 fun LegendItem(color: Color, label: String, modifier: Modifier = Modifier) {
+    val dimensions = rememberAppDimensions()
     val isDarkTheme = isSystemInDarkTheme()
     val textColor = if (isDarkTheme) Color(0xFFB0B0B0) else Color.Gray
 
@@ -782,13 +787,13 @@ fun LegendItem(color: Color, label: String, modifier: Modifier = Modifier) {
     ) {
         Box(
             modifier = Modifier
-                .size(8.dp)
+                .size(dimensions.paddingSmall)
                 .background(color, CircleShape)
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             label,
-            fontSize = 10.sp,
+            fontSize = dimensions.textSizeSmall,
             color = textColor
         )
     }

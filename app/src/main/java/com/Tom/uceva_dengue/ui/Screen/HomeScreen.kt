@@ -25,6 +25,8 @@ import com.Tom.uceva_dengue.ui.Components.EnhancedPostCard
 import com.Tom.uceva_dengue.ui.Components.ModernPublicationCard
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
+import com.Tom.uceva_dengue.utils.rememberAppDimensions
+import com.Tom.uceva_dengue.utils.rememberWindowSize
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,6 +37,9 @@ fun HomeScreen(
     userId: Int? = null,
     navController: NavController
 ) {
+    val dimensions = rememberAppDimensions()
+    val windowSize = rememberWindowSize()
+
     var searchText by remember { mutableStateOf("") }
     val publicaciones by viewModel.publicaciones.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
@@ -56,7 +61,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp)
+                .padding(dimensions.paddingMedium)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // → Buscador idéntico al de HospitalScreen
@@ -69,27 +74,28 @@ fun HomeScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    placeholder = { Text("Buscar título...") },
+                        .padding(bottom = dimensions.spacingMedium),
+                    placeholder = { Text("Buscar título...", fontSize = dimensions.textSizeMedium) },
                     singleLine = true,
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Buscar",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(dimensions.iconMedium)
                         )
                     },
-                    shape = RoundedCornerShape(24.dp)
+                    shape = RoundedCornerShape(dimensions.cardCornerRadius * 2)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
                 // Estado de lista vacía
                 if (publicaciones.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(32.dp),
+                        .padding(dimensions.paddingExtraLarge),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -99,27 +105,29 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Sin resultados",
-                            modifier = Modifier.size(80.dp),
+                            modifier = Modifier.size(dimensions.iconExtraLarge),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                         Text(
                             text = if (searchText.isNotBlank()) "No se encontraron publicaciones" else "No hay publicaciones disponibles",
                             style = MaterialTheme.typography.titleMedium,
+                            fontSize = dimensions.textSizeLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(dimensions.spacingSmall))
                         Text(
                             text = if (searchText.isNotBlank()) "Intenta con otro término de búsqueda" else "Sé el primero en publicar",
                             style = MaterialTheme.typography.bodySmall,
+                            fontSize = dimensions.textSizeSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             } else {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp), // Espacio para el FAB
+                    verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium),
+                    contentPadding = PaddingValues(bottom = dimensions.paddingExtraLarge * 2), // Espacio para el FAB
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(publicaciones) { publicacion ->

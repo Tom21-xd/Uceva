@@ -21,9 +21,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.Tom.uceva_dengue.ui.viewModel.ProfileViewModel
+import com.Tom.uceva_dengue.utils.rememberAppDimensions
+import com.Tom.uceva_dengue.utils.rememberWindowSize
 
 @Composable
 fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
+    val dimensions = rememberAppDimensions()
+    val windowSize = rememberWindowSize()
     val context = LocalContext.current
     val user by viewModel.user.collectAsState()
     val isLoading by viewModel.loading.collectAsState()
@@ -64,15 +68,15 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(dimensions.paddingMedium),
+                verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
             ) {
                 // Header Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = dimensions.cardElevation)
                 ) {
                     Column(
                         modifier = Modifier
@@ -82,43 +86,43 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     colors = listOf(Color(0xFF00796B), Color(0xFF004D40))
                                 )
                             )
-                            .padding(24.dp),
+                            .padding(dimensions.paddingLarge),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(80.dp)
+                                .size(dimensions.logoSize)
                                 .clip(CircleShape)
                                 .background(Color.White.copy(alpha = 0.3f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = nombre.take(1).uppercase(),
-                                fontSize = 36.sp,
+                                fontSize = dimensions.textSizeHeader,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
                         Text(
                             text = nombre,
-                            fontSize = 22.sp,
+                            fontSize = dimensions.textSizeTitle,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
                         Surface(
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(dimensions.cardCornerRadius),
                             color = Color.White.copy(alpha = 0.2f)
                         ) {
                             Text(
                                 text = user!!.NOMBRE_ROL ?: "Sin rol",
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                fontSize = 13.sp,
+                                modifier = Modifier.padding(horizontal = dimensions.paddingSmall, vertical = dimensions.spacingSmall / 2),
+                                fontSize = dimensions.textSizeMedium,
                                 color = Color.White
                             )
                         }
@@ -128,11 +132,11 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                 // Information Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = dimensions.cardElevation)
                 ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
+                    Column(modifier = Modifier.padding(dimensions.paddingLarge)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -140,7 +144,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                         ) {
                             Text(
                                 text = "Información Personal",
-                                fontSize = 18.sp,
+                                fontSize = dimensions.textSizeExtraLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -149,23 +153,30 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     Icon(
                                         Icons.Default.Edit,
                                         contentDescription = "Editar",
-                                        tint = Color(0xFF00796B)
+                                        tint = Color(0xFF00796B),
+                                        modifier = Modifier.size(dimensions.iconLarge)
                                     )
                                 }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
                         // Nombre
                         if (isEditing) {
                             OutlinedTextField(
                                 value = nombre,
                                 onValueChange = { nombre = it },
-                                label = { Text("Nombre") },
-                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                                label = { Text("Nombre", fontSize = dimensions.textSizeMedium) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Person,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(dimensions.iconMedium)
+                                    )
+                                },
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(dimensions.cardCornerRadius),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = Color(0xFF00796B),
                                     focusedLabelColor = Color(0xFF00796B),
@@ -174,23 +185,30 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                             )
                         } else {
                             ProfileInfoRow(
+                                dimensions = dimensions,
                                 icon = Icons.Default.Person,
                                 label = "Nombre",
                                 value = nombre
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
                         // Correo
                         if (isEditing) {
                             OutlinedTextField(
                                 value = correo,
                                 onValueChange = { correo = it },
-                                label = { Text("Correo Electrónico") },
-                                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                                label = { Text("Correo Electrónico", fontSize = dimensions.textSizeMedium) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Email,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(dimensions.iconMedium)
+                                    )
+                                },
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(dimensions.cardCornerRadius),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = Color(0xFF00796B),
                                     focusedLabelColor = Color(0xFF00796B),
@@ -199,23 +217,30 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                             )
                         } else {
                             ProfileInfoRow(
+                                dimensions = dimensions,
                                 icon = Icons.Default.Email,
                                 label = "Correo Electrónico",
                                 value = correo
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
                         // Dirección
                         if (isEditing) {
                             OutlinedTextField(
                                 value = direccion,
                                 onValueChange = { direccion = it },
-                                label = { Text("Dirección") },
-                                leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+                                label = { Text("Dirección", fontSize = dimensions.textSizeMedium) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.LocationOn,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(dimensions.iconMedium)
+                                    )
+                                },
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(dimensions.cardCornerRadius),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = Color(0xFF00796B),
                                     focusedLabelColor = Color(0xFF00796B),
@@ -224,6 +249,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                             )
                         } else {
                             ProfileInfoRow(
+                                dimensions = dimensions,
                                 icon = Icons.Default.LocationOn,
                                 label = "Dirección",
                                 value = direccion
@@ -231,29 +257,32 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                         }
 
                         HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 12.dp),
+                            modifier = Modifier.padding(vertical = dimensions.spacingSmall),
                             color = MaterialTheme.colorScheme.outlineVariant
                         )
 
                         // Read-only fields
                         ProfileInfoRow(
+                            dimensions = dimensions,
                             icon = Icons.Default.Transgender,
                             label = "Género",
                             value = user!!.NOMBRE_GENERO ?: "No especificado"
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
                         ProfileInfoRow(
+                            dimensions = dimensions,
                             icon = Icons.Default.Favorite,
                             label = "Tipo de Sangre",
                             value = user!!.NOMBRE_TIPOSANGRE ?: "No especificado"
                         )
 
                         if (user!!.NOMBRE_MUNICIPIO != null) {
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
                             ProfileInfoRow(
+                                dimensions = dimensions,
                                 icon = Icons.Default.Place,
                                 label = "Municipio",
                                 value = user!!.NOMBRE_MUNICIPIO ?: "No especificado"
@@ -262,11 +291,11 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
 
                         // Action buttons in edit mode
                         if (isEditing) {
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(dimensions.spacingLarge))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                horizontalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
                             ) {
                                 OutlinedButton(
                                     onClick = {
@@ -280,16 +309,20 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     },
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(50.dp),
-                                    shape = RoundedCornerShape(12.dp),
+                                        .height(dimensions.buttonHeight),
+                                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = Color(0xFF00796B)
                                     ),
                                     enabled = !isSaving
                                 ) {
-                                    Icon(Icons.Default.Close, contentDescription = null)
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Cancelar", fontWeight = FontWeight.SemiBold)
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(dimensions.iconMedium)
+                                    )
+                                    Spacer(modifier = Modifier.width(dimensions.spacingSmall))
+                                    Text("Cancelar", fontWeight = FontWeight.SemiBold, fontSize = dimensions.textSizeMedium)
                                 }
 
                                 Button(
@@ -317,8 +350,8 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                     },
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(50.dp),
-                                    shape = RoundedCornerShape(12.dp),
+                                        .height(dimensions.buttonHeight),
+                                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(0xFF00796B)
                                     ),
@@ -326,14 +359,18 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                                 ) {
                                     if (isSaving) {
                                         CircularProgressIndicator(
-                                            modifier = Modifier.size(20.dp),
+                                            modifier = Modifier.size(dimensions.iconMedium),
                                             color = Color.White,
                                             strokeWidth = 2.dp
                                         )
                                     } else {
-                                        Icon(Icons.Default.Check, contentDescription = null)
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Guardar", color = Color.White, fontWeight = FontWeight.SemiBold)
+                                        Icon(
+                                            Icons.Default.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(dimensions.iconMedium)
+                                        )
+                                        Spacer(modifier = Modifier.width(dimensions.spacingSmall))
+                                        Text("Guardar", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = dimensions.textSizeMedium)
                                     }
                                 }
                             }
@@ -344,7 +381,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                 // ID Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
                     colors = CardDefaults.cardColors(
                         containerColor = Color(0xFFB2DFDB)
                     ),
@@ -353,7 +390,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
+                            .padding(dimensions.paddingLarge),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -361,26 +398,27 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                             Icons.Default.AccountCircle,
                             contentDescription = null,
                             tint = Color(0xFF00796B),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(dimensions.iconLarge)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(dimensions.spacingSmall))
                         Text(
                             text = "ID: ${user!!.ID_USUARIO}",
-                            fontSize = 16.sp,
+                            fontSize = dimensions.textSizeLarge,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF00796B)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(dimensions.paddingExtraLarge * 2))
             }
         } else {
             // No data state
+            val dimensions = rememberAppDimensions()
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -388,12 +426,12 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
                     Icons.Default.Error,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(dimensions.iconExtraLarge)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                 Text(
                     text = "No se pudo cargar el perfil",
-                    fontSize = 18.sp,
+                    fontSize = dimensions.textSizeExtraLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -404,6 +442,7 @@ fun ProfileScreenModern(viewModel: ProfileViewModel, userId: String?) {
 
 @Composable
 private fun ProfileInfoRow(
+    dimensions: com.Tom.uceva_dengue.utils.AppDimensions,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     value: String
@@ -414,7 +453,7 @@ private fun ProfileInfoRow(
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(dimensions.iconButtonSize * 0.8f)
                 .clip(CircleShape)
                 .background(Color(0xFFB2DFDB)),
             contentAlignment = Alignment.Center
@@ -423,23 +462,23 @@ private fun ProfileInfoRow(
                 imageVector = icon,
                 contentDescription = null,
                 tint = Color(0xFF00796B),
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(dimensions.iconMedium)
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(dimensions.spacingMedium))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,
-                fontSize = 12.sp,
+                fontSize = dimensions.textSizeSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(dimensions.spacingSmall / 2))
             Text(
                 text = value.ifBlank { "No especificado" },
-                fontSize = 15.sp,
+                fontSize = dimensions.textSizeMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Normal
             )

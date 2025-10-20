@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.Data.Model.NotificationModel
 import com.Tom.uceva_dengue.ui.viewModel.NotificationViewModel
+import com.Tom.uceva_dengue.utils.rememberAppDimensions
+import com.Tom.uceva_dengue.utils.rememberWindowSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,6 +30,8 @@ fun NotificationScreen(
     navController: NavController,
     viewModel: NotificationViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
+    val dimensions = rememberAppDimensions()
+    val windowSize = rememberWindowSize()
     val notifications by viewModel.notifications.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
@@ -56,11 +60,11 @@ fun NotificationScreen(
                                     imageVector = Icons.Default.Error,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(64.dp)
+                                    modifier = Modifier.size(dimensions.iconExtraLarge)
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                                 Text(text = error ?: "Error inesperado", color = MaterialTheme.colorScheme.error)
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                                 Button(onClick = { viewModel.fetchNotifications() }) {
                                     Text("Reintentar")
                                 }
@@ -74,19 +78,19 @@ fun NotificationScreen(
                                     imageVector = Icons.Default.NotificationsNone,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(80.dp)
+                                    modifier = Modifier.size(dimensions.iconExtraLarge)
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                                 Text(
                                     text = "No hay notificaciones",
-                                    fontSize = 18.sp,
+                                    fontSize = dimensions.textSizeLarge,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
                                 Text(
                                     text = "Desliza hacia abajo para actualizar",
-                                    fontSize = 14.sp,
+                                    fontSize = dimensions.textSizeMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -94,12 +98,12 @@ fun NotificationScreen(
                     }
                 else -> {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall),
+                        contentPadding = PaddingValues(dimensions.paddingMedium),
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(notifications) { notif ->
-                            NotificationCard(notif)
+                            NotificationCard(notif, dimensions)
                         }
                     }
                 }
@@ -108,36 +112,36 @@ fun NotificationScreen(
     }
 }
 @Composable
-fun NotificationCard(notification: NotificationModel) {
+fun NotificationCard(notification: NotificationModel, dimensions: com.Tom.uceva_dengue.utils.AppDimensions) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(dimensions.cardCornerRadius)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(dimensions.paddingMedium),
             verticalAlignment = Alignment.Top
         ) {
             // Icono circular
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(dimensions.iconExtraLarge)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(dimensions.iconLarge)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(dimensions.spacingMedium))
 
             // Contenido
             Column(modifier = Modifier.weight(1f)) {
@@ -148,32 +152,32 @@ fun NotificationCard(notification: NotificationModel) {
                 ) {
                     Text(
                         text = "Notificación",
-                        fontSize = 16.sp,
+                        fontSize = dimensions.textSizeLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
                     )
                     Surface(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(dimensions.paddingSmall),
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
                             text = formatNotificationDate(notification.FECHA_NOTIFICACION),
-                            fontSize = 11.sp,
+                            fontSize = dimensions.textSizeSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier.padding(horizontal = dimensions.paddingSmall, vertical = 4.dp),
                             fontWeight = FontWeight.Medium
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
 
                 Text(
                     text = notification.CONTENIDO_NOTIFICACION.ifEmpty { "Sin contenido" },
-                    fontSize = 14.sp,
+                    fontSize = dimensions.textSizeMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 20.sp
+                    lineHeight = dimensions.paddingLarge
                 )
             }
         }

@@ -49,6 +49,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import com.Tom.uceva_dengue.Data.Service.AuthRepository
 import com.Tom.uceva_dengue.ui.Components.BottomNavigationBar
 import com.Tom.uceva_dengue.ui.Components.MenuLateral
@@ -246,7 +251,33 @@ fun NavigationCon(context: Context) {
                         role = role
                     )
                 }
-                composable(Rout.CreateHospitalScreen.name) {
+                composable(
+                    route = Rout.CreateHospitalScreen.name,
+                    enterTransition = {
+                        slideInHorizontally(
+                            initialOffsetX = { fullWidth -> fullWidth },
+                            animationSpec = tween(300)
+                        ) + fadeIn(animationSpec = tween(300))
+                    },
+                    exitTransition = {
+                        slideOutHorizontally(
+                            targetOffsetX = { fullWidth -> -fullWidth / 4 },
+                            animationSpec = tween(300)
+                        ) + fadeOut(animationSpec = tween(300))
+                    },
+                    popEnterTransition = {
+                        slideInHorizontally(
+                            initialOffsetX = { fullWidth -> -fullWidth / 4 },
+                            animationSpec = tween(300)
+                        ) + fadeIn(animationSpec = tween(300))
+                    },
+                    popExitTransition = {
+                        slideOutHorizontally(
+                            targetOffsetX = { fullWidth -> fullWidth },
+                            animationSpec = tween(300)
+                        ) + fadeOut(animationSpec = tween(300))
+                    }
+                ) {
                     CreateHospitalScreen(
                         navController = navController,
                         viewModel = viewModel()

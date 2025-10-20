@@ -16,8 +16,14 @@ data class PatientStateModel(
     @SerializedName("NIVEL_GRAVEDAD")
     val NIVEL_GRAVEDAD: Int, // 1=Leve, 2=Moderado, 3=Grave, 4=Crítico, 5=Resuelto
 
-    @SerializedName("DESCRIPCION_ESTADO")
-    val DESCRIPCION_ESTADO: String? = null
+    @SerializedName("DESCRIPCION")
+    val DESCRIPCION_ESTADO: String? = null,
+
+    @SerializedName("COLOR_INDICADOR")
+    val COLOR_INDICADOR: String? = null,
+
+    @SerializedName("ESTADO_ACTIVO")
+    val ESTADO_ACTIVO: Boolean = true
 )
 
 /**
@@ -31,14 +37,23 @@ data class CaseEvolutionModel(
     @SerializedName("FK_ID_CASO")
     val FK_ID_CASO: Int,
 
+    @SerializedName("FK_ID_MEDICO")
+    val FK_ID_MEDICO: Int,
+
+    @SerializedName("FK_ID_TIPODENGUE")
+    val FK_ID_TIPO_DENGUE: Int,
+
     @SerializedName("FK_ID_ESTADO_PACIENTE")
     val FK_ID_ESTADO_PACIENTE: Int,
 
-    @SerializedName("DIA_ENFERMEDAD")
-    val DIA_ENFERMEDAD: Int,
-
     @SerializedName("FECHA_EVOLUCION")
     val FECHA_EVOLUCION: String,
+
+    @SerializedName("DIA_ENFERMEDAD")
+    val DIA_ENFERMEDAD: Int? = null,
+
+    @SerializedName("SINTOMAS_REPORTADOS")
+    val SINTOMAS_REPORTADOS: String = "[]", // JSON con IDs de síntomas
 
     // ===== SIGNOS VITALES =====
 
@@ -58,7 +73,7 @@ data class CaseEvolutionModel(
     val FRECUENCIA_RESPIRATORIA: Int? = null,
 
     @SerializedName("SATURACION_OXIGENO")
-    val SATURACION_OXIGENO: Int? = null,
+    val SATURACION_OXIGENO: Double? = null,
 
     // ===== LABORATORIOS =====
 
@@ -74,92 +89,87 @@ data class CaseEvolutionModel(
     @SerializedName("LEUCOCITOS")
     val LEUCOCITOS: Int? = null,
 
-    @SerializedName("CREATININA")
-    val CREATININA: Double? = null,
+    @SerializedName("TRANSAMINASAS_AST")
+    val AST: Int? = null,
 
-    @SerializedName("TRANSAMINASAS")
-    val TRANSAMINASAS: Int? = null,
+    @SerializedName("TRANSAMINASAS_ALT")
+    val ALT: Int? = null,
 
-    // ===== SÍNTOMAS Y OBSERVACIONES =====
-
-    @SerializedName("SINTOMAS_REPORTADOS")
-    val SINTOMAS_REPORTADOS: String? = null, // JSON con IDs de síntomas
-
-    @SerializedName("DOLOR_ABDOMINAL")
-    val DOLOR_ABDOMINAL: Boolean = false,
-
-    @SerializedName("VOMITO_PERSISTENTE")
-    val VOMITO_PERSISTENTE: Boolean = false,
-
-    @SerializedName("SANGRADO_MUCOSAS")
-    val SANGRADO_MUCOSAS: Boolean = false,
-
-    @SerializedName("LETARGIA")
-    val LETARGIA: Boolean = false,
-
-    @SerializedName("HEPATOMEGALIA")
-    val HEPATOMEGALIA: Boolean = false,
-
-    @SerializedName("ACUMULACION_LIQUIDOS")
-    val ACUMULACION_LIQUIDOS: Boolean = false,
+    // ===== EVALUACIÓN CLÍNICA =====
 
     @SerializedName("OBSERVACIONES_CLINICAS")
     val OBSERVACIONES_CLINICAS: String? = null,
 
-    // ===== ALERTAS =====
+    @SerializedName("TRATAMIENTO_INDICADO")
+    val TRATAMIENTO_INDICADO: String? = null,
+
+    @SerializedName("EXAMENES_SOLICITADOS")
+    val EXAMENES_SOLICITADOS: String? = null,
+
+    // ===== ALERTAS Y CAMBIOS =====
+
+    @SerializedName("CAMBIO_TIPO_DENGUE")
+    val CAMBIO_TIPO_DENGUE: Boolean = false,
 
     @SerializedName("EMPEORAMIENTO_DETECTADO")
     val EMPEORAMIENTO_DETECTADO: Boolean = false,
 
-    @SerializedName("REQUIERE_ATENCION_INMEDIATA")
-    val REQUIERE_ATENCION_INMEDIATA: Boolean = false,
+    @SerializedName("REQUIERE_HOSPITALIZACION")
+    val REQUIERE_HOSPITALIZACION: Boolean = false,
 
-    @SerializedName("SIGNOS_ALARMA")
-    val SIGNOS_ALARMA: String? = null, // JSON con signos de alarma detectados
+    @SerializedName("REQUIERE_UCI")
+    val REQUIERE_UCI: Boolean = false,
 
-    // ===== TRATAMIENTO =====
+    // ===== SEGUIMIENTO =====
 
-    @SerializedName("TRATAMIENTO_ADMINISTRADO")
-    val TRATAMIENTO_ADMINISTRADO: String? = null,
+    @SerializedName("PROXIMA_CITA")
+    val PROXIMA_CITA: String? = null,
 
-    @SerializedName("HIDRATACION_ORAL")
-    val HIDRATACION_ORAL: Boolean = false,
-
-    @SerializedName("HIDRATACION_INTRAVENOSA")
-    val HIDRATACION_INTRAVENOSA: Boolean = false,
-
-    @SerializedName("VOLUMEN_LIQUIDOS_ML")
-    val VOLUMEN_LIQUIDOS_ML: Int? = null,
+    @SerializedName("RECOMENDACIONES_PACIENTE")
+    val RECOMENDACIONES_PACIENTE: String? = null,
 
     // ===== METADATA =====
-
-    @SerializedName("FK_ID_PROFESIONAL_SALUD")
-    val FK_ID_PROFESIONAL_SALUD: Int? = null,
 
     @SerializedName("ESTADO_EVOLUCION")
     val ESTADO_EVOLUCION: Boolean = true,
 
-    // ===== NESTED OBJECTS =====
+    @SerializedName("FECHA_REGISTRO")
+    val FECHA_REGISTRO: String? = null,
 
-    @SerializedName("ESTADO_PACIENTE")
+    @SerializedName("FECHA_MODIFICACION")
+    val FECHA_MODIFICACION: String? = null,
+
+    // ===== NESTED OBJECTS (from Includes) =====
+
+    @SerializedName("patientState")
     val ESTADO_PACIENTE: PatientStateModel? = null,
 
-    @SerializedName("PROFESIONAL")
-    val PROFESIONAL: UserInfo? = null
+    @SerializedName("doctor")
+    val MEDICO: UserInfo? = null,
+
+    @SerializedName("typeOfDengue")
+    val TIPO_DENGUE: TypeOfDengueInfo? = null
 )
 
 /**
  * Request para crear evolución clínica
+ * IMPORTANTE: El backend recibe CaseEvolution entity directamente
  */
 data class CreateCaseEvolutionRequest(
-    @SerializedName("FK_ID_CASO")
-    val FK_ID_CASO: Int,
-
     @SerializedName("FK_ID_ESTADO_PACIENTE")
     val FK_ID_ESTADO_PACIENTE: Int,
 
+    @SerializedName("FK_ID_TIPODENGUE")
+    val FK_ID_TIPODENGUE: Int,
+
+    @SerializedName("FK_ID_MEDICO")
+    val FK_ID_MEDICO: Int,
+
     @SerializedName("DIA_ENFERMEDAD")
-    val DIA_ENFERMEDAD: Int,
+    val DIA_ENFERMEDAD: Int? = null,
+
+    @SerializedName("SINTOMAS_REPORTADOS")
+    val SINTOMAS_REPORTADOS: String = "[]",
 
     // Signos vitales
     @SerializedName("TEMPERATURA")
@@ -178,7 +188,7 @@ data class CreateCaseEvolutionRequest(
     val FRECUENCIA_RESPIRATORIA: Int? = null,
 
     @SerializedName("SATURACION_OXIGENO")
-    val SATURACION_OXIGENO: Int? = null,
+    val SATURACION_OXIGENO: Double? = null,
 
     // Laboratorios
     @SerializedName("PLAQUETAS")
@@ -193,37 +203,34 @@ data class CreateCaseEvolutionRequest(
     @SerializedName("LEUCOCITOS")
     val LEUCOCITOS: Int? = null,
 
-    // Síntomas
-    @SerializedName("SINTOMAS_REPORTADOS")
-    val SINTOMAS_REPORTADOS: List<Int>? = null, // IDs de síntomas
+    @SerializedName("TRANSAMINASAS_AST")
+    val TRANSAMINASAS_AST: Int? = null,
 
-    @SerializedName("DOLOR_ABDOMINAL")
-    val DOLOR_ABDOMINAL: Boolean = false,
+    @SerializedName("TRANSAMINASAS_ALT")
+    val TRANSAMINASAS_ALT: Int? = null,
 
-    @SerializedName("VOMITO_PERSISTENTE")
-    val VOMITO_PERSISTENTE: Boolean = false,
-
-    @SerializedName("SANGRADO_MUCOSAS")
-    val SANGRADO_MUCOSAS: Boolean = false,
-
-    @SerializedName("LETARGIA")
-    val LETARGIA: Boolean = false,
-
+    // Observaciones y tratamiento
     @SerializedName("OBSERVACIONES_CLINICAS")
     val OBSERVACIONES_CLINICAS: String? = null,
 
-    // Tratamiento
-    @SerializedName("TRATAMIENTO_ADMINISTRADO")
-    val TRATAMIENTO_ADMINISTRADO: String? = null,
+    @SerializedName("TRATAMIENTO_INDICADO")
+    val TRATAMIENTO_INDICADO: String? = null,
 
-    @SerializedName("HIDRATACION_ORAL")
-    val HIDRATACION_ORAL: Boolean = false,
+    @SerializedName("EXAMENES_SOLICITADOS")
+    val EXAMENES_SOLICITADOS: String? = null,
 
-    @SerializedName("HIDRATACION_INTRAVENOSA")
-    val HIDRATACION_INTRAVENOSA: Boolean = false,
+    // Alertas
+    @SerializedName("REQUIERE_HOSPITALIZACION")
+    val REQUIERE_HOSPITALIZACION: Boolean = false,
 
-    @SerializedName("VOLUMEN_LIQUIDOS_ML")
-    val VOLUMEN_LIQUIDOS_ML: Int? = null
+    @SerializedName("REQUIERE_UCI")
+    val REQUIERE_UCI: Boolean = false,
+
+    @SerializedName("PROXIMA_CITA")
+    val PROXIMA_CITA: String? = null,
+
+    @SerializedName("RECOMENDACIONES_PACIENTE")
+    val RECOMENDACIONES_PACIENTE: String? = null
 )
 
 /**
@@ -231,30 +238,30 @@ data class CreateCaseEvolutionRequest(
  * Para mostrar gráficas y tendencias
  */
 data class CaseEvolutionSummaryModel(
-    @SerializedName("ID_CASO")
+    @SerializedName("id_caso")
     val ID_CASO: Int,
 
-    @SerializedName("ESTADO_ACTUAL")
+    @SerializedName("estado_actual")
     val ESTADO_ACTUAL: PatientStateModel,
 
-    @SerializedName("DIA_ENFERMEDAD_ACTUAL")
+    @SerializedName("dia_enfermedad_actual")
     val DIA_ENFERMEDAD_ACTUAL: Int,
 
-    @SerializedName("TOTAL_EVOLUCIONES")
+    @SerializedName("total_evoluciones")
     val TOTAL_EVOLUCIONES: Int,
 
-    @SerializedName("ULTIMA_EVOLUCION")
+    @SerializedName("ultima_evolucion")
     val ULTIMA_EVOLUCION: CaseEvolutionModel?,
 
-    @SerializedName("TENDENCIA_PLAQUETAS")
+    @SerializedName("tendencia_plaquetas")
     val TENDENCIA_PLAQUETAS: String? = null, // "mejorando", "estable", "empeorando"
 
-    @SerializedName("TENDENCIA_HEMATOCRITO")
+    @SerializedName("tendencia_hematocrito")
     val TENDENCIA_HEMATOCRITO: String? = null,
 
-    @SerializedName("TIENE_SIGNOS_ALARMA")
+    @SerializedName("tiene_signos_alarma")
     val TIENE_SIGNOS_ALARMA: Boolean = false,
 
-    @SerializedName("EVOLUCIONES")
+    @SerializedName("evoluciones")
     val EVOLUCIONES: List<CaseEvolutionModel>? = null
 )

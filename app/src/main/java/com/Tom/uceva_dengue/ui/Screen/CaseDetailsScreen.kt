@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.Tom.uceva_dengue.ui.Components.ComboBox
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
+import com.Tom.uceva_dengue.ui.theme.*
+import com.Tom.uceva_dengue.utils.rememberAppDimensions
+import com.Tom.uceva_dengue.utils.rememberWindowSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,6 +32,8 @@ fun CaseDetailsScreen(
     viewModel: CaseDetailsViewModel,
     navController: NavHostController
 ) {
+    val dimensions = rememberAppDimensions()
+    val windowSize = rememberWindowSize()
     val context = LocalContext.current
 
     // Observing all relevant state
@@ -83,8 +88,8 @@ fun CaseDetailsScreen(
                 val c = caseModel!!
 
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(dimensions.paddingMedium),
+                    contentPadding = PaddingValues(dimensions.paddingMedium),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     // Contenido principal
@@ -92,8 +97,8 @@ fun CaseDetailsScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                                .padding(dimensions.paddingMedium),
+                            verticalArrangement = Arrangement.spacedBy(dimensions.paddingMedium)
                         ) {
                             // Card de información del paciente
                             ModernInfoCard(
@@ -111,32 +116,32 @@ fun CaseDetailsScreen(
                             // Card de información médica
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(dimensions.cardCornerRadius),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                elevation = CardDefaults.cardElevation(defaultElevation = dimensions.elevationSmall)
                             ) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(20.dp),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                        .padding(dimensions.paddingLarge),
+                                    verticalArrangement = Arrangement.spacedBy(dimensions.paddingMedium)
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Surface(
-                                            shape = RoundedCornerShape(12.dp),
+                                            shape = RoundedCornerShape(dimensions.iconBackgroundRadius),
                                             color = MaterialTheme.colorScheme.primaryContainer
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.LocalHospital,
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                                modifier = Modifier.padding(12.dp).size(24.dp)
+                                                modifier = Modifier.padding(dimensions.iconPadding).size(dimensions.iconSizeMedium)
                                             )
                                         }
-                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Spacer(modifier = Modifier.width(dimensions.spacerMedium))
                                         Text(
                                             text = "Información Médica",
-                                            fontSize = 18.sp,
+                                            fontSize = dimensions.fontSizeLarge,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
@@ -180,9 +185,9 @@ fun CaseDetailsScreen(
                                             label = { Text("Descripción") },
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .heightIn(min = 120.dp),
+                                                .heightIn(min = dimensions.textFieldHeightLarge),
                                             maxLines = 5,
-                                            shape = RoundedCornerShape(12.dp),
+                                            shape = RoundedCornerShape(dimensions.iconBackgroundRadius),
                                             colors = OutlinedTextFieldDefaults.colors(
                                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                                 focusedLabelColor = MaterialTheme.colorScheme.primary,
@@ -201,8 +206,8 @@ fun CaseDetailsScreen(
                                 Row(
                                     Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                        .padding(vertical = dimensions.paddingSmall),
+                                    horizontalArrangement = Arrangement.spacedBy(dimensions.spacerMedium)
                                 ) {
                                     OutlinedButton(
                                         onClick = {
@@ -214,14 +219,14 @@ fun CaseDetailsScreen(
                                         },
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height(56.dp),
-                                        shape = RoundedCornerShape(12.dp),
+                                            .height(dimensions.buttonHeight),
+                                        shape = RoundedCornerShape(dimensions.iconBackgroundRadius),
                                         colors = ButtonDefaults.outlinedButtonColors(
                                             contentColor = Color(0xFF00796B)
                                         )
                                     ) {
-                                        Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(20.dp))
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(dimensions.iconSizeSmall))
+                                        Spacer(modifier = Modifier.width(dimensions.paddingSmall))
                                         Text("Cancelar", fontWeight = FontWeight.SemiBold)
                                     }
                                     Button(
@@ -237,14 +242,14 @@ fun CaseDetailsScreen(
                                         },
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height(56.dp),
-                                        shape = RoundedCornerShape(12.dp),
+                                            .height(dimensions.buttonHeight),
+                                        shape = RoundedCornerShape(dimensions.iconBackgroundRadius),
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = Color(0xFF00796B)
                                         )
                                     ) {
-                                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(dimensions.iconSizeSmall))
+                                        Spacer(modifier = Modifier.width(dimensions.paddingSmall))
                                         Text("Guardar", color = Color.White, fontWeight = FontWeight.SemiBold)
                                     }
                                 }
@@ -254,15 +259,15 @@ fun CaseDetailsScreen(
                             if (!isEditing) {
                                 Text(
                                     text = "Evolución Clínica",
-                                    fontSize = 18.sp,
+                                    fontSize = dimensions.fontSizeLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
+                                    modifier = Modifier.padding(top = dimensions.paddingSmall, bottom = dimensions.iconBackgroundRadius)
                                 )
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(dimensions.spacerMedium)
                                 ) {
                                     // Botón para ver historial
                                     OutlinedButton(
@@ -271,11 +276,11 @@ fun CaseDetailsScreen(
                                         },
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height(56.dp),
-                                        shape = RoundedCornerShape(12.dp)
+                                            .height(dimensions.buttonHeight),
+                                        shape = RoundedCornerShape(dimensions.iconBackgroundRadius)
                                     ) {
-                                        Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(20.dp))
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(dimensions.iconSizeSmall))
+                                        Spacer(modifier = Modifier.width(dimensions.paddingSmall))
                                         Text("Ver Historial", fontWeight = FontWeight.SemiBold)
                                     }
 
@@ -290,20 +295,20 @@ fun CaseDetailsScreen(
                                         },
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height(56.dp),
-                                        shape = RoundedCornerShape(12.dp),
+                                            .height(dimensions.buttonHeight),
+                                        shape = RoundedCornerShape(dimensions.iconBackgroundRadius),
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = MaterialTheme.colorScheme.primary
                                         )
                                     ) {
-                                        Icon(Icons.Default.MedicalServices, contentDescription = null, modifier = Modifier.size(20.dp))
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Icon(Icons.Default.MedicalServices, contentDescription = null, modifier = Modifier.size(dimensions.iconSizeSmall))
+                                        Spacer(modifier = Modifier.width(dimensions.paddingSmall))
                                         Text("Nueva Evolución", fontWeight = FontWeight.SemiBold)
                                     }
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(80.dp))
+                            Spacer(modifier = Modifier.height(dimensions.bottomPadding))
                         }
                     }
                 }
@@ -314,17 +319,17 @@ fun CaseDetailsScreen(
                         onClick = { isEditing = true },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
-                            .padding(24.dp)
-                            .size(64.dp),
+                            .padding(dimensions.paddingExtraLarge)
+                            .size(dimensions.fabSize),
                         containerColor = Color(0xFF00796B),
                         contentColor = Color.White,
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(dimensions.cardCornerRadius),
                         elevation = FloatingActionButtonDefaults.elevation(
-                            defaultElevation = 8.dp,
-                            pressedElevation = 12.dp
+                            defaultElevation = dimensions.paddingSmall,
+                            pressedElevation = dimensions.iconBackgroundRadius
                         )
                     ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar", modifier = Modifier.size(28.dp))
+                        Icon(Icons.Default.Edit, contentDescription = "Editar", modifier = Modifier.size(dimensions.iconSizeLarge))
                     }
                 }
             }
@@ -340,34 +345,36 @@ private fun ModernInfoCard(
     iconBackgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
     iconTintColor: Color = MaterialTheme.colorScheme.primary
 ) {
+    val dimensions = rememberAppDimensions()
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(dimensions.cardCornerRadius),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = dimensions.elevationSmall)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(dimensions.paddingLarge),
+            verticalArrangement = Arrangement.spacedBy(dimensions.iconBackgroundRadius)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(dimensions.iconBackgroundRadius),
                     color = iconBackgroundColor
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = iconTintColor,
-                        modifier = Modifier.padding(12.dp).size(24.dp)
+                        modifier = Modifier.padding(dimensions.iconPadding).size(dimensions.iconSizeMedium)
                     )
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(dimensions.spacerMedium))
                 Text(
                     text = title,
-                    fontSize = 18.sp,
+                    fontSize = dimensions.fontSizeLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -382,17 +389,19 @@ private fun ModernInfoCard(
 
 @Composable
 private fun ModernInfoItem(label: String, value: String?) {
+    val dimensions = rememberAppDimensions()
+
     Column {
         Text(
             text = label,
-            fontSize = 12.sp,
+            fontSize = dimensions.fontSizeSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(dimensions.paddingExtraSmall))
         Text(
             text = value.takeIf { !it.isNullOrBlank() } ?: "Sin información",
-            fontSize = 16.sp,
+            fontSize = dimensions.fontSizeMedium,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface
         )

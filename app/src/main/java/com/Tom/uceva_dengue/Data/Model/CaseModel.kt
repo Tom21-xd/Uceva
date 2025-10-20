@@ -117,5 +117,8 @@ data class TypeOfDengueInfo(
     val ID_TIPODENGUE: Int,
 
     @SerializedName("NOMBRE_TIPODENGUE")
-    val NOMBRE_TIPODENGUE: String
+    val NOMBRE_TIPODENGUE: String,
+
+    @SerializedName("ESTADO_TIPODENGUE")
+    val ESTADO_TIPODENGUE: Boolean = true
 )

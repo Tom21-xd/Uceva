@@ -28,8 +28,11 @@ import com.Tom.uceva_dengue.Data.Service.AuthRepository
 import com.Tom.uceva_dengue.ui.Components.CommentSection
 import com.Tom.uceva_dengue.ui.Components.EnhancedReactionBar
 import com.Tom.uceva_dengue.ui.Components.FloatingHeartAnimation
+import com.Tom.uceva_dengue.ui.theme.*
 import com.Tom.uceva_dengue.ui.Components.BookmarkSaveAnimation
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
+import com.Tom.uceva_dengue.utils.rememberAppDimensions
+import com.Tom.uceva_dengue.utils.rememberWindowSize
 
 @Composable
 fun PostDetailScreen(
@@ -37,6 +40,9 @@ fun PostDetailScreen(
     viewModel: PublicacionViewModel,
     navController: NavController
 ) {
+    val dimensions = rememberAppDimensions()
+    val windowSize = rememberWindowSize()
+
     var publicacion by remember { mutableStateOf<PublicationModel?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var comments by remember { mutableStateOf<List<PublicationCommentModel>>(emptyList()) }
@@ -142,8 +148,8 @@ fun PostDetailScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 250.dp) // Reducido de 320dp a 250dp max
-                    .aspectRatio(16f / 9f, matchHeightConstraintsFirst = false) // Mantiene aspect ratio
+                    .heightIn(max = dimensions.imageHeightMedium)
+                    .aspectRatio(16f / 9f, matchHeightConstraintsFirst = false)
             ) {
                 if (imageUrl != null) {
                     SubcomposeAsyncImage(
@@ -160,7 +166,7 @@ fun PostDetailScreen(
                             ) {
                                 CircularProgressIndicator(
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(50.dp)
+                                    modifier = Modifier.size(dimensions.progressIndicatorSize)
                                 )
                             }
                         },
@@ -176,10 +182,10 @@ fun PostDetailScreen(
                                         imageVector = Icons.Default.BrokenImage,
                                         contentDescription = "Error al cargar imagen",
                                         tint = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(64.dp)
+                                        modifier = Modifier.size(dimensions.fabSize)
                                     )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text("No se pudo cargar la imagen", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
+                                    Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                                    Text("No se pudo cargar la imagen", color = MaterialTheme.colorScheme.onSurface, fontSize = dimensions.fontSizeMedium)
                                 }
                             }
                         }
@@ -197,10 +203,10 @@ fun PostDetailScreen(
                                 imageVector = Icons.Default.BrokenImage,
                                 contentDescription = "Sin imagen",
                                 tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(64.dp)
+                                modifier = Modifier.size(dimensions.fabSize)
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("Sin imagen disponible", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
+                            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                            Text("Sin imagen disponible", color = MaterialTheme.colorScheme.onSurface, fontSize = dimensions.fontSizeMedium)
                         }
                     }
                 }
@@ -209,7 +215,7 @@ fun PostDetailScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(100.dp)
+                        .height(dimensions.overlayHeight)
                         .align(Alignment.BottomStart)
                         .background(
                             androidx.compose.ui.graphics.Brush.verticalGradient(
@@ -226,48 +232,48 @@ fun PostDetailScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
+                    .padding(dimensions.paddingLarge)
             ) {
                 // Card del título y descripción
                 androidx.compose.material3.Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = dimensions.elevationSmall)
                 ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
+                    Column(modifier = Modifier.padding(dimensions.paddingLarge)) {
                         Text(
                             text = publicacion!!.TITULO_PUBLICACION,
-                            fontSize = 20.sp, // Reducido de 24sp
+                            fontSize = dimensions.fontSizeExtraLarge,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
-                            lineHeight = 26.sp // Ajustado proporcionalmente
+                            lineHeight = dimensions.lineHeightLarge
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(dimensions.paddingMedium))
 
                         Text(
                             text = publicacion!!.DESCRIPCION_PUBLICACION,
-                            fontSize = 16.sp,
+                            fontSize = dimensions.fontSizeMedium,
                             color = MaterialTheme.colorScheme.onSurface,
-                            lineHeight = 24.sp
+                            lineHeight = dimensions.lineHeightMedium
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensions.paddingMedium))
 
                 // Card de información del autor
                 androidx.compose.material3.Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = dimensions.elevationSmall)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(dimensions.paddingMedium),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -275,30 +281,30 @@ fun PostDetailScreen(
                             androidx.compose.material3.Surface(
                                 shape = androidx.compose.foundation.shape.CircleShape,
                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                modifier = Modifier.size(48.dp)
+                                modifier = Modifier.size(dimensions.avatarSizeMedium)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = Icons.Default.Person,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(dimensions.iconSizeMedium)
                                     )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(dimensions.spacerMedium))
 
                             Column {
                                 Text(
                                     text = publicacion!!.USUARIO?.NOMBRE_USUARIO ?: publicacion!!.NOMBRE_USUARIO ?: "Usuario desconocido",
-                                    fontSize = 16.sp,
+                                    fontSize = dimensions.fontSizeMedium,
                                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = publicacion!!.FECHA_PUBLICACION,
-                                    fontSize = 13.sp,
+                                    fontSize = dimensions.fontSizeSmall,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
@@ -306,7 +312,7 @@ fun PostDetailScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensions.paddingMedium))
 
                 // Barra de reacciones mejorada
                 EnhancedReactionBar(
@@ -370,12 +376,12 @@ fun PostDetailScreen(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(dimensions.paddingExtraLarge))
 
                 // Sección de comentarios
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
 
                 CommentSection(
                     comments = comments,
@@ -440,7 +446,7 @@ fun PostDetailScreen(
                     currentUserId = currentUserId
                 )
 
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(dimensions.bottomPadding))
             }
         }
 

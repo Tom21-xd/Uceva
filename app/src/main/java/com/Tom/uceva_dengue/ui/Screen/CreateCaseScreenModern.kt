@@ -400,23 +400,6 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
     val surfaceColor = MaterialTheme.colorScheme.surface
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
-    var searchQuery by remember { mutableStateOf("") }
-    var showDropdown by remember { mutableStateOf(false) }
-
-    val filteredUsers = remember(users, searchQuery) {
-        if (searchQuery.isNotBlank()) {
-            users.filter {
-                it.NOMBRE_USUARIO.toString().contains(searchQuery, ignoreCase = true)
-            }
-        } else {
-            emptyList()
-        }
-    }
-
-    LaunchedEffect(searchQuery, filteredUsers) {
-        showDropdown = searchQuery.isNotBlank() && filteredUsers.isNotEmpty()
-    }
-
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Toggle usuario existente
         Row(
@@ -431,8 +414,6 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
                     selected = isExistingUser,
                     onClick = {
                         viewModel.setExistingUser(true)
-                        showDropdown = false
-                        searchQuery = ""
                     },
                     colors = RadioButtonDefaults.colors(
                         selectedColor = primaryColor,
@@ -450,7 +431,6 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
                     selected = !isExistingUser,
                     onClick = {
                         viewModel.setExistingUser(false)
-                        showDropdown = false
                     },
                     colors = RadioButtonDefaults.colors(
                         selectedColor = primaryColor,
@@ -466,39 +446,20 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
         }
 
         if (isExistingUser) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { query ->
-                        searchQuery = query
-                    },
-                    label = { Text("Buscar Usuario") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = primaryColor) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = primaryColor,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                    )
-                )
-
-                DropdownMenu(
-                    expanded = showDropdown,
-                    onDismissRequest = { showDropdown = false },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    filteredUsers.forEach { user ->
-                        DropdownMenuItem(
-                            text = { Text(user.NOMBRE_USUARIO.toString()) },
-                            onClick = {
-                                viewModel.selectUser(user)
-                                searchQuery = user.NOMBRE_USUARIO.toString()
-                                showDropdown = false
-                            }
-                        )
+            // Componente de búsqueda mejorado
+            com.Tom.uceva_dengue.ui.Components.SearchableDropdown(
+                items = users,
+                selectedItem = selectedUser,
+                onItemSelected = { user ->
+                    if (user != null) {
+                        viewModel.selectUser(user)
                     }
-                }
-            }
+                },
+                itemLabel = { user -> user.NOMBRE_USUARIO.toString() },
+                label = "Buscar Usuario",
+                placeholder = "Escribe el nombre del usuario...",
+                modifier = Modifier.fillMaxWidth()
+            )
 
             selectedUser?.let { SelectedUserCardModern(it) }
         } else {

@@ -43,29 +43,11 @@ fun CaseEvolutionHistoryScreen(
         viewModel.fetchEvolutionSummary(caseId)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Historial de Evolución") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(paddingValues)
-        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
             when {
                 isLoading && evolutions.isEmpty() -> {
                     // Loading state
@@ -182,7 +164,6 @@ fun CaseEvolutionHistoryScreen(
                     }
                 }
             }
-        }
     }
 }
 

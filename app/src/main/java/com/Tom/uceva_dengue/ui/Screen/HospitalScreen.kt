@@ -39,8 +39,16 @@ import com.Tom.uceva_dengue.ui.viewModel.HospitalViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import com.Tom.uceva_dengue.utils.rememberAppDimensions
+import com.Tom.uceva_dengue.utils.rememberWindowSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +57,8 @@ fun HospitalScreen(
     viewModel: HospitalViewModel = viewModel(),
     role: Int = 0
 ) {
+    val dimensions = rememberAppDimensions()
+    val windowSize = rememberWindowSize()
     val hospitals by viewModel.hospitals.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
@@ -68,7 +78,7 @@ fun HospitalScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(16.dp)
+                    .padding(dimensions.paddingMedium)
             ) {
             // Buscador
             OutlinedTextField(
@@ -80,7 +90,7 @@ fun HospitalScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                    .padding(bottom = dimensions.paddingSmall),
                 placeholder = { Text("Buscar hospital...") },
                 singleLine = true,
                 leadingIcon = {
@@ -91,7 +101,7 @@ fun HospitalScreen(
                     )
                 },
 
-                shape = RoundedCornerShape(24.dp)
+                shape = RoundedCornerShape(dimensions.cardCornerRadius)
             )
 
                 if (isLoading) {
@@ -101,9 +111,78 @@ fun HospitalScreen(
                     ) {
                         CircularProgressIndicator()
                     }
+                } else if (hospitals.isEmpty()) {
+                    // Estado vacío
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(dimensions.paddingLarge),
+                            shape = RoundedCornerShape(dimensions.cardCornerRadius),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(dimensions.paddingExtraLarge),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.LocalHospital,
+                                    contentDescription = "Sin hospitales",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(dimensions.iconExtraLarge)
+                                )
+
+                                Text(
+                                    text = "No hay hospitales registrados",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Text(
+                                    text = if (role == 2 || role == 3) {
+                                        "Comienza agregando el primer hospital a la plataforma"
+                                    } else {
+                                        "Aún no hay hospitales disponibles en el sistema"
+                                    },
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    textAlign = TextAlign.Center
+                                )
+
+                                if (role == 2 || role == 3) {
+                                    Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                                    Button(
+                                        onClick = {
+                                            navController.navigate(Rout.CreateHospitalScreen.name)
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(dimensions.iconMedium)
+                                        )
+                                        Spacer(modifier = Modifier.width(dimensions.paddingSmall))
+                                        Text("Crear primer hospital")
+                                    }
+                                }
+                            }
+                        }
+                    }
                 } else {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall),
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(hospitals) { hospital ->
@@ -133,7 +212,7 @@ fun HospitalScreen(
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+                    .padding(dimensions.paddingMedium)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Crear hospital")
             }
