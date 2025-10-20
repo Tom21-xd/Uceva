@@ -177,7 +177,7 @@ fun NotificationCard(notification: NotificationModel, dimensions: com.Tom.uceva_
                     text = notification.CONTENIDO_NOTIFICACION.ifEmpty { "Sin contenido" },
                     fontSize = dimensions.textSizeMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = dimensions.paddingLarge
+                    lineHeight = 20.sp
                 )
             }
         }

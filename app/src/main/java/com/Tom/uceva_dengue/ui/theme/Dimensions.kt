@@ -29,6 +29,7 @@ val elevationLarge: Dp = 8.dp
 val borderRadiusSmall: Dp = 8.dp
 val borderRadiusMedium: Dp = 12.dp
 val borderRadiusLarge: Dp = 16.dp
+val cardCornerRadiusLarge: Dp = 24.dp
 val iconBackgroundRadius: Dp = 12.dp
 
 // ===== ICON SIZES =====
@@ -43,6 +44,7 @@ val fontSizeSmall: TextUnit = 12.sp
 val fontSizeMedium: TextUnit = 14.sp
 val fontSizeLarge: TextUnit = 16.sp
 val fontSizeExtraLarge: TextUnit = 20.sp
+val fontSizeExtraExtraLarge: TextUnit = 28.sp
 val fontSizeTitle: TextUnit = 24.sp
 
 // ===== COMPONENT SIZES =====

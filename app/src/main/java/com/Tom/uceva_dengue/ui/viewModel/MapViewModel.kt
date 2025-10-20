@@ -2,6 +2,7 @@ package com.Tom.uceva_dengue.ui.viewModel
 
 import android.util.Log
 import com.Tom.uceva_dengue.Data.Api.RetrofitClient
+import com.Tom.uceva_dengue.Data.Service.SignalRService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.Tom.uceva_dengue.Data.Model.CaseModel
@@ -19,6 +20,9 @@ import kotlin.math.sqrt
 
 
 class MapViewModel : ViewModel() {
+
+    // SignalR service for real-time updates
+    private val signalRService = SignalRService.getInstance()
 
     private val _cases = MutableStateFlow<List<CaseModel>>(emptyList())
     val cases: StateFlow<List<CaseModel>> = _cases
@@ -102,6 +106,73 @@ class MapViewModel : ViewModel() {
 
     init {
         loadAllData()
+        connectToSignalR()
+        observeSignalREvents()
+    }
+
+    /**
+     * Connect to SignalR hub for real-time updates
+     */
+    private fun connectToSignalR() {
+        viewModelScope.launch {
+            try {
+                signalRService.connect()
+                Log.d("MapViewModel", "SignalR connection initiated")
+            } catch (e: Exception) {
+                Log.e("MapViewModel", "Error connecting to SignalR", e)
+            }
+        }
+    }
+
+    /**
+     * Observe SignalR events and update UI accordingly
+     */
+    private fun observeSignalREvents() {
+        // Observe new case events
+        viewModelScope.launch {
+            signalRService.newCaseEvent.collect { event ->
+                event?.let { (caseId, message) ->
+                    Log.d("MapViewModel", "New case received via SignalR: $caseId - $message")
+                    // Reload data to get the new case
+                    refreshData()
+                    signalRService.clearNewCaseEvent()
+                }
+            }
+        }
+
+        // Observe case update events
+        viewModelScope.launch {
+            signalRService.caseUpdateEvent.collect { event ->
+                event?.let { (caseId, message) ->
+                    Log.d("MapViewModel", "Case update received via SignalR: $caseId - $message")
+                    // Reload data to get the updated case
+                    refreshData()
+                    signalRService.clearCaseUpdateEvent()
+                }
+            }
+        }
+
+        // Observe case deleted events
+        viewModelScope.launch {
+            signalRService.caseDeletedEvent.collect { caseId ->
+                caseId?.let {
+                    Log.d("MapViewModel", "Case deleted received via SignalR: $caseId")
+                    // Remove case from local list
+                    _cases.value = _cases.value.filter { case -> case.ID_CASOREPORTADO != caseId }
+                    filterCasesByProximity()
+                    signalRService.clearCaseDeletedEvent()
+                }
+            }
+        }
+    }
+
+    /**
+     * Disconnect from SignalR when ViewModel is cleared
+     */
+    override fun onCleared() {
+        super.onCleared()
+        signalRService.disconnect()
+        Log.d("MapViewModel", "SignalR disconnected")
     }
 
     /**

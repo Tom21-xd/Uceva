@@ -166,7 +166,7 @@ class CreateCaseViewModel : ViewModel() {
 
             try {
                 // Lanzar todas las peticiones en paralelo
-                val usersDeferred = async { RetrofitClient.userService.getUsers() }
+                val usersDeferred = async { RetrofitClient.userService.getUserLives() }
                 val genresDeferred = async { RetrofitClient.genreService.getGenres() }
                 val bloodTypesDeferred = async { RetrofitClient.bloodTypeService.getBloodTypes() }
                 val symptomsDeferred = async { RetrofitClient.dengueService.getSymptoms() }
@@ -174,7 +174,7 @@ class CreateCaseViewModel : ViewModel() {
                 val departmentsDeferred = async { RetrofitClient.departmentService.getDepartments() }
 
                 // Esperar a que todas completen
-                // userService.getUsers() retorna Response<List<UserModel>>
+                // userService.getUserLives() retorna Response<List<UserModel>> - solo usuarios sin casos activos
                 val usersResponse = usersDeferred.await()
                 _users.value = if (usersResponse.isSuccessful) {
                     usersResponse.body() ?: emptyList()

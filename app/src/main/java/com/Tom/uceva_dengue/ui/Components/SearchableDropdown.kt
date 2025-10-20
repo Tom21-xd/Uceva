@@ -42,7 +42,7 @@ import androidx.compose.ui.window.PopupProperties
 fun <T> SearchableDropdown(
     items: List<T>,
     selectedItem: T?,
-    onItemSelected: (T) -> Unit,
+    onItemSelected: (T?) -> Unit,
     itemLabel: (T) -> String,
     modifier: Modifier = Modifier,
     label: String = "Buscar",
@@ -88,7 +88,7 @@ fun <T> SearchableDropdown(
                     searchQuery = query
                     // Si el campo se limpia, deseleccionar el item
                     if (query.isBlank() && selectedItem != null) {
-                        onItemSelected(null as T)
+                        onItemSelected(null)
                     }
                 },
                 label = { Text(label) },
@@ -116,7 +116,7 @@ fun <T> SearchableDropdown(
                             IconButton(
                                 onClick = {
                                     searchQuery = ""
-                                    onItemSelected(null as T)
+                                    onItemSelected(null)
                                     isDropdownExpanded = false
                                 }
                             ) {

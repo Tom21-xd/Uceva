@@ -67,7 +67,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
             onClick = { navController.navigateUp() },
             modifier = Modifier
                 .padding(dimensions.paddingMedium)
-                .size(dimensions.avatarSizeMedium)
+                .size(dimensions.iconButtonSize)
                 .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(dimensions.paddingExtraLarge))
                 .align(Alignment.TopStart)
         ) {
@@ -92,8 +92,8 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .shadow(dimensions.paddingMedium, RoundedCornerShape(dimensions.cardCornerRadiusLarge)),
-                shape = RoundedCornerShape(dimensions.cardCornerRadiusLarge),
+                    .shadow(dimensions.paddingMedium, RoundedCornerShape(dimensions.cardCornerRadius)),
+                shape = RoundedCornerShape(dimensions.cardCornerRadius),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -107,17 +107,17 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     // Icono animado
                     Box(
                         modifier = Modifier
-                            .size(dimensions.overlayHeight)
+                            .size(80.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = RoundedCornerShape(dimensions.progressIndicatorSize)
+                                shape = RoundedCornerShape(40.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Email,
                             contentDescription = null,
-                            modifier = Modifier.size(dimensions.progressIndicatorSize),
+                            modifier = Modifier.size(dimensions.iconExtraLarge),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -126,23 +126,23 @@ fun ForgotPasswordScreenModern(navController: NavController) {
 
                     Text(
                         text = "¿Olvidaste tu contraseña?",
-                        fontSize = dimensions.fontSizeExtraExtraLarge,
+                        fontSize = dimensions.textSizeTitle,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(dimensions.iconBackgroundRadius))
+                    Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
                     Text(
                         text = "No te preocupes, ingresa tu correo electrónico y te enviaremos una nueva contraseña temporal.",
-                        fontSize = dimensions.fontSizeMedium,
+                        fontSize = dimensions.textSizeMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
-                        lineHeight = dimensions.lineHeightSmall
+                        lineHeight = 20.sp
                     )
 
-                    Spacer(modifier = Modifier.height(dimensions.paddingExtraExtraLarge))
+                    Spacer(modifier = Modifier.height(dimensions.paddingExtraLarge))
 
                     // Campo de email
                     ModernEmailField(
@@ -156,7 +156,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         dimensions = dimensions
                     )
 
-                    Spacer(modifier = Modifier.height(dimensions.paddingExtraExtraLarge))
+                    Spacer(modifier = Modifier.height(dimensions.paddingExtraLarge))
 
                     // Botón de recuperación
                     RecoveryButton(
@@ -208,14 +208,14 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                                 Icons.Default.ArrowBack,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(dimensions.fontSizeLarge)
+                                modifier = Modifier.size(dimensions.iconMedium)
                             )
-                            Spacer(modifier = Modifier.width(dimensions.paddingExtraSmall))
+                            Spacer(modifier = Modifier.width(dimensions.spacingSmall))
                             Text(
                                 "Volver al inicio de sesión",
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold,
-                                fontSize = dimensions.fontSizeMedium
+                                fontSize = dimensions.textSizeMedium
                             )
                         }
                     }
@@ -240,14 +240,14 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         Icons.Default.Info,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(dimensions.iconSizeMedium)
+                        modifier = Modifier.size(dimensions.iconMedium)
                     )
-                    Spacer(modifier = Modifier.width(dimensions.spacerMedium))
+                    Spacer(modifier = Modifier.width(dimensions.spacingMedium))
                     Text(
                         text = "La contraseña temporal llegará a tu correo en pocos minutos. Recuerda cambiarla después de iniciar sesión.",
-                        fontSize = dimensions.fontSizeSmall,
+                        fontSize = dimensions.textSizeSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = dimensions.lineHeightSmall
+                        lineHeight = 18.sp
                     )
                 }
             }
@@ -265,10 +265,10 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                 icon = {
                     Box(
                         modifier = Modifier
-                            .size(dimensions.bottomPadding)
+                            .size(80.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = RoundedCornerShape(dimensions.dialogIconSize)
+                                shape = RoundedCornerShape(40.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -276,7 +276,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                             Icons.Default.CheckCircle,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(dimensions.avatarSizeMedium)
+                            modifier = Modifier.size(dimensions.iconExtraLarge)
                         )
                     }
                 },
@@ -284,7 +284,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     Text(
                         "¡Correo Enviado!",
                         fontWeight = FontWeight.Bold,
-                        fontSize = dimensions.fontSizeExtraLarge,
+                        fontSize = dimensions.textSizeTitle,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -293,9 +293,9 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     Text(
                         "Hemos enviado una nueva contraseña temporal a tu correo electrónico. Por favor, revisa tu bandeja de entrada.",
                         textAlign = TextAlign.Center,
-                        fontSize = dimensions.fontSizeMedium,
+                        fontSize = dimensions.textSizeMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = dimensions.lineHeightSmall
+                        lineHeight = 20.sp
                     )
                 },
                 confirmButton = {
@@ -306,16 +306,16 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(dimensions.progressIndicatorSize),
+                            .height(dimensions.buttonHeight),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
                         ),
-                        shape = RoundedCornerShape(dimensions.buttonCornerRadius)
+                        shape = RoundedCornerShape(dimensions.cardCornerRadius)
                     ) {
                         Text(
                             "Entendido",
                             fontWeight = FontWeight.Bold,
-                            fontSize = dimensions.fontSizeMedium
+                            fontSize = dimensions.textSizeMedium
                         )
                     }
                 }
@@ -331,10 +331,10 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                 icon = {
                     Box(
                         modifier = Modifier
-                            .size(dimensions.bottomPadding)
+                            .size(80.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.errorContainer,
-                                shape = RoundedCornerShape(dimensions.dialogIconSize)
+                                shape = RoundedCornerShape(40.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -342,7 +342,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                             Icons.Default.Error,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(dimensions.avatarSizeMedium)
+                            modifier = Modifier.size(dimensions.iconExtraLarge)
                         )
                     }
                 },
@@ -350,7 +350,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     Text(
                         "Error",
                         fontWeight = FontWeight.Bold,
-                        fontSize = dimensions.fontSizeExtraLarge,
+                        fontSize = dimensions.textSizeTitle,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -359,9 +359,9 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                     Text(
                         errorMessage,
                         textAlign = TextAlign.Center,
-                        fontSize = dimensions.fontSizeMedium,
+                        fontSize = dimensions.textSizeMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = dimensions.lineHeightSmall
+                        lineHeight = 20.sp
                     )
                 },
                 confirmButton = {
@@ -373,7 +373,7 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                             "Intentar nuevamente",
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = dimensions.fontSizeMedium
+                            fontSize = dimensions.textSizeMedium
                         )
                     }
                 }
@@ -395,7 +395,7 @@ fun ModernEmailField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            label = { Text("Correo Electrónico", fontSize = dimensions.fontSizeMedium) },
+            label = { Text("Correo Electrónico", fontSize = dimensions.textSizeMedium) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Email,
@@ -405,7 +405,7 @@ fun ModernEmailField(
             },
             isError = isError,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(dimensions.iconBackgroundRadius),
+            shape = RoundedCornerShape(dimensions.cardCornerRadius),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -425,20 +425,20 @@ fun ModernEmailField(
             exit = fadeOut() + scaleOut()
         ) {
             Row(
-                modifier = Modifier.padding(start = dimensions.paddingMedium, top = dimensions.paddingExtraSmall),
+                modifier = Modifier.padding(start = dimensions.paddingMedium, top = dimensions.spacingSmall),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     Icons.Default.Error,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(dimensions.fontSizeMedium)
+                    modifier = Modifier.size(dimensions.iconSmall)
                 )
-                Spacer(modifier = Modifier.width(dimensions.paddingExtraSmall))
+                Spacer(modifier = Modifier.width(dimensions.spacingSmall))
                 Text(
                     text = errorMessage ?: "",
                     color = MaterialTheme.colorScheme.error,
-                    fontSize = dimensions.fontSizeSmall
+                    fontSize = dimensions.textSizeSmall
                 )
             }
         }
@@ -462,11 +462,11 @@ fun RecoveryButton(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(dimensions.buttonHeightLarge)
+            .height(dimensions.buttonHeight)
             .alpha(animatedAlpha)
-            .shadow(if (enabled && !loading) dimensions.paddingSmall else 0.dp, RoundedCornerShape(dimensions.buttonCornerRadius)),
+            .shadow(if (enabled && !loading) dimensions.cardElevation else 0.dp, RoundedCornerShape(dimensions.cardCornerRadius)),
         enabled = enabled && !loading,
-        shape = RoundedCornerShape(dimensions.buttonCornerRadius),
+        shape = RoundedCornerShape(dimensions.cardCornerRadius),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
@@ -478,15 +478,15 @@ fun RecoveryButton(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(dimensions.iconSizeSmall),
+                    modifier = Modifier.size(dimensions.iconMedium),
                     color = Color.White,
-                    strokeWidth = dimensions.elevationSmall
+                    strokeWidth = 2.dp
                 )
-                Spacer(modifier = Modifier.width(dimensions.paddingSmall))
+                Spacer(modifier = Modifier.width(dimensions.spacingSmall))
                 Text(
                     text = "Enviando...",
                     color = Color.White,
-                    fontSize = dimensions.fontSizeMedium,
+                    fontSize = dimensions.textSizeMedium,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -498,13 +498,13 @@ fun RecoveryButton(
                 Icon(
                     Icons.Default.Send,
                     contentDescription = null,
-                    modifier = Modifier.size(dimensions.iconSizeSmall)
+                    modifier = Modifier.size(dimensions.iconMedium)
                 )
-                Spacer(modifier = Modifier.width(dimensions.paddingSmall))
+                Spacer(modifier = Modifier.width(dimensions.spacingSmall))
                 Text(
                     text = "Enviar Contraseña",
                     color = Color.White,
-                    fontSize = dimensions.fontSizeMedium,
+                    fontSize = dimensions.textSizeMedium,
                     fontWeight = FontWeight.Bold
                 )
             }

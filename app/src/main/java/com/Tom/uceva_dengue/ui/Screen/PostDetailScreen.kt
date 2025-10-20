@@ -148,7 +148,7 @@ fun PostDetailScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = dimensions.imageHeightMedium)
+                    .heightIn(max = imageHeightMedium)
                     .aspectRatio(16f / 9f, matchHeightConstraintsFirst = false)
             ) {
                 if (imageUrl != null) {
@@ -166,7 +166,7 @@ fun PostDetailScreen(
                             ) {
                                 CircularProgressIndicator(
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(dimensions.progressIndicatorSize)
+                                    modifier = Modifier.size(progressIndicatorSize)
                                 )
                             }
                         },
@@ -182,10 +182,10 @@ fun PostDetailScreen(
                                         imageVector = Icons.Default.BrokenImage,
                                         contentDescription = "Error al cargar imagen",
                                         tint = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(dimensions.fabSize)
+                                        modifier = Modifier.size(fabSize)
                                     )
                                     Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-                                    Text("No se pudo cargar la imagen", color = MaterialTheme.colorScheme.onSurface, fontSize = dimensions.fontSizeMedium)
+                                    Text("No se pudo cargar la imagen", color = MaterialTheme.colorScheme.onSurface, fontSize = fontSizeMedium)
                                 }
                             }
                         }
@@ -203,10 +203,10 @@ fun PostDetailScreen(
                                 imageVector = Icons.Default.BrokenImage,
                                 contentDescription = "Sin imagen",
                                 tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(dimensions.fabSize)
+                                modifier = Modifier.size(fabSize)
                             )
                             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-                            Text("Sin imagen disponible", color = MaterialTheme.colorScheme.onSurface, fontSize = dimensions.fontSizeMedium)
+                            Text("Sin imagen disponible", color = MaterialTheme.colorScheme.onSurface, fontSize = fontSizeMedium)
                         }
                     }
                 }
@@ -215,7 +215,7 @@ fun PostDetailScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(dimensions.overlayHeight)
+                        .height(overlayHeight)
                         .align(Alignment.BottomStart)
                         .background(
                             androidx.compose.ui.graphics.Brush.verticalGradient(
@@ -239,24 +239,24 @@ fun PostDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(dimensions.cardCornerRadius),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = dimensions.elevationSmall)
+                    elevation = CardDefaults.cardElevation(defaultElevation = elevationSmall)
                 ) {
                     Column(modifier = Modifier.padding(dimensions.paddingLarge)) {
                         Text(
                             text = publicacion!!.TITULO_PUBLICACION,
-                            fontSize = dimensions.fontSizeExtraLarge,
+                            fontSize = fontSizeExtraLarge,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
-                            lineHeight = dimensions.lineHeightLarge
+                            lineHeight = lineHeightLarge
                         )
 
                         Spacer(modifier = Modifier.height(dimensions.paddingMedium))
 
                         Text(
                             text = publicacion!!.DESCRIPCION_PUBLICACION,
-                            fontSize = dimensions.fontSizeMedium,
+                            fontSize = fontSizeMedium,
                             color = MaterialTheme.colorScheme.onSurface,
-                            lineHeight = dimensions.lineHeightMedium
+                            lineHeight = lineHeightMedium
                         )
                     }
                 }
@@ -268,7 +268,7 @@ fun PostDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(dimensions.cardCornerRadius),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = dimensions.elevationSmall)
+                    elevation = CardDefaults.cardElevation(defaultElevation = elevationSmall)
                 ) {
                     Row(
                         modifier = Modifier
@@ -281,30 +281,30 @@ fun PostDetailScreen(
                             androidx.compose.material3.Surface(
                                 shape = androidx.compose.foundation.shape.CircleShape,
                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                modifier = Modifier.size(dimensions.avatarSizeMedium)
+                                modifier = Modifier.size(avatarSizeMedium)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = Icons.Default.Person,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(dimensions.iconSizeMedium)
+                                        modifier = Modifier.size(iconSizeMedium)
                                     )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(dimensions.spacerMedium))
+                            Spacer(modifier = Modifier.width(spacerMedium))
 
                             Column {
                                 Text(
                                     text = publicacion!!.USUARIO?.NOMBRE_USUARIO ?: publicacion!!.NOMBRE_USUARIO ?: "Usuario desconocido",
-                                    fontSize = dimensions.fontSizeMedium,
+                                    fontSize = fontSizeMedium,
                                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = publicacion!!.FECHA_PUBLICACION,
-                                    fontSize = dimensions.fontSizeSmall,
+                                    fontSize = fontSizeSmall,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
@@ -446,7 +446,7 @@ fun PostDetailScreen(
                     currentUserId = currentUserId
                 )
 
-                Spacer(modifier = Modifier.height(dimensions.bottomPadding))
+                Spacer(modifier = Modifier.height(bottomPadding))
             }
         }
 

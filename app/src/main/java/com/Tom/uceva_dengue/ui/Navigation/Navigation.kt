@@ -385,6 +385,8 @@ fun getTopBarTitle(route: String): String {
         Rout.EditUserScreen.name -> "Editar Usuario"
         Rout.PostDetailScreen.name -> "Detalle de Publicación"
         Rout.SavedPublicationsScreen.name -> "Mis Guardados"
+        Rout.CreateCaseEvolutionScreen.name -> "Nueva Evolución"
+        Rout.CaseEvolutionHistoryScreen.name -> "Historial de Evoluciones"
         else -> "Mi Aplicación"
     }
 }

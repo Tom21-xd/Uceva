@@ -238,30 +238,30 @@ data class CreateCaseEvolutionRequest(
  * Para mostrar gráficas y tendencias
  */
 data class CaseEvolutionSummaryModel(
-    @SerializedName("id_caso")
+    @SerializedName("ID_CASO")
     val ID_CASO: Int,
 
-    @SerializedName("estado_actual")
+    @SerializedName("ESTADO_ACTUAL")
     val ESTADO_ACTUAL: PatientStateModel,
 
-    @SerializedName("dia_enfermedad_actual")
+    @SerializedName("DIA_ENFERMEDAD_ACTUAL")
     val DIA_ENFERMEDAD_ACTUAL: Int,
 
-    @SerializedName("total_evoluciones")
+    @SerializedName("TOTAL_EVOLUCIONES")
     val TOTAL_EVOLUCIONES: Int,
 
-    @SerializedName("ultima_evolucion")
+    @SerializedName("ULTIMA_EVOLUCION")
     val ULTIMA_EVOLUCION: CaseEvolutionModel?,
 
-    @SerializedName("tendencia_plaquetas")
+    @SerializedName("TENDENCIA_PLAQUETAS")
     val TENDENCIA_PLAQUETAS: String? = null, // "mejorando", "estable", "empeorando"
 
-    @SerializedName("tendencia_hematocrito")
+    @SerializedName("TENDENCIA_HEMATOCRITO")
     val TENDENCIA_HEMATOCRITO: String? = null,
 
-    @SerializedName("tiene_signos_alarma")
+    @SerializedName("TIENE_SIGNOS_ALARMA")
     val TIENE_SIGNOS_ALARMA: Boolean = false,
 
-    @SerializedName("evoluciones")
+    @SerializedName("EVOLUCIONES")
     val EVOLUCIONES: List<CaseEvolutionModel>? = null
 )
