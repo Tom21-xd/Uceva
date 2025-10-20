@@ -43,10 +43,16 @@ import com.Tom.uceva_dengue.ui.Components.Campo
 import com.Tom.uceva_dengue.ui.Components.ComboBox
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
+import com.Tom.uceva_dengue.utils.rememberAppDimensions
+import com.Tom.uceva_dengue.utils.rememberWindowSize
+import com.Tom.uceva_dengue.utils.WindowSize
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
+    val dimensions = rememberAppDimensions()
+    val windowSize = rememberWindowSize()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -63,9 +69,9 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
+                .padding(dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
         ) {
             Spacer(modifier = Modifier.weight(1f, fill = false)) // Centra cuando hay espacio
             // Card contenedor con diseño moderno
@@ -73,8 +79,8 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .shadow(12.dp, RoundedCornerShape(24.dp)),
-                shape = RoundedCornerShape(24.dp),
+                    .shadow(dimensions.cardElevation, RoundedCornerShape(dimensions.cardCornerRadius)),
+                shape = RoundedCornerShape(dimensions.cardCornerRadius),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -82,40 +88,40 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp), // Reducido de 32dp para pantallas pequeñas
+                        .padding(dimensions.paddingLarge),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Logo y título
                     Image(
                         painter = painterResource(id = R.drawable.salud),
                         contentDescription = "Logo",
-                        modifier = Modifier.size(64.dp) // Reducido de 80dp
+                        modifier = Modifier.size(dimensions.logoSize)
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp)) // Reducido de 16dp
+                    Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
                     Text(
                         text = "Bienvenido",
-                        fontSize = 22.sp, // Reducido de 28sp para pantallas pequeñas
+                        fontSize = dimensions.textSizeTitle,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
                     Text(
                         text = "Sistema de Monitoreo de Dengue",
-                        fontSize = 13.sp, // Reducido de 14sp
+                        fontSize = dimensions.textSizeMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp)) // Reducido de 32dp
+                    Spacer(modifier = Modifier.height(dimensions.spacingLarge))
 
                     // Tabs modernos
-                    ModernTabs(viewModel)
+                    ModernTabs(viewModel, dimensions)
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(dimensions.spacingLarge))
 
                     // Contenido animado
                     val logRegis by viewModel.log_regis.observeAsState(initial = false)
@@ -143,24 +149,24 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
             // Footer
             Text(
                 text = "© 2025 UCEVA - Todos los derechos reservados",
-                fontSize = 12.sp,
+                fontSize = dimensions.textSizeSmall,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
             )
 
-            Spacer(modifier = Modifier.height(16.dp)) // Espacio inferior
+            Spacer(modifier = Modifier.height(dimensions.spacingMedium)) // Espacio inferior
         }
     }
 }
 
 @Composable
-fun ModernTabs(viewModel: AuthViewModel) {
+fun ModernTabs(viewModel: AuthViewModel, dimensions: com.Tom.uceva_dengue.utils.AppDimensions) {
     val logRegis by viewModel.log_regis.observeAsState(initial = false)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
-            .clip(RoundedCornerShape(25.dp))
+            .height(dimensions.tabHeight)
+            .clip(RoundedCornerShape(dimensions.tabHeight / 2))
             .background(MaterialTheme.colorScheme.surfaceVariant),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
@@ -169,7 +175,7 @@ fun ModernTabs(viewModel: AuthViewModel) {
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(25.dp))
+                .clip(RoundedCornerShape(dimensions.tabHeight / 2))
                 .background(if (!logRegis) MaterialTheme.colorScheme.primary else Color.Transparent)
                 .clickable { viewModel.log_regis.value = false },
             contentAlignment = Alignment.Center
@@ -178,7 +184,7 @@ fun ModernTabs(viewModel: AuthViewModel) {
                 text = "Iniciar Sesión",
                 color = if (!logRegis) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
+                fontSize = dimensions.textSizeMedium
             )
         }
 
@@ -187,7 +193,7 @@ fun ModernTabs(viewModel: AuthViewModel) {
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(25.dp))
+                .clip(RoundedCornerShape(dimensions.tabHeight / 2))
                 .background(if (logRegis) MaterialTheme.colorScheme.primary else Color.Transparent)
                 .clickable { viewModel.log_regis.value = true },
             contentAlignment = Alignment.Center
@@ -196,7 +202,7 @@ fun ModernTabs(viewModel: AuthViewModel) {
                 text = "Registrarse",
                 color = if (logRegis) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
+                fontSize = dimensions.textSizeMedium
             )
         }
     }
@@ -204,6 +210,7 @@ fun ModernTabs(viewModel: AuthViewModel) {
 
 @Composable
 fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
+    val dimensions = rememberAppDimensions()
     val correo by viewModel.correo.observeAsState(initial = "")
     val contra by viewModel.contra.observeAsState(initial = "")
     val loginEnabled by viewModel.loginEnabled.observeAsState(initial = false)
@@ -214,9 +221,9 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
+            .padding(vertical = dimensions.spacingMedium),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
     ) {
         // Campo Email Moderno
         ModernTextField(
@@ -243,7 +250,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
         ) {
             Text(
                 text = "¿Olvidaste tu contraseña?",
-                fontSize = 13.sp,
+                fontSize = dimensions.textSizeMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.clickable {
@@ -252,7 +259,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
         // Botón de inicio de sesión moderno
         ModernButton(
@@ -281,14 +288,14 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
                             Icons.Default.Warning,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(dimensions.iconLarge)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Error de inicio de sesión")
+                        Spacer(modifier = Modifier.width(dimensions.spacingSmall))
+                        Text("Error de inicio de sesión", fontSize = dimensions.textSizeLarge)
                     }
                 },
-                text = { Text(error) },
-                shape = RoundedCornerShape(16.dp)
+                text = { Text(error, fontSize = dimensions.textSizeMedium) },
+                shape = RoundedCornerShape(dimensions.cardCornerRadius)
             )
         }
     }
@@ -296,6 +303,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
 
 @Composable
 fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
+    val dimensions = rememberAppDimensions()
     val departamentos by viewModel.departamentos.collectAsState()
     val ciudades by viewModel.municipios.collectAsState()
     val generos by viewModel.generos.collectAsState()
@@ -330,18 +338,18 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
             .fillMaxWidth()
             .heightIn(max = 500.dp)
             .verticalScroll(rememberScrollState())
-            .padding(vertical = 8.dp),
+            .padding(vertical = dimensions.spacingSmall),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(dimensions.spacingSmall)
     ) {
         Text(
             text = "Crear cuenta nueva",
-            fontSize = 20.sp,
+            fontSize = dimensions.textSizeTitle,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
         ModernTextField(
             value = firstName,
@@ -696,19 +704,21 @@ fun ModernTextField(
     leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
+    val dimensions = rememberAppDimensions()
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label, fontSize = 14.sp) },
+        label = { Text(label, fontSize = dimensions.textSizeMedium) },
         leadingIcon = {
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(dimensions.iconMedium)
             )
         },
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(dimensions.cardCornerRadius),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -728,15 +738,17 @@ fun ModernPasswordField(
     passwordVisible: Boolean,
     onToggleVisibility: () -> Unit
 ) {
+    val dimensions = rememberAppDimensions()
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label, fontSize = 14.sp) },
+        label = { Text(label, fontSize = dimensions.textSizeMedium) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Lock,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(dimensions.iconMedium)
             )
         },
         trailingIcon = {
@@ -744,13 +756,14 @@ fun ModernPasswordField(
                 Icon(
                     imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                     contentDescription = "Toggle visibility",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(dimensions.iconMedium)
                 )
             }
         },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(dimensions.cardCornerRadius),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -768,6 +781,7 @@ fun ModernButton(
     loading: Boolean,
     onClick: () -> Unit
 ) {
+    val dimensions = rememberAppDimensions()
     val animatedAlpha by animateFloatAsState(
         targetValue = if (enabled && !loading) 1f else 0.5f,
         animationSpec = tween(300),
@@ -778,11 +792,11 @@ fun ModernButton(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .height(dimensions.buttonHeight)
             .alpha(animatedAlpha)
-            .shadow(if (enabled) 8.dp else 0.dp, RoundedCornerShape(26.dp)),
+            .shadow(if (enabled) dimensions.cardElevation else 0.dp, RoundedCornerShape(dimensions.buttonHeight / 2)),
         enabled = enabled && !loading,
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedCornerShape(dimensions.buttonHeight / 2),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
@@ -794,15 +808,15 @@ fun ModernButton(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(dimensions.iconMedium),
                     color = Color.White,
                     strokeWidth = 2.dp
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(dimensions.spacingSmall))
                 Text(
                     text = "Cargando...",
                     color = Color.White,
-                    fontSize = 16.sp,
+                    fontSize = dimensions.textSizeLarge,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -810,7 +824,7 @@ fun ModernButton(
             Text(
                 text = text,
                 color = Color.White,
-                fontSize = 16.sp,
+                fontSize = dimensions.textSizeLarge,
                 fontWeight = FontWeight.Bold
             )
         }

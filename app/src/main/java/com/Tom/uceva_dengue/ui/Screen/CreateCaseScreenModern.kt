@@ -44,6 +44,9 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.Tom.uceva_dengue.utils.rememberAppDimensions
+import com.Tom.uceva_dengue.utils.rememberWindowSize
+import com.Tom.uceva_dengue.utils.WindowSize
 
 @Composable
 fun CreateCaseScreenModern(
@@ -53,6 +56,10 @@ fun CreateCaseScreenModern(
     user: String?,
     navController: NavHostController
 ) {
+    // Dimensiones responsivas
+    val dimensions = rememberAppDimensions()
+    val windowSize = rememberWindowSize()
+
     // Colores del tema
     val PrimaryBlue = MaterialTheme.colorScheme.primary
     val SecondaryBlue = MaterialTheme.colorScheme.primaryContainer
@@ -85,13 +92,14 @@ fun CreateCaseScreenModern(
                 verticalArrangement = Arrangement.Center
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(dimensions.iconExtraLarge),
                     color = PrimaryBlue
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                 Text(
                     text = "Cargando información...",
                     style = MaterialTheme.typography.bodyLarge,
+                    fontSize = dimensions.textSizeLarge,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
@@ -105,7 +113,7 @@ fun CreateCaseScreenModern(
             modifier = Modifier
                 .fillMaxSize()
                 .background(BackgroundColor)
-                .padding(16.dp),
+                .padding(dimensions.paddingMedium),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -116,17 +124,21 @@ fun CreateCaseScreenModern(
                     imageVector = Icons.Filled.Error,
                     contentDescription = "Error",
                     tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(dimensions.iconExtraLarge)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
                 Text(
                     text = loadingError ?: "Error desconocido",
                     style = MaterialTheme.typography.bodyLarge,
+                    fontSize = dimensions.textSizeLarge,
                     color = MaterialTheme.colorScheme.error
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { viewModel.loadInitialData() }) {
-                    Text("Reintentar")
+                Spacer(modifier = Modifier.height(dimensions.spacingMedium))
+                Button(
+                    onClick = { viewModel.loadInitialData() },
+                    modifier = Modifier.height(dimensions.buttonHeight)
+                ) {
+                    Text("Reintentar", fontSize = dimensions.textSizeMedium)
                 }
             }
         }
@@ -141,20 +153,20 @@ fun CreateCaseScreenModern(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(dimensions.paddingMedium),
+            verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
         ) {
             item {
                 // Header
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(8.dp, RoundedCornerShape(20.dp)),
-                    shape = RoundedCornerShape(20.dp),
+                        .shadow(dimensions.cardElevation, RoundedCornerShape(dimensions.cardCornerRadius)),
+                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
                     colors = CardDefaults.cardColors(
                         containerColor = CardColor
                     ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = dimensions.cardElevation)
                 ) {
                     Box(
                         modifier = Modifier
@@ -167,15 +179,15 @@ fun CreateCaseScreenModern(
                                     )
                                 )
                             )
-                            .padding(20.dp)
+                            .padding(dimensions.paddingLarge)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(50.dp)
+                                    .size(dimensions.iconExtraLarge)
                                     .background(Color.White.copy(alpha = 0.3f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -183,19 +195,19 @@ fun CreateCaseScreenModern(
                                     Icons.Default.Add,
                                     contentDescription = null,
                                     tint = Color.White,
-                                    modifier = Modifier.size(28.dp)
+                                    modifier = Modifier.size(dimensions.iconLarge)
                                 )
                             }
                             Column {
                                 Text(
                                     text = "Reportar Caso",
-                                    fontSize = 24.sp,
+                                    fontSize = dimensions.textSizeHeader,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Text(
                                     text = "Nuevo caso de dengue",
-                                    fontSize = 14.sp,
+                                    fontSize = dimensions.textSizeMedium,
                                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                                 )
                             }
@@ -275,29 +287,29 @@ fun CreateCaseScreenModern(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
-                        .shadow(8.dp, RoundedCornerShape(28.dp)),
-                    shape = RoundedCornerShape(28.dp),
+                        .height(dimensions.buttonHeight)
+                        .shadow(dimensions.cardElevation, RoundedCornerShape(dimensions.buttonHeight / 2)),
+                    shape = RoundedCornerShape(dimensions.buttonHeight / 2),
                     colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
                     enabled = !isCreatingCase
                 ) {
                     if (isCreatingCase) {
                         CircularProgressIndicator(
                             color = Color.White,
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(dimensions.iconMedium),
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Icon(Icons.Default.Check, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(dimensions.iconMedium))
+                        Spacer(modifier = Modifier.width(dimensions.spacingSmall))
                         Text(
                             text = "Reportar Caso",
-                            fontSize = 16.sp,
+                            fontSize = dimensions.textSizeLarge,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(dimensions.paddingExtraLarge * 2))
             }
         }
     }
@@ -311,14 +323,15 @@ fun ModernSectionCard(
     onExpandChanged: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    val dimensions = rememberAppDimensions()
     val cardColor = MaterialTheme.colorScheme.surface
     val primaryColor = MaterialTheme.colorScheme.primary
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
+            .shadow(dimensions.cardElevation, RoundedCornerShape(dimensions.cardCornerRadius)),
+        shape = RoundedCornerShape(dimensions.cardCornerRadius),
         colors = CardDefaults.cardColors(containerColor = cardColor)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -328,17 +341,17 @@ fun ModernSectionCard(
                     .fillMaxWidth()
                     .clickable { onExpandChanged() }
                     .background(primaryColor.copy(alpha = 0.05f))
-                    .padding(16.dp),
+                    .padding(dimensions.paddingMedium),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(dimensions.spacingMedium),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(dimensions.iconButtonSize * 0.7f)
                             .background(primaryColor.copy(alpha = 0.1f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
@@ -346,12 +359,12 @@ fun ModernSectionCard(
                             imageVector = icon,
                             contentDescription = null,
                             tint = primaryColor,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(dimensions.iconMedium)
                         )
                     }
                     Text(
                         text = title,
-                        fontSize = 16.sp,
+                        fontSize = dimensions.textSizeLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -359,7 +372,8 @@ fun ModernSectionCard(
                 Icon(
                     imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = primaryColor
+                    tint = primaryColor,
+                    modifier = Modifier.size(dimensions.iconLarge)
                 )
             }
 
@@ -368,7 +382,7 @@ fun ModernSectionCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(dimensions.paddingMedium)
                 ) {
                     content()
                 }

@@ -13,6 +13,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
@@ -29,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,6 +47,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.Tom.uceva_dengue.ui.Components.ComboBox
 import com.Tom.uceva_dengue.ui.viewModel.CreateHospitalViewModel
+import com.google.android.gms.location.LocationServices
+import com.Tom.uceva_dengue.utils.moveToUserLocation
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +70,21 @@ fun CreateHospitalScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var showMapDialog by remember { mutableStateOf(false) }
+
+    // Estado para la ubicación seleccionada en el mapa
+    var selectedLocation by remember {
+        mutableStateOf<LatLng?>(
+            if (latitud.isNotEmpty() && longitud.isNotEmpty()) {
+                try {
+                    LatLng(latitud.toDouble(), longitud.toDouble())
+                } catch (e: Exception) {
+                    LatLng(3.4516, -76.5320) // Tulua, Valle del Cauca por defecto
+                }
+            } else {
+                LatLng(3.4516, -76.5320)
+            }
+        )
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -224,21 +246,6 @@ fun CreateHospitalScreen(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
-            }
-
-            // Mapa interactivo
-            var selectedLocation by remember {
-                mutableStateOf<LatLng?>(
-                    if (latitud.isNotEmpty() && longitud.isNotEmpty()) {
-                        try {
-                            LatLng(latitud.toDouble(), longitud.toDouble())
-                        } catch (e: Exception) {
-                            LatLng(3.4516, -76.5320) // Tulua, Valle del Cauca por defecto
-                        }
-                    } else {
-                        LatLng(3.4516, -76.5320)
-                    }
-                )
             }
 
             // Vista previa del mapa (solo visualización)
@@ -424,17 +431,28 @@ fun CreateHospitalScreen(
             Spacer(modifier = Modifier.height(80.dp))
         }
 
-        // Diálogo con mapa completo para selección precisa
+        // Diálogo con mapa para selección precisa
         if (showMapDialog) {
             Dialog(
                 onDismissRequest = { showMapDialog = false },
                 properties = DialogProperties(usePlatformDefaultWidth = false)
             ) {
-                Box(
+                val configuration = LocalConfiguration.current
+                val screenHeight = configuration.screenHeightDp.dp
+                val dialogHeight = screenHeight * 0.75f
+
+                Surface(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surface)
+                        .fillMaxWidth()
+                        .height(dialogHeight)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 8.dp
                 ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
                     val dialogCameraPositionState = rememberCameraPositionState {
                         position = CameraPosition.fromLatLngZoom(
                             if (latitud.isNotEmpty() && longitud.isNotEmpty()) {
@@ -464,6 +482,10 @@ fun CreateHospitalScreen(
                         )
                     }
 
+                    val fusedLocationClient = remember {
+                        LocationServices.getFusedLocationProviderClient(context)
+                    }
+
                     GoogleMap(
                         modifier = Modifier.fillMaxSize(),
                         cameraPositionState = dialogCameraPositionState,
@@ -472,7 +494,7 @@ fun CreateHospitalScreen(
                         },
                         uiSettings = MapUiSettings(
                             zoomControlsEnabled = true,
-                            myLocationButtonEnabled = true
+                            myLocationButtonEnabled = false
                         )
                     ) {
                         Marker(
@@ -482,49 +504,92 @@ fun CreateHospitalScreen(
                         )
                     }
 
-                    // Botón cerrar
-                    IconButton(
-                        onClick = { showMapDialog = false },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(16.dp)
-                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(50))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Cerrar",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    // Información de coordenadas y botón confirmar
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Lat: ${String.format("%.6f", tempSelectedLocation.latitude)}, Lng: ${String.format("%.6f", tempSelectedLocation.longitude)}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Button(
-                            onClick = {
-                                viewModel.setLatitud(tempSelectedLocation.latitude.toString())
-                                viewModel.setLongitud(tempSelectedLocation.longitude.toString())
-                                showMapDialog = false
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        // Botón cerrar
+                        IconButton(
+                            onClick = { showMapDialog = false },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(8.dp)
+                                .background(Color.White.copy(alpha = 0.9f), CircleShape)
                         ) {
-                            Text("Confirmar Ubicación", color = Color.White)
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Cerrar",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        // Botón para obtener ubicación actual
+                        IconButton(
+                            onClick = {
+                                moveToUserLocation(
+                                    context = context,
+                                    fusedLocationClient = fusedLocationClient,
+                                    cameraPositionState = dialogCameraPositionState,
+                                    onLocationFound = { location ->
+                                        tempSelectedLocation = location
+                                        Toast.makeText(context, "Ubicación obtenida", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            },
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(8.dp)
+                                .background(Color.White.copy(alpha = 0.9f), CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = "Mi ubicación",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        // Panel inferior compacto
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .background(
+                                    Color.White.copy(alpha = 0.95f),
+                                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                                )
+                                .padding(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Coordenadas
+                            Text(
+                                text = "${String.format("%.4f", tempSelectedLocation.latitude)}, ${String.format("%.4f", tempSelectedLocation.longitude)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.Gray,
+                                fontSize = 11.sp
+                            )
+
+                            // Botón confirmar
+                            Button(
+                                onClick = {
+                                    viewModel.setLatitud(tempSelectedLocation.latitude.toString())
+                                    viewModel.setLongitud(tempSelectedLocation.longitude.toString())
+                                    selectedLocation = tempSelectedLocation
+                                    showMapDialog = false
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(40.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    "Confirmar Ubicación",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                            }
                         }
                     }
                 }
