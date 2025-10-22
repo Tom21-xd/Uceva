@@ -302,6 +302,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
     val dimensions = rememberAppDimensions()

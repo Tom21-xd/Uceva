@@ -99,6 +99,15 @@ fun PostDetailScreen(
                 // Cargar comentarios y interacciones
                 loadComments()
                 loadUserInteractions()
+
+                // Registrar vista automáticamente
+                if (currentUserId != null) {
+                    viewModel.registerView(
+                        publicationId = publicationId,
+                        userId = currentUserId,
+                        readTimeSeconds = null
+                    )
+                }
             },
             onError = { error ->
                 Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()

@@ -23,6 +23,8 @@ import androidx.navigation.NavController
 import com.Tom.uceva_dengue.Data.Model.PublicationModel
 import com.Tom.uceva_dengue.ui.Components.EnhancedPostCard
 import com.Tom.uceva_dengue.ui.Components.ModernPublicationCard
+import com.Tom.uceva_dengue.ui.Components.PublicationFilter
+import com.Tom.uceva_dengue.ui.Components.PublicationFiltersRow
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import com.Tom.uceva_dengue.utils.rememberAppDimensions
@@ -45,11 +47,103 @@ fun HomeScreen(
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     var publicationToDelete by remember { mutableStateOf<PublicationModel?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedFilter by remember { mutableStateOf(PublicationFilter.ALL) }
+    var filteredPublications by remember { mutableStateOf<List<PublicationModel>>(emptyList()) }
+    var isLoadingFilter by remember { mutableStateOf(false) }
+    var categories by remember { mutableStateOf<List<com.Tom.uceva_dengue.Data.Model.PublicationCategoryModel>>(emptyList()) }
+    var selectedCategoryId by remember { mutableStateOf<Int?>(null) }
     val context = LocalContext.current
 
-    // Load publications with userId to get user-specific interactions
-    LaunchedEffect(userId) {
-        viewModel.obtenerPublicaciones(userId)
+    // Load categories
+    LaunchedEffect(Unit) {
+        try {
+            val response = com.Tom.uceva_dengue.Data.Api.RetrofitClient.publicationCategoryService.getAllCategories()
+            if (response.isSuccessful && response.body() != null) {
+                categories = response.body()!!.filter { it.ESTADO_CATEGORIA }
+            }
+        } catch (e: Exception) {
+            Log.e("HomeScreen", "Error loading categories", e)
+        }
+    }
+
+    // Load publications with userId using intelligent feed (ordered by priority)
+    LaunchedEffect(userId, selectedCategoryId) {
+        // Use intelligent feed: Pinned > Priority (Urgent > High > Normal > Low) > Date
+        viewModel.obtenerFeedInteligente(
+            userId = userId,
+            ciudadId = null,
+            categoriaId = selectedCategoryId,
+            limit = 50
+        )
+    }
+
+    // Load publications based on selected filter
+    fun loadFilteredPublications(filter: PublicationFilter) {
+        isLoadingFilter = true
+        when (filter) {
+            PublicationFilter.ALL -> {
+                viewModel.obtenerFeedInteligente(userId = userId, limit = 50)
+                isLoadingFilter = false
+            }
+            PublicationFilter.URGENT -> {
+                viewModel.getUrgentPublications(
+                    userId = userId,
+                    onSuccess = { pubs ->
+                        filteredPublications = pubs
+                        isLoadingFilter = false
+                    },
+                    onError = { error ->
+                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                        isLoadingFilter = false
+                    }
+                )
+            }
+            PublicationFilter.PINNED -> {
+                viewModel.getPinnedPublications(
+                    userId = userId,
+                    onSuccess = { pubs ->
+                        filteredPublications = pubs
+                        isLoadingFilter = false
+                    },
+                    onError = { error ->
+                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                        isLoadingFilter = false
+                    }
+                )
+            }
+            PublicationFilter.TRENDING -> {
+                viewModel.getTrendingPublications(
+                    limit = 20,
+                    days = 7,
+                    userId = userId,
+                    onSuccess = { pubs ->
+                        filteredPublications = pubs
+                        isLoadingFilter = false
+                    },
+                    onError = { error ->
+                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                        isLoadingFilter = false
+                    }
+                )
+            }
+            PublicationFilter.CATEGORY -> {
+                // Category filtering is handled separately via selectedCategoryId in LaunchedEffect
+                viewModel.obtenerFeedInteligente(
+                    userId = userId,
+                    ciudadId = null,
+                    categoriaId = selectedCategoryId,
+                    limit = 50
+                )
+                isLoadingFilter = false
+            }
+        }
+    }
+
+    // Determine which publications to show
+    val displayPublications = if (selectedFilter == PublicationFilter.ALL) {
+        publicaciones
+    } else {
+        filteredPublications
     }
 
     PullToRefreshBox(
@@ -88,10 +182,45 @@ fun HomeScreen(
                     shape = RoundedCornerShape(dimensions.cardCornerRadius * 2)
                 )
 
+                // Filtros de publicaciones
+                PublicationFiltersRow(
+                    selectedFilter = selectedFilter,
+                    onFilterSelected = { filter ->
+                        selectedFilter = filter
+                        searchText = "" // Clear search when changing filter
+                        loadFilteredPublications(filter)
+                    },
+                    categories = categories,
+                    selectedCategoryId = selectedCategoryId,
+                    onCategorySelected = { categoryId ->
+                        selectedCategoryId = categoryId
+                        searchText = ""
+                        // Reload with category filter
+                        if (selectedFilter == PublicationFilter.ALL) {
+                            viewModel.obtenerFeedInteligente(
+                                userId = userId,
+                                categoriaId = categoryId,
+                                limit = 50
+                            )
+                        }
+                    }
+                )
+
                 Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
+                // Estado de carga de filtros
+                if (isLoadingFilter) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(dimensions.paddingExtraLarge),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
                 // Estado de lista vacía
-                if (publicaciones.isEmpty()) {
+                else if (displayPublications.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -130,7 +259,7 @@ fun HomeScreen(
                     contentPadding = PaddingValues(bottom = dimensions.paddingExtraLarge * 2), // Espacio para el FAB
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(publicaciones) { publicacion ->
+                    items(displayPublications) { publicacion ->
                         ModernPublicationCard(
                             publicacion = publicacion,
                             currentUserId = userId,

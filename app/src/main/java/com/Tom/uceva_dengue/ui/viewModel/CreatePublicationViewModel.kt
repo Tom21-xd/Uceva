@@ -1,9 +1,13 @@
 package com.Tom.uceva_dengue.ui.viewModel
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import android.net.Uri
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.Tom.uceva_dengue.Data.Service.PublicationService
@@ -24,6 +28,10 @@ class CreatePublicationViewModel : ViewModel() {
         description: String,
         userId: String,
         imageUri: Uri?,
+        categoriaId: Int? = null,
+        etiquetasIds: List<Int>? = null,
+        prioridad: String? = null,
+        fijada: Boolean = false,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -37,6 +45,32 @@ class CreatePublicationViewModel : ViewModel() {
                 val titlePart = RequestBody.create("text/plain".toMediaTypeOrNull(), title)
                 val descriptionPart = RequestBody.create("text/plain".toMediaTypeOrNull(), description)
                 val userIdPart = RequestBody.create("text/plain".toMediaTypeOrNull(), userId)
+
+                // Nuevos parámetros opcionales
+                val categoriaPart = categoriaId?.let {
+                    RequestBody.create("text/plain".toMediaTypeOrNull(), it.toString())
+                }
+
+                val etiquetasPart = etiquetasIds?.let {
+                    if (it.isNotEmpty()) {
+                        RequestBody.create("text/plain".toMediaTypeOrNull(), it.joinToString(","))
+                    } else null
+                }
+
+                val prioridadPart = prioridad?.let {
+                    RequestBody.create("text/plain".toMediaTypeOrNull(), it)
+                }
+
+                val fijadaPart = RequestBody.create("text/plain".toMediaTypeOrNull(), fijada.toString())
+
+                // Obtener ubicación automáticamente
+                val location = getCurrentLocation(context)
+                val latitudPart = location?.first?.let {
+                    RequestBody.create("text/plain".toMediaTypeOrNull(), it.toString())
+                }
+                val longitudPart = location?.second?.let {
+                    RequestBody.create("text/plain".toMediaTypeOrNull(), it.toString())
+                }
 
                 val imagePart = imageUri?.let { uri ->
                     try {
@@ -59,7 +93,13 @@ class CreatePublicationViewModel : ViewModel() {
                     titulo = titlePart,
                     descripcion = descriptionPart,
                     imagen = imagePart,
-                    usuarioId = userIdPart
+                    usuarioId = userIdPart,
+                    categoriaId = categoriaPart,
+                    etiquetasIds = etiquetasPart,
+                    prioridad = prioridadPart,
+                    fijada = fijadaPart,
+                    latitud = latitudPart,
+                    longitud = longitudPart
                 )
 
                 if (response.isSuccessful) {
@@ -89,6 +129,43 @@ class CreatePublicationViewModel : ViewModel() {
         } catch (e: Exception) {
             Log.e("CreatePublicationViewModel", "Error al copiar el archivo URI", e)
             throw e
+        }
+    }
+
+    /**
+     * Obtiene la ubicación actual del dispositivo
+     * Retorna (latitud, longitud) o null si no está disponible
+     */
+    private fun getCurrentLocation(context: Context): Pair<Double, Double>? {
+        try {
+            // Verificar permisos
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+                Log.w("CreatePublicationViewModel", "Permisos de ubicación no concedidos")
+                return null
+            }
+
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+            // Intentar obtener la última ubicación conocida
+            val providers = locationManager.getProviders(true)
+            var bestLocation: android.location.Location? = null
+
+            for (provider in providers) {
+                val location = locationManager.getLastKnownLocation(provider) ?: continue
+                if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
+                    bestLocation = location
+                }
+            }
+
+            return bestLocation?.let {
+                Pair(it.latitude, it.longitude)
+            }
+        } catch (e: Exception) {
+            Log.e("CreatePublicationViewModel", "Error al obtener ubicación", e)
+            return null
         }
     }
 }

@@ -122,3 +122,5 @@ data class TypeOfDengueInfo(
     @SerializedName("ESTADO_TIPODENGUE")
     val ESTADO_TIPODENGUE: Boolean = true
 )
+
+// UserInfo, CityInfo, and DepartmentInfo are now defined in SharedModels.kt to avoid redeclaration

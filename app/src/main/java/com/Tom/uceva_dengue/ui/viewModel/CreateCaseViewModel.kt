@@ -513,7 +513,8 @@ class CreateCaseViewModel : ViewModel() {
                         FK_ID_ROL = 1, // Rol 1 = Usuario regular/Paciente
                         FK_ID_TIPOSANGRE = authViewModel.bloodTypeId.value ?: 0,
                         FK_ID_GENERO = authViewModel.genderId.value ?: 0,
-                        FK_ID_MUNICIPIO = authViewModel.cityId.value ?: 0
+                        FK_ID_MUNICIPIO = authViewModel.cityId.value ?: 0,
+                        FECHA_NACIMIENTO_USUARIO = authViewModel.birthDate.value ?: ""
                     )
                 )
 

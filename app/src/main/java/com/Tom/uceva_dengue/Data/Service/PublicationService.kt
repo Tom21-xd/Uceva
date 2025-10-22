@@ -21,7 +21,13 @@ interface PublicationService{
         @Part("Titulo") titulo: RequestBody,
         @Part("Descripcion") descripcion: RequestBody,
         @Part imagen: MultipartBody.Part,
-        @Part("UsuarioId") usuarioId: RequestBody
+        @Part("UsuarioId") usuarioId: RequestBody,
+        @Part("CategoriaId") categoriaId: RequestBody? = null,
+        @Part("EtiquetasIds") etiquetasIds: RequestBody? = null,
+        @Part("Prioridad") prioridad: RequestBody? = null,
+        @Part("Fijada") fijada: RequestBody? = null,
+        @Part("Latitud") latitud: RequestBody? = null,
+        @Part("Longitud") longitud: RequestBody? = null
     ): Response<String>
 
     @GET("Publication/getPublicationById/{id}")
@@ -40,57 +46,66 @@ interface PublicationService{
 
     /**
      * Obtener feed ordenado por prioridad (Urgente > Alta > Normal > Baja)
-     * Publicaciones fijadas aparecen primero
+     * Publicaciones fijadas aparecen primero - IMPLEMENTADO
      */
     @GET("Publication/feed")
     suspend fun getFeed(
         @Query("ciudadId") ciudadId: Int? = null,
         @Query("categoriaId") categoriaId: Int? = null,
-        @Query("limit") limit: Int? = 20,
-        @Query("offset") offset: Int? = 0
+        @Query("userId") userId: Int? = null,
+        @Query("limit") limit: Int = 20,
+        @Query("offset") offset: Int = 0
     ): Response<List<PublicationModel>>
 
     /**
-     * Obtener publicaciones por categoría
+     * Obtener publicaciones por categoría - IMPLEMENTADO
      */
     @GET("Publication/category/{categoryId}")
-    suspend fun getPublicationsByCategory(@Path("categoryId") categoryId: Int): Response<List<PublicationModel>>
+    suspend fun getPublicationsByCategory(
+        @Path("categoryId") categoryId: Int,
+        @Query("userId") userId: Int? = null
+    ): Response<List<PublicationModel>>
 
     /**
-     * Obtener solo publicaciones urgentes/alertas
+     * Obtener solo publicaciones urgentes/alertas - IMPLEMENTADO
      */
     @GET("Publication/urgent")
-    suspend fun getUrgentPublications(): Response<List<PublicationModel>>
+    suspend fun getUrgentPublications(@Query("userId") userId: Int? = null): Response<List<PublicationModel>>
 
     /**
-     * Obtener publicaciones fijadas
+     * Obtener publicaciones fijadas - IMPLEMENTADO
      */
     @GET("Publication/pinned")
-    suspend fun getPinnedPublications(): Response<List<PublicationModel>>
+    suspend fun getPinnedPublications(@Query("userId") userId: Int? = null): Response<List<PublicationModel>>
 
     /**
-     * Obtener publicaciones cercanas a una ubicación
+     * Obtener publicaciones cercanas a una ubicación - IMPLEMENTADO
      */
     @GET("Publication/nearby")
     suspend fun getNearbyPublications(
         @Query("lat") latitude: Double,
         @Query("lng") longitude: Double,
-        @Query("radius") radiusKm: Double = 10.0
+        @Query("radiusKm") radiusKm: Double = 10.0,
+        @Query("userId") userId: Int? = null
     ): Response<List<PublicationModel>>
 
     /**
-     * Obtener publicaciones por etiqueta/tag
+     * Obtener publicaciones por etiqueta/tag - IMPLEMENTADO
      */
     @GET("Publication/tag/{tagId}")
-    suspend fun getPublicationsByTag(@Path("tagId") tagId: Int): Response<List<PublicationModel>>
+    suspend fun getPublicationsByTag(
+        @Path("tagId") tagId: Int,
+        @Query("userId") userId: Int? = null
+    ): Response<List<PublicationModel>>
 
     /**
-     * Buscar publicaciones
+     * Buscar publicaciones - IMPLEMENTADO
      */
     @GET("Publication/search")
     suspend fun searchPublications(
         @Query("query") query: String,
-        @Query("categoriaId") categoriaId: Int? = null
+        @Query("categoriaId") categoriaId: Int? = null,
+        @Query("userId") userId: Int? = null
     ): Response<List<PublicationModel>>
 
     // ===== REACCIONES =====
@@ -157,7 +172,7 @@ interface PublicationService{
     // ===== ESTADÍSTICAS =====
 
     /**
-     * Registrar vista/lectura de publicación
+     * Registrar vista/lectura de publicación - IMPLEMENTADO
      */
     @POST("Publication/{id}/view")
     suspend fun registerView(
@@ -166,18 +181,19 @@ interface PublicationService{
     ): Response<Map<String, String>>
 
     /**
-     * Obtener estadísticas completas de una publicación
+     * Obtener estadísticas completas de una publicación - NO IMPLEMENTADO (usar getStats)
      */
     @GET("Publication/{id}/stats")
     suspend fun getPublicationStats(@Path("id") publicationId: Int): Response<PublicationStatsModel>
 
     /**
-     * Obtener publicaciones más populares (trending)
+     * Obtener publicaciones más populares (trending) - IMPLEMENTADO
      */
     @GET("Publication/trending")
     suspend fun getTrendingPublications(
         @Query("limit") limit: Int = 10,
-        @Query("days") days: Int = 7
+        @Query("days") days: Int = 7,
+        @Query("userId") userId: Int? = null
     ): Response<List<PublicationModel>>
 
     // ===== ENDPOINTS IMPLEMENTADOS EN BACKEND =====

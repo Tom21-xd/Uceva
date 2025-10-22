@@ -34,6 +34,40 @@ class PublicacionViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Obtener feed inteligente y actualizar StateFlow
+     * Ordena por: Fijadas > Prioridad (Urgente > Alta > Normal > Baja) > Fecha
+     */
+    fun obtenerFeedInteligente(
+        userId: Int? = null,
+        ciudadId: Int? = null,
+        categoriaId: Int? = null,
+        limit: Int = 50
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.getFeed(
+                    ciudadId = ciudadId,
+                    categoriaId = categoriaId,
+                    userId = userId,
+                    limit = limit,
+                    offset = 0
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    _publicaciones.value = response.body()!!
+                } else {
+                    Log.e("PublicacionViewModel", "Error al obtener feed: ${response.message()}")
+                    // Fallback al método básico
+                    obtenerPublicaciones(userId)
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al obtener feed inteligente", e)
+                // Fallback al método básico
+                obtenerPublicaciones(userId)
+            }
+        }
+    }
+
     fun buscarPublicacion(nombre: String) {
         viewModelScope.launch {
             try {
@@ -372,6 +406,253 @@ class PublicacionViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 Log.e("PublicacionViewModel", "Error al actualizar publicación", e)
+            }
+        }
+    }
+
+    // ==================== NUEVAS FUNCIONALIDADES ====================
+
+    /**
+     * Obtener feed inteligente ordenado por prioridad
+     */
+    fun getFeed(
+        userId: Int? = null,
+        ciudadId: Int? = null,
+        categoriaId: Int? = null,
+        limit: Int = 20,
+        offset: Int = 0,
+        onSuccess: (List<PublicationModel>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.getFeed(
+                    ciudadId = ciudadId,
+                    categoriaId = categoriaId,
+                    userId = userId,
+                    limit = limit,
+                    offset = offset
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al obtener el feed: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al obtener feed", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Obtener publicaciones por categoría
+     */
+    fun getPublicationsByCategory(
+        categoryId: Int,
+        userId: Int? = null,
+        onSuccess: (List<PublicationModel>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.getPublicationsByCategory(categoryId, userId)
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al obtener publicaciones por categoría: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al obtener publicaciones por categoría", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Obtener publicaciones urgentes
+     */
+    fun getUrgentPublications(
+        userId: Int? = null,
+        onSuccess: (List<PublicationModel>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.getUrgentPublications(userId)
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al obtener publicaciones urgentes: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al obtener publicaciones urgentes", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Obtener publicaciones fijadas
+     */
+    fun getPinnedPublications(
+        userId: Int? = null,
+        onSuccess: (List<PublicationModel>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.getPinnedPublications(userId)
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al obtener publicaciones fijadas: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al obtener publicaciones fijadas", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Obtener publicaciones cercanas a una ubicación
+     */
+    fun getNearbyPublications(
+        latitude: Double,
+        longitude: Double,
+        radiusKm: Double = 10.0,
+        userId: Int? = null,
+        onSuccess: (List<PublicationModel>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.getNearbyPublications(
+                    latitude = latitude,
+                    longitude = longitude,
+                    radiusKm = radiusKm,
+                    userId = userId
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al obtener publicaciones cercanas: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al obtener publicaciones cercanas", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Obtener publicaciones por etiqueta
+     */
+    fun getPublicationsByTag(
+        tagId: Int,
+        userId: Int? = null,
+        onSuccess: (List<PublicationModel>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.getPublicationsByTag(tagId, userId)
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al obtener publicaciones por etiqueta: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al obtener publicaciones por etiqueta", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Buscar publicaciones avanzado
+     */
+    fun searchPublicationsAdvanced(
+        query: String,
+        categoriaId: Int? = null,
+        userId: Int? = null,
+        onSuccess: (List<PublicationModel>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.searchPublications(
+                    query = query,
+                    categoriaId = categoriaId,
+                    userId = userId
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al buscar publicaciones: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al buscar publicaciones", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Registrar vista en una publicación
+     */
+    fun registerView(
+        publicationId: Int,
+        userId: Int,
+        readTimeSeconds: Int? = null,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                val viewData = com.Tom.uceva_dengue.Data.Model.RegisterViewRequest(
+                    UserId = userId,
+                    ReadTimeSeconds = readTimeSeconds
+                )
+                val response = RetrofitClient.publicationService.registerView(publicationId, viewData)
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onError("Error al registrar vista: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al registrar vista", e)
+                onError("Error de red: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Obtener publicaciones trending (más populares)
+     */
+    fun getTrendingPublications(
+        limit: Int = 10,
+        days: Int = 7,
+        userId: Int? = null,
+        onSuccess: (List<PublicationModel>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.publicationService.getTrendingPublications(
+                    limit = limit,
+                    days = days,
+                    userId = userId
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    onError("Error al obtener trending: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al obtener trending", e)
+                onError("Error de red: ${e.localizedMessage}")
             }
         }
     }

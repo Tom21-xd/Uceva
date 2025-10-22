@@ -123,10 +123,14 @@ data class PublicationViewModel(
 
 /**
  * Request para registrar vista
+ * Debe coincidir con RegisterViewDto del backend
  */
 data class RegisterViewRequest(
-    @SerializedName("TIEMPO_LECTURA_SEGUNDOS")
-    val TIEMPO_LECTURA_SEGUNDOS: Int? = null
+    @SerializedName("UserId")
+    val UserId: Int,
+
+    @SerializedName("ReadTimeSeconds")
+    val ReadTimeSeconds: Int? = null
 )
 
 /**
