@@ -60,7 +60,7 @@ import com.Tom.uceva_dengue.ui.Components.MenuLateral
 import com.Tom.uceva_dengue.ui.Screen.CaseDetailsScreen
 import com.Tom.uceva_dengue.ui.Screen.CaseScreen
 import com.Tom.uceva_dengue.ui.Screen.CreateCaseScreenModern
-import com.Tom.uceva_dengue.ui.Screen.CreatePublicationScreen
+import com.Tom.uceva_dengue.ui.Screen.CreatePublicationScreenEnhanced
 import com.Tom.uceva_dengue.ui.Screen.UpdatePublicationScreen
 import com.Tom.uceva_dengue.ui.Screen.HomeScreen
 import com.Tom.uceva_dengue.ui.Screen.HospitalScreen
@@ -227,7 +227,7 @@ fun NavigationCon(context: Context) {
                     PreventionGuideScreen()
                 }
                 composable(Rout.CreatePublicationScreen.name) {
-                    CreatePublicationScreen(viewModel = viewModel(),role,user,navController)
+                    CreatePublicationScreenEnhanced(viewModel = viewModel(),role,user,navController)
                 }
                 composable("${Rout.UpdatePublicationScreen.name}/{publicationId}") { backStackEntry ->
                     val publicationId = backStackEntry.arguments?.getString("publicationId")?.toIntOrNull() ?: 0

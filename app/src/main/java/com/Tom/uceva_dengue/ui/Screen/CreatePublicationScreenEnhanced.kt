@@ -72,14 +72,28 @@ fun CreatePublicationScreenEnhanced(
     LaunchedEffect(Unit) {
         scope.launch {
             try {
+                Log.d("CreatePublication", "Iniciando carga de categorías y etiquetas...")
+
                 val catResponse = RetrofitClient.publicationCategoryService.getAllCategories()
+                Log.d("CreatePublication", "Response categorías: ${catResponse.code()}")
                 if (catResponse.isSuccessful && catResponse.body() != null) {
-                    categories = catResponse.body()!!.filter { it.ESTADO_CATEGORIA }
+                    val allCategories = catResponse.body()!!
+                    Log.d("CreatePublication", "Categorías totales: ${allCategories.size}")
+                    categories = allCategories.filter { it.ESTADO_CATEGORIA }
+                    Log.d("CreatePublication", "Categorías activas: ${categories.size}")
+                } else {
+                    Log.e("CreatePublication", "Error al cargar categorías: ${catResponse.errorBody()?.string()}")
                 }
 
                 val tagResponse = RetrofitClient.publicationTagService.getAllTags()
+                Log.d("CreatePublication", "Response etiquetas: ${tagResponse.code()}")
                 if (tagResponse.isSuccessful && tagResponse.body() != null) {
-                    tags = tagResponse.body()!!.filter { it.ESTADO_ETIQUETA }
+                    val allTags = tagResponse.body()!!
+                    Log.d("CreatePublication", "Etiquetas totales: ${allTags.size}")
+                    tags = allTags.filter { it.ESTADO_ETIQUETA }
+                    Log.d("CreatePublication", "Etiquetas activas: ${tags.size}")
+                } else {
+                    Log.e("CreatePublication", "Error al cargar etiquetas: ${tagResponse.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
                 Log.e("CreatePublication", "Error loading data", e)
@@ -156,9 +170,8 @@ fun CreatePublicationScreenEnhanced(
                 }
             }
 
-            // Categoría (NUEVO)
-            if (categories.isNotEmpty()) {
-                Card(
+            // Categoría (NUEVO) - Siempre visible
+            Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -173,54 +186,61 @@ fun CreatePublicationScreenEnhanced(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        ExposedDropdownMenuBox(
-                            expanded = expandedCategory,
-                            onExpandedChange = { expandedCategory = it }
-                        ) {
-                            OutlinedTextField(
-                                value = selectedCategoryId?.let { id ->
-                                    categories.find { it.ID_CATEGORIA_PUBLICACION == id }?.NOMBRE_CATEGORIA
-                                } ?: "Selecciona una categoría",
-                                onValueChange = {},
-                                readOnly = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor(),
-                                trailingIcon = {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory)
-                                },
-                                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                                shape = RoundedCornerShape(12.dp)
+                        if (categories.isEmpty()) {
+                            Text(
+                                text = "⚠️ No hay categorías disponibles. Ejecuta el script SQL de categorías en la base de datos.",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(8.dp)
                             )
-
-                            ExposedDropdownMenu(
+                        } else {
+                            ExposedDropdownMenuBox(
                                 expanded = expandedCategory,
-                                onDismissRequest = { expandedCategory = false }
+                                onExpandedChange = { expandedCategory = it }
                             ) {
-                                categories.forEach { category ->
-                                    DropdownMenuItem(
-                                        text = { Text(category.NOMBRE_CATEGORIA) },
-                                        onClick = {
-                                            selectedCategoryId = category.ID_CATEGORIA_PUBLICACION
-                                            expandedCategory = false
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = getCategoryIcon(category.ICONO),
-                                                contentDescription = null
-                                            )
-                                        }
-                                    )
+                                OutlinedTextField(
+                                    value = selectedCategoryId?.let { id ->
+                                        categories.find { it.ID_CATEGORIA_PUBLICACION == id }?.NOMBRE_CATEGORIA
+                                    } ?: "Selecciona una categoría",
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .menuAnchor(),
+                                    trailingIcon = {
+                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory)
+                                    },
+                                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+
+                                ExposedDropdownMenu(
+                                    expanded = expandedCategory,
+                                    onDismissRequest = { expandedCategory = false }
+                                ) {
+                                    categories.forEach { category ->
+                                        DropdownMenuItem(
+                                            text = { Text(category.NOMBRE_CATEGORIA) },
+                                            onClick = {
+                                                selectedCategoryId = category.ID_CATEGORIA_PUBLICACION
+                                                expandedCategory = false
+                                            },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = getCategoryIcon(category.ICONO),
+                                                    contentDescription = null
+                                                )
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            // Etiquetas (NUEVO)
-            if (tags.isNotEmpty()) {
-                Card(
+            // Etiquetas (NUEVO) - Siempre visible
+            Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -247,26 +267,34 @@ fun CreatePublicationScreenEnhanced(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         // Tags horizontales scrollables
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(tags) { tag ->
-                                FilterChip(
-                                    selected = selectedTagsIds.contains(tag.ID_ETIQUETA),
-                                    onClick = {
-                                        selectedTagsIds = if (selectedTagsIds.contains(tag.ID_ETIQUETA)) {
-                                            selectedTagsIds - tag.ID_ETIQUETA
-                                        } else {
-                                            selectedTagsIds + tag.ID_ETIQUETA
-                                        }
-                                    },
-                                    label = { Text(tag.NOMBRE_ETIQUETA) }
-                                )
+                        if (tags.isEmpty()) {
+                            Text(
+                                text = "⚠️ No hay etiquetas disponibles. Verifica que las etiquetas estén activas (ESTADO_ETIQUETA = 1) en la base de datos.",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        } else {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(tags) { tag ->
+                                    FilterChip(
+                                        selected = selectedTagsIds.contains(tag.ID_ETIQUETA),
+                                        onClick = {
+                                            selectedTagsIds = if (selectedTagsIds.contains(tag.ID_ETIQUETA)) {
+                                                selectedTagsIds - tag.ID_ETIQUETA
+                                            } else {
+                                                selectedTagsIds + tag.ID_ETIQUETA
+                                            }
+                                        },
+                                        label = { Text(tag.NOMBRE_ETIQUETA) }
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            }
 
             // Prioridad y Fijar (NUEVO - Solo admin/médico)
             if (isAdminOrMedico) {
