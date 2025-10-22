@@ -200,6 +200,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _address = MutableLiveData("")
     val address: LiveData<String> get() = _address
 
+    private val _birthDate = MutableLiveData("")
+    val birthDate: LiveData<String> get() = _birthDate
+
     init {
         fetchDepartamentos()
         fetchGeneros()
@@ -272,6 +275,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         cityId: Int,
         address: String,
         genderId: Int = 0,
+        birthDate: String = ""
     ) {
         _email.value = email
         _password.value = password
@@ -281,6 +285,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _address.value = address
         _genderId.value = genderId
         _bloodTypeId.value = bloodTypeId
+        _birthDate.value = birthDate
     }
 
     fun registrarUsuario(
@@ -358,6 +363,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     CORREO_USUARIO = _email.value ?: "",
                     CONTRASENIA_USUARIO = _password.value ?: "",
                     DIRECCION_USUARIO = _address.value ?: "",
+                    FECHA_NACIMIENTO_USUARIO = _birthDate.value ?: "",
                     FK_ID_ROL = rolId,
                     FK_ID_TIPOSANGRE = _bloodTypeId.value ?: 0,
                     FK_ID_GENERO = _genderId.value ?: 0,

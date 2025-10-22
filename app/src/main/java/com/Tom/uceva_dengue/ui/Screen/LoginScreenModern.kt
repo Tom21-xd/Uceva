@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -314,6 +315,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
     val email by viewModel.email.observeAsState(initial = "")
     val password by viewModel.password.observeAsState(initial = "")
     val address by viewModel.address.observeAsState(initial = "")
+    val birthDate by viewModel.birthDate.observeAsState(initial = "")
     val genderId by viewModel.genderId.observeAsState(initial = 0)
     val genderName by viewModel.genderName.observeAsState(initial = "")
     val bloodTypeId by viewModel.bloodTypeId.observeAsState(initial = 0)
@@ -332,6 +334,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
     var numeroDocumento by remember { mutableStateOf("") }
     var acceptedTerms by remember { mutableStateOf(false) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -354,7 +357,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
         ModernTextField(
             value = firstName,
             onValueChange = {
-                viewModel.onRegisterChange(email, password, it, lastName, bloodTypeId, cityId, address, genderId)
+                viewModel.onRegisterChange(email, password, it, lastName, bloodTypeId, cityId, address, genderId, birthDate)
             },
             label = "Nombres",
             leadingIcon = Icons.Default.Person
@@ -363,7 +366,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
         ModernTextField(
             value = lastName,
             onValueChange = {
-                viewModel.onRegisterChange(email, password, firstName, it, bloodTypeId, cityId, address, genderId)
+                viewModel.onRegisterChange(email, password, firstName, it, bloodTypeId, cityId, address, genderId, birthDate)
             },
             label = "Apellidos",
             leadingIcon = Icons.Default.Person
@@ -372,7 +375,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
         ModernTextField(
             value = email,
             onValueChange = {
-                viewModel.onRegisterChange(it, password, firstName, lastName, bloodTypeId, cityId, address, genderId)
+                viewModel.onRegisterChange(it, password, firstName, lastName, bloodTypeId, cityId, address, genderId, birthDate)
             },
             label = "Correo Electrónico",
             leadingIcon = Icons.Default.Email,
@@ -382,7 +385,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
         ModernPasswordField(
             value = password,
             onValueChange = {
-                viewModel.onRegisterChange(email, it, firstName, lastName, bloodTypeId, cityId, address, genderId)
+                viewModel.onRegisterChange(email, it, firstName, lastName, bloodTypeId, cityId, address, genderId, birthDate)
             },
             label = "Contraseña",
             passwordVisible = contrasenaVisible,
@@ -392,11 +395,63 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
         ModernTextField(
             value = address,
             onValueChange = {
-                viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, cityId, it, genderId)
+                viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, cityId, it, genderId, birthDate)
             },
             label = "Dirección",
             leadingIcon = Icons.Default.Home
         )
+
+        // Campo de Fecha de Nacimiento
+        OutlinedTextField(
+            value = birthDate,
+            onValueChange = { },
+            label = { Text("Fecha de Nacimiento", fontSize = 14.sp) },
+            readOnly = true,
+            leadingIcon = {
+                Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            },
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true }) {
+                    Icon(Icons.Default.Edit, contentDescription = "Seleccionar fecha", tint = MaterialTheme.colorScheme.primary)
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+            )
+        )
+
+        // DatePicker Dialog
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState()
+
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val selectedDate = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                            val formattedDate = selectedDate.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                            viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, cityId, address, genderId, formattedDate)
+                        }
+                        showDatePicker = false
+                    }) {
+                        Text("Aceptar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
 
         ComboBox(
             selectedValue = bloodTypeName,
@@ -405,7 +460,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
         ) { seleccion ->
             val selectedBloodType = tiposSangre.firstOrNull { it.NOMBRE_TIPOSANGRE == seleccion }
             val id = selectedBloodType?.ID_TIPOSANGRE ?: 0
-            viewModel.onRegisterChange(email, password, firstName, lastName, id, cityId, address, genderId)
+            viewModel.onRegisterChange(email, password, firstName, lastName, id, cityId, address, genderId, birthDate)
             viewModel.setBloodTypeName(seleccion)
         }
 
@@ -428,7 +483,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
         ) { nuevaCiudad ->
             val ciudadSeleccionada = ciudades.firstOrNull { it.NOMBRE_MUNICIPIO == nuevaCiudad }
             val idCiudad = ciudadSeleccionada?.ID_MUNICIPIO ?: 0
-            viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, idCiudad, address, genderId)
+            viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, idCiudad, address, genderId, birthDate)
             viewModel.setCityName(nuevaCiudad)
         }
 
@@ -439,7 +494,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
         ) { seleccion ->
             val selectedGenero = generos.firstOrNull { it.NOMBRE_GENERO == seleccion }
             val id = selectedGenero?.ID_GENERO ?: 0
-            viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, cityId, address, id)
+            viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, cityId, address, id, birthDate)
             viewModel.setGenderName(seleccion)
         }
 
