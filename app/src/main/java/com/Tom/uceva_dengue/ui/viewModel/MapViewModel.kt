@@ -61,6 +61,11 @@ class MapViewModel : ViewModel() {
     private val _dengueTypes = MutableStateFlow<List<TypeOfDengueModel>>(emptyList())
     val dengueTypes: StateFlow<List<TypeOfDengueModel>> = _dengueTypes
 
+    // Filtro de grupo etario (null = todas las edades, 1-5 según clasificación OMS)
+    // 1: 0-4 años, 2: 5-14 años, 3: 15-49 años, 4: 50-64 años, 5: 65+ años
+    private val _selectedAgeGroup = MutableStateFlow<Int?>(null)
+    val selectedAgeGroup: StateFlow<Int?> = _selectedAgeGroup
+
     private var isCasesFetched = false
     private var isHospitalsFetched = false
     private var isDengueTypesFetched = false
@@ -292,25 +297,65 @@ class MapViewModel : ViewModel() {
     }
 
     /**
-     * Filtra los casos según la ubicación del usuario, el radio configurado y el tipo de dengue
+     * Actualiza el grupo etario seleccionado (null = todas las edades)
+     */
+    fun updateSelectedAgeGroup(ageGroup: Int?) {
+        _selectedAgeGroup.value = ageGroup
+        filterCasesByProximity()
+    }
+
+    /**
+     * Filtra los casos según la ubicación del usuario, el radio configurado, el tipo de dengue y el grupo etario
      */
     private fun filterCasesByProximity() {
         val userLoc = _userLocation.value
         val radius = _filterRadiusKm.value
         val selectedType = _selectedDengueTypeId.value
+        val selectedAge = _selectedAgeGroup.value
 
         var casesToFilter = _cases.value
+
+        Log.d("MapViewModel", "=== INICIANDO FILTRADO ===")
+        Log.d("MapViewModel", "Total casos originales: ${casesToFilter.size}")
+        Log.d("MapViewModel", "Filtro tipo dengue: $selectedType")
+        Log.d("MapViewModel", "Filtro grupo edad: $selectedAge")
 
         // Filtrar por tipo de dengue si hay uno seleccionado
         if (selectedType != null) {
             casesToFilter = casesToFilter.filter { case ->
                 case.FK_ID_TIPODENGUE == selectedType
             }
+            Log.d("MapViewModel", "Casos después filtro dengue: ${casesToFilter.size}")
+        }
+
+        // Filtrar por grupo etario si hay uno seleccionado
+        if (selectedAge != null) {
+            Log.d("MapViewModel", "--- Aplicando filtro de edad ---")
+
+            // Contar casos con fecha de nacimiento
+            val casesWithBirthDate = casesToFilter.count { it.PACIENTE?.FECHA_NACIMIENTO_USUARIO != null }
+            Log.d("MapViewModel", "Casos con fecha nacimiento: $casesWithBirthDate de ${casesToFilter.size}")
+
+            // Filtrar y loggear cada caso
+            casesToFilter = casesToFilter.filter { case ->
+                val paciente = case.PACIENTE
+                val fechaNacimiento = paciente?.FECHA_NACIMIENTO_USUARIO
+                val edad = paciente?.calculateAge()
+                val grupo = paciente?.getAgeGroup()
+
+                if (paciente != null) {
+                    Log.d("MapViewModel", "Paciente: ${paciente.NOMBRE_USUARIO}, FechaNac: $fechaNacimiento, Edad: $edad, Grupo: $grupo, ¿Coincide con $selectedAge?: ${grupo == selectedAge}")
+                }
+
+                grupo == selectedAge
+            }
+            Log.d("MapViewModel", "Casos después filtro edad: ${casesToFilter.size}")
         }
 
         // Filtrar por proximidad si hay ubicación del usuario
         if (userLoc == null) {
             _filteredCases.value = casesToFilter
+            Log.d("MapViewModel", "Sin ubicación usuario, total casos filtrados: ${casesToFilter.size}")
             return
         }
 
@@ -329,7 +374,23 @@ class MapViewModel : ViewModel() {
         } else {
             ""
         }
-        Log.d("MapViewModel", "Casos filtrados: ${_filteredCases.value.size} de ${_cases.value.size} dentro de ${radius}km$typeInfo")
+
+        val ageInfo = if (selectedAge != null) {
+            val ageRange = when(selectedAge) {
+                1 -> "0-4 años"
+                2 -> "5-14 años"
+                3 -> "15-49 años"
+                4 -> "50-64 años"
+                5 -> "65+ años"
+                else -> "Desconocido"
+            }
+            " (edad: $ageRange)"
+        } else {
+            ""
+        }
+
+        Log.d("MapViewModel", "=== RESULTADO FINAL ===")
+        Log.d("MapViewModel", "Casos filtrados: ${_filteredCases.value.size} de ${_cases.value.size} dentro de ${radius}km$typeInfo$ageInfo")
     }
 
     /**

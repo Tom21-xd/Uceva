@@ -156,6 +156,61 @@ class PublicacionViewModel : ViewModel() {
         }
     }
 
+    // UPDATE: Actualizar publicación con categoría, etiquetas, prioridad y fijada
+    fun updatePublicationEnhanced(
+        id: Int,
+        titulo: String,
+        descripcion: String,
+        categoriaId: Int? = null,
+        etiquetasIds: List<Int>? = null,
+        prioridad: String? = null,
+        fijada: Boolean? = null,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val publicationData = mutableMapOf<String, String?>()
+                publicationData["titulo"] = titulo
+                publicationData["descripcion"] = descripcion
+
+                if (categoriaId != null) {
+                    publicationData["categoriaId"] = categoriaId.toString()
+                }
+
+                if (!etiquetasIds.isNullOrEmpty()) {
+                    publicationData["etiquetasIds"] = etiquetasIds.joinToString(",")
+                }
+
+                if (prioridad != null) {
+                    publicationData["prioridad"] = prioridad
+                }
+
+                if (fijada != null) {
+                    publicationData["fijada"] = fijada.toString()
+                }
+
+                Log.d("PublicacionViewModel", "Updating publication with data: $publicationData")
+
+                val response = RetrofitClient.publicationService.updatePublication(id, publicationData)
+                if (response.isSuccessful) {
+                    Log.d("PublicacionViewModel", "Publicación actualizada con éxito")
+                    obtenerPublicaciones() // Recargar lista
+                    onSuccess()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val errorMsg = "Error al actualizar: ${response.message()} - $errorBody"
+                    Log.e("PublicacionViewModel", errorMsg)
+                    onError(errorMsg)
+                }
+            } catch (e: Exception) {
+                val errorMsg = "Error de red: ${e.localizedMessage}"
+                Log.e("PublicacionViewModel", "Error al actualizar publicación", e)
+                onError(errorMsg)
+            }
+        }
+    }
+
     // Obtener una publicación por ID
     fun getPublicationById(id: Int, onSuccess: (com.Tom.uceva_dengue.Data.Model.PublicationModel) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {

@@ -231,7 +231,7 @@ fun NavigationCon(context: Context) {
                 }
                 composable("${Rout.UpdatePublicationScreen.name}/{publicationId}") { backStackEntry ->
                     val publicationId = backStackEntry.arguments?.getString("publicationId")?.toIntOrNull() ?: 0
-                    UpdatePublicationScreen(publicationId = publicationId, navController = navController)
+                    UpdatePublicationScreen(publicationId = publicationId, navController = navController, role = role)
                 }
                 composable(Rout.CaseScreen.name){
                     CaseScreen(caseViewModel = viewModel(),role,navController)

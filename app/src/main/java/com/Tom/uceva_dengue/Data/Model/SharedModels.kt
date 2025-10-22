@@ -28,6 +28,13 @@ data class UserInfo(
     fun calculateAge(): Int? {
         return try {
             FECHA_NACIMIENTO_USUARIO?.let { dateString ->
+                // Si la fecha viene con hora (formato ISO 8601), extraer solo la fecha
+                val dateOnly = if (dateString.contains('T')) {
+                    dateString.split('T')[0]
+                } else {
+                    dateString
+                }
+
                 val possibleFormats = listOf(
                     "yyyy-MM-dd",
                     "dd/MM/yyyy",
@@ -38,7 +45,7 @@ data class UserInfo(
                 for (format in possibleFormats) {
                     try {
                         val formatter = java.time.format.DateTimeFormatter.ofPattern(format)
-                        birthDate = java.time.LocalDate.parse(dateString, formatter)
+                        birthDate = java.time.LocalDate.parse(dateOnly, formatter)
                         break
                     } catch (e: Exception) {
                         // Continuar con el siguiente formato

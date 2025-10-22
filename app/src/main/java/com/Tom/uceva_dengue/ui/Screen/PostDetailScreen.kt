@@ -7,10 +7,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrokenImage
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,7 @@ import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import com.Tom.uceva_dengue.utils.rememberAppDimensions
 import com.Tom.uceva_dengue.utils.rememberWindowSize
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PostDetailScreen(
     publicationId: Int,
@@ -315,6 +317,176 @@ fun PostDetailScreen(
                                     text = publicacion!!.FECHA_PUBLICACION,
                                     fontSize = fontSizeSmall,
                                     color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(dimensions.paddingMedium))
+
+                // Card de categoría, etiquetas y metadatos
+                androidx.compose.material3.Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(dimensions.cardCornerRadius),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = elevationSmall)
+                ) {
+                    Column(modifier = Modifier.padding(dimensions.paddingMedium)) {
+                        // Categoría
+                        publicacion!!.CATEGORIA?.let { categoria ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Category,
+                                    contentDescription = "Categoría",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(iconSizeSmall)
+                                )
+                                Spacer(modifier = Modifier.width(spacerSmall))
+                                Text(
+                                    text = "Categoría:",
+                                    fontSize = fontSizeSmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.width(spacerSmall))
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.primaryContainer
+                                ) {
+                                    Text(
+                                        text = categoria.NOMBRE_CATEGORIA,
+                                        fontSize = fontSizeSmall,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        // Etiquetas
+                        if (!publicacion!!.ETIQUETAS.isNullOrEmpty()) {
+                            if (publicacion!!.CATEGORIA != null) {
+                                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Label,
+                                    contentDescription = "Etiquetas",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(iconSizeSmall)
+                                )
+                                Spacer(modifier = Modifier.width(spacerSmall))
+                                Text(
+                                    text = "Etiquetas:",
+                                    fontSize = fontSizeSmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.width(spacerSmall))
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    publicacion!!.ETIQUETAS!!.forEach { etiqueta ->
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = MaterialTheme.colorScheme.secondaryContainer
+                                        ) {
+                                            Text(
+                                                text = etiqueta.NOMBRE_ETIQUETA,
+                                                fontSize = fontSizeSmall,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Prioridad (si no es Normal)
+                        if (publicacion!!.NIVEL_PRIORIDAD != null && publicacion!!.NIVEL_PRIORIDAD != "Normal") {
+                            if (publicacion!!.CATEGORIA != null || !publicacion!!.ETIQUETAS.isNullOrEmpty()) {
+                                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = if (publicacion!!.NIVEL_PRIORIDAD == "Urgente") Icons.Default.Error
+                                                  else if (publicacion!!.NIVEL_PRIORIDAD == "Alta") Icons.Default.Warning
+                                                  else Icons.Default.Info,
+                                    contentDescription = "Prioridad",
+                                    tint = when(publicacion!!.NIVEL_PRIORIDAD) {
+                                        "Urgente" -> Color(0xFFD32F2F)
+                                        "Alta" -> Color(0xFFFFA000)
+                                        else -> MaterialTheme.colorScheme.primary
+                                    },
+                                    modifier = Modifier.size(iconSizeSmall)
+                                )
+                                Spacer(modifier = Modifier.width(spacerSmall))
+                                Text(
+                                    text = "Prioridad:",
+                                    fontSize = fontSizeSmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.width(spacerSmall))
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = when(publicacion!!.NIVEL_PRIORIDAD) {
+                                        "Urgente" -> Color(0xFFFFEBEE)
+                                        "Alta" -> Color(0xFFFFF3E0)
+                                        "Baja" -> Color(0xFFE3F2FD)
+                                        else -> MaterialTheme.colorScheme.surfaceVariant
+                                    }
+                                ) {
+                                    Text(
+                                        text = publicacion!!.NIVEL_PRIORIDAD!!,
+                                        fontSize = fontSizeSmall,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        color = when(publicacion!!.NIVEL_PRIORIDAD) {
+                                            "Urgente" -> Color(0xFFD32F2F)
+                                            "Alta" -> Color(0xFFEF6C00)
+                                            "Baja" -> Color(0xFF1976D2)
+                                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                        },
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+
+                        // Publicación fijada
+                        if (publicacion!!.FIJADA) {
+                            if (publicacion!!.CATEGORIA != null || !publicacion!!.ETIQUETAS.isNullOrEmpty() || publicacion!!.NIVEL_PRIORIDAD != "Normal") {
+                                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PushPin,
+                                    contentDescription = "Fijada",
+                                    tint = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.size(iconSizeSmall)
+                                )
+                                Spacer(modifier = Modifier.width(spacerSmall))
+                                Text(
+                                    text = "Publicación fijada",
+                                    fontSize = fontSizeSmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.tertiary
                                 )
                             }
                         }

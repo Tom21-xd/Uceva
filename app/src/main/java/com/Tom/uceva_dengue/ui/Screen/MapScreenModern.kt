@@ -135,6 +135,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
     val hospitals by viewModel.hospitals.collectAsState()
     val dengueTypes by viewModel.dengueTypes.collectAsState()
     val selectedDengueTypeId by viewModel.selectedDengueTypeId.collectAsState()
+    val selectedAgeGroup by viewModel.selectedAgeGroup.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     var showFiltersPanel by remember { mutableStateOf(false) }
@@ -756,6 +757,95 @@ fun MapScreenModern(viewModel: MapViewModel) {
                             }
                         }
                     }
+
+                    // Filtro de grupo etario
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+                    ) {
+                        Text(
+                            "Grupo de edad",
+                            fontSize = dimensions.textSizeMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = textColor
+                        )
+
+                        // Chips en LazyRow horizontal scrollable
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+                        ) {
+                            // Chip "Todas las edades" al inicio
+                            item {
+                                FilterChip(
+                                    selected = selectedAgeGroup == null,
+                                    onClick = { viewModel.updateSelectedAgeGroup(null) },
+                                    label = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            if (selectedAgeGroup == null) {
+                                                Icon(
+                                                    Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(dimensions.iconSmall)
+                                                )
+                                            }
+                                            Text(
+                                                "Todas",
+                                                fontSize = dimensions.textSizeSmall,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = PrimaryBlue,
+                                        selectedLabelColor = Color.White
+                                    )
+                                )
+                            }
+
+                            // Chips de grupos etarios según clasificación OMS
+                            items(
+                                items = listOf(
+                                    1 to "0-4 años",
+                                    2 to "5-14 años",
+                                    3 to "15-49 años",
+                                    4 to "50-64 años",
+                                    5 to "65+ años"
+                                )
+                            ) { (groupId, groupLabel) ->
+                                FilterChip(
+                                    selected = selectedAgeGroup == groupId,
+                                    onClick = { viewModel.updateSelectedAgeGroup(groupId) },
+                                    label = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                        ) {
+                                            if (selectedAgeGroup == groupId) {
+                                                Icon(
+                                                    Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(dimensions.iconSmall)
+                                                )
+                                            }
+                                            Text(
+                                                groupLabel,
+                                                fontSize = dimensions.textSizeSmall,
+                                                fontWeight = FontWeight.Medium,
+                                                maxLines = 1
+                                            )
+                                        }
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = getAgeGroupColor(groupId),
+                                        selectedLabelColor = Color.White
+                                    )
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -770,6 +860,18 @@ private fun getDengueTypeColor(typeId: Int): Color {
         2 -> Color(0xFFFF8C42)  // Dengue Hemorrágico - Naranja
         3 -> Color(0xFFFFB74D)  // Dengue Grave - Naranja oscuro
         4 -> Color(0xFFE53935)  // Otro tipo - Rojo oscuro
+        else -> Color(0xFF5E81F4) // Default - Azul
+    }
+}
+
+// Función auxiliar para colores de grupos etarios
+private fun getAgeGroupColor(groupId: Int): Color {
+    return when (groupId) {
+        1 -> Color(0xFF9C27B0)  // 0-4 años - Púrpura
+        2 -> Color(0xFF2196F3)  // 5-14 años - Azul
+        3 -> Color(0xFF4CAF50)  // 15-49 años - Verde
+        4 -> Color(0xFFFF9800)  // 50-64 años - Naranja
+        5 -> Color(0xFFF44336)  // 65+ años - Rojo
         else -> Color(0xFF5E81F4) // Default - Azul
     }
 }
