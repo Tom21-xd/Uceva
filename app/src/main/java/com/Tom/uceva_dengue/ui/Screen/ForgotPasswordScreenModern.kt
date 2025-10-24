@@ -84,9 +84,8 @@ fun ForgotPasswordScreenModern(navController: NavController) {
                 .verticalScroll(rememberScrollState())
                 .padding(dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(dimensions.paddingMedium)
+            verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.weight(1f, fill = false))
             // Card principal
             Card(
                 modifier = Modifier

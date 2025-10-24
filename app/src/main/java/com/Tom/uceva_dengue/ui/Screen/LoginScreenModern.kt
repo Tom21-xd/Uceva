@@ -72,9 +72,8 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                 .verticalScroll(rememberScrollState())
                 .padding(dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
+            verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.weight(1f, fill = false)) // Centra cuando hay espacio
             // Card contenedor con diseño moderno
             Card(
                 modifier = Modifier
@@ -94,9 +93,9 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                 ) {
                     // Logo y título
                     Image(
-                        painter = painterResource(id = R.drawable.salud),
+                        painter = painterResource(id = R.mipmap.ic_launcher_foreground),
                         contentDescription = "Logo",
-                        modifier = Modifier.size(dimensions.logoSize)
+                        modifier = Modifier.size(120.dp)
                     )
 
                     Spacer(modifier = Modifier.height(dimensions.spacingMedium))
@@ -145,7 +144,7 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f, fill = false)) // Centra cuando hay espacio
+            Spacer(modifier = Modifier.height(dimensions.spacingLarge))
 
             // Footer
             Text(
@@ -153,8 +152,6 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
                 fontSize = dimensions.textSizeSmall,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
             )
-
-            Spacer(modifier = Modifier.height(dimensions.spacingMedium)) // Espacio inferior
         }
     }
 }
