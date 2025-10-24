@@ -34,6 +34,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,6 +81,10 @@ import com.Tom.uceva_dengue.ui.Screen.PostDetailScreen
 import com.Tom.uceva_dengue.ui.Screen.SavedPublicationsScreen
 import com.Tom.uceva_dengue.ui.Screen.CreateCaseEvolutionScreen
 import com.Tom.uceva_dengue.ui.Screen.CaseEvolutionHistoryScreen
+import com.Tom.uceva_dengue.ui.Screen.QuizStartScreen
+import com.Tom.uceva_dengue.ui.Screen.QuizQuestionsScreen
+import com.Tom.uceva_dengue.ui.Screen.QuizResultScreen
+import com.Tom.uceva_dengue.ui.Screen.CertificateScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
@@ -116,7 +121,15 @@ fun NavigationCon(context: Context) {
             contentWindowInsets = WindowInsets.systemBars,
             topBar = {
                 currentRoute.value?.destination?.route?.let { route ->
-                    if (route != Rout.LoginScreen.name && route != Rout.OlvContraseniaScreen.name) {
+                    val excludedRoutes = listOf(
+                        Rout.LoginScreen.name,
+                        Rout.OlvContraseniaScreen.name,
+                        Rout.QuizStartScreen.name,
+                        Rout.QuizQuestionsScreen.name,
+                        Rout.QuizResultScreen.name,
+                        Rout.CertificateScreen.name
+                    )
+                    if (route !in excludedRoutes) {
                         // TopAppBar moderno con gradiente azul que respeta el status bar
                         Box(
                             modifier = Modifier
@@ -186,7 +199,15 @@ fun NavigationCon(context: Context) {
             },
             bottomBar = {
                 currentRoute.value?.destination?.route?.let { route ->
-                    if (route != Rout.LoginScreen.name && route != Rout.OlvContraseniaScreen.name) {
+                    val excludedRoutes = listOf(
+                        Rout.LoginScreen.name,
+                        Rout.OlvContraseniaScreen.name,
+                        Rout.QuizStartScreen.name,
+                        Rout.QuizQuestionsScreen.name,
+                        Rout.QuizResultScreen.name,
+                        Rout.CertificateScreen.name
+                    )
+                    if (route !in excludedRoutes) {
                         BottomNavigationBar(navController)
                     }
                 }
@@ -224,7 +245,9 @@ fun NavigationCon(context: Context) {
                     InfoScreen()
                 }
                 composable(Rout.PreventionGuideScreen.name) {
-                    PreventionGuideScreen()
+                    PreventionGuideScreen(
+                        onNavigateToQuiz = { navController.navigate(Rout.QuizStartScreen.name) }
+                    )
                 }
                 composable(Rout.CreatePublicationScreen.name) {
                     CreatePublicationScreenEnhanced(viewModel = viewModel(),role,user,navController)
@@ -357,6 +380,59 @@ fun NavigationCon(context: Context) {
                         navController = navController
                     )
                 }
+                composable(Rout.QuizStartScreen.name) {
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(Rout.QuizStartScreen.name)
+                    }
+                    val quizViewModel: com.Tom.uceva_dengue.ui.viewModel.QuizViewModel = viewModel(viewModelStoreOwner = parentEntry)
+
+                    QuizStartScreen(
+                        userId = user?.toIntOrNull() ?: 0,
+                        onNavigateBack = { navController.popBackStack() },
+                        onQuizStarted = { navController.navigate(Rout.QuizQuestionsScreen.name) },
+                        viewModel = quizViewModel
+                    )
+                }
+                composable(Rout.QuizQuestionsScreen.name) {
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(Rout.QuizStartScreen.name)
+                    }
+                    val quizViewModel: com.Tom.uceva_dengue.ui.viewModel.QuizViewModel = viewModel(viewModelStoreOwner = parentEntry)
+
+                    QuizQuestionsScreen(
+                        onNavigateBack = { navController.popBackStack() },
+                        onQuizFinished = { navController.navigate(Rout.QuizResultScreen.name) },
+                        viewModel = quizViewModel
+                    )
+                }
+                composable(Rout.QuizResultScreen.name) {
+                    val parentEntry = remember(it) {
+                        navController.getBackStackEntry(Rout.QuizStartScreen.name)
+                    }
+                    val quizViewModel: com.Tom.uceva_dengue.ui.viewModel.QuizViewModel = viewModel(viewModelStoreOwner = parentEntry)
+
+                    QuizResultScreen(
+                        onNavigateBack = { navController.navigate(Rout.PreventionGuideScreen.name) {
+                            popUpTo(Rout.PreventionGuideScreen.name) { inclusive = false }
+                        }},
+                        onNavigateToCertificate = { navController.navigate(Rout.CertificateScreen.name) },
+                        onRetakeQuiz = {
+                            navController.navigate(Rout.QuizStartScreen.name) {
+                                popUpTo(Rout.QuizStartScreen.name) { inclusive = true }
+                            }
+                        },
+                        viewModel = quizViewModel
+                    )
+                }
+                composable(Rout.CertificateScreen.name) {
+                    val quizViewModel: com.Tom.uceva_dengue.ui.viewModel.QuizViewModel = viewModel()
+
+                    CertificateScreen(
+                        userId = user?.toIntOrNull() ?: 0,
+                        onNavigateBack = { navController.popBackStack() },
+                        viewModel = quizViewModel
+                    )
+                }
 
             }
         }
@@ -387,6 +463,10 @@ fun getTopBarTitle(route: String): String {
         Rout.SavedPublicationsScreen.name -> "Mis Guardados"
         Rout.CreateCaseEvolutionScreen.name -> "Nueva Evolución"
         Rout.CaseEvolutionHistoryScreen.name -> "Historial de Evoluciones"
+        Rout.QuizStartScreen.name -> "Evaluación"
+        Rout.QuizQuestionsScreen.name -> "Evaluación en Curso"
+        Rout.QuizResultScreen.name -> "Resultados"
+        Rout.CertificateScreen.name -> "Mi Certificado"
         else -> "Mi Aplicación"
     }
 }

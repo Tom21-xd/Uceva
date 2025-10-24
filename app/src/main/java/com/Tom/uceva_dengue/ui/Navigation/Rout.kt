@@ -23,5 +23,9 @@ enum class Rout {
     PostDetailScreen,
     SavedPublicationsScreen,
     CreateCaseEvolutionScreen,
-    CaseEvolutionHistoryScreen
+    CaseEvolutionHistoryScreen,
+    QuizStartScreen,
+    QuizQuestionsScreen,
+    QuizResultScreen,
+    CertificateScreen
 }

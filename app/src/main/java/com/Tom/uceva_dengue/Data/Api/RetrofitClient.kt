@@ -16,6 +16,7 @@ import com.Tom.uceva_dengue.Data.Service.NotificationService
 import com.Tom.uceva_dengue.Data.Service.PublicationService
 import com.Tom.uceva_dengue.Data.Service.PublicationCategoryService
 import com.Tom.uceva_dengue.Data.Service.PublicationTagService
+import com.Tom.uceva_dengue.Data.Service.QuizService
 import com.Tom.uceva_dengue.Data.Service.RoleService
 import com.Tom.uceva_dengue.Data.Service.StatisticsService
 import com.Tom.uceva_dengue.Data.Service.SymptomService
@@ -117,5 +118,8 @@ object RetrofitClient {
     }
     val symptomService : SymptomService by lazy {
         retrofit.create(SymptomService::class.java)
+    }
+    val quizService : QuizService by lazy {
+        retrofit.create(QuizService::class.java)
     }
 }
