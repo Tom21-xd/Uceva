@@ -2,21 +2,32 @@ package com.Tom.uceva_dengue.ui.Screen
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -52,6 +63,7 @@ fun HomeScreen(
     var isLoadingFilter by remember { mutableStateOf(false) }
     var categories by remember { mutableStateOf<List<com.Tom.uceva_dengue.Data.Model.PublicationCategoryModel>>(emptyList()) }
     var selectedCategoryId by remember { mutableStateOf<Int?>(null) }
+    var showFiltersPanel by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     // Load categories
@@ -158,7 +170,7 @@ fun HomeScreen(
                 .padding(dimensions.paddingMedium)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // → Buscador idéntico al de HospitalScreen
+                // → Buscador compacto
                 OutlinedTextField(
                     value = searchText,
                     onValueChange = { query ->
@@ -181,32 +193,6 @@ fun HomeScreen(
                     },
                     shape = RoundedCornerShape(dimensions.cardCornerRadius * 2)
                 )
-
-                // Filtros de publicaciones
-                PublicationFiltersRow(
-                    selectedFilter = selectedFilter,
-                    onFilterSelected = { filter ->
-                        selectedFilter = filter
-                        searchText = "" // Clear search when changing filter
-                        loadFilteredPublications(filter)
-                    },
-                    categories = categories,
-                    selectedCategoryId = selectedCategoryId,
-                    onCategorySelected = { categoryId ->
-                        selectedCategoryId = categoryId
-                        searchText = ""
-                        // Reload with category filter
-                        if (selectedFilter == PublicationFilter.ALL) {
-                            viewModel.obtenerFeedInteligente(
-                                userId = userId,
-                                categoriaId = categoryId,
-                                limit = 50
-                            )
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(dimensions.spacingSmall))
 
                 // Estado de carga de filtros
                 if (isLoadingFilter) {
@@ -325,21 +311,216 @@ fun HomeScreen(
             }
         }
 
+        // Botón flotante de filtros
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(dimensions.paddingMedium),
+            verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+        ) {
+            FloatingActionButton(
+                onClick = { showFiltersPanel = !showFiltersPanel },
+                containerColor = if (showFiltersPanel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                contentColor = if (showFiltersPanel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                shape = CircleShape,
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(8.dp, CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.FilterList,
+                    contentDescription = "Filtros"
+                )
+            }
+        }
+
         // Administrador (2) y Personal Médico (3) pueden crear publicaciones
         if (role == 2 || role == 3) {
             FloatingActionButton(
                 onClick = { navController.navigate(Rout.CreatePublicationScreen.name) },
-                shape = RoundedCornerShape(50),
+                shape = CircleShape,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-                containerColor = MaterialTheme.colorScheme.primaryContainer
+                    .padding(dimensions.paddingMedium)
+                    .size(56.dp)
+                    .shadow(8.dp, CircleShape),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Crear publicación",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    contentDescription = "Crear publicación"
                 )
+            }
+        }
+
+        // Panel de filtros desplegable
+        AnimatedVisibility(
+            visible = showFiltersPanel,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(dimensions.paddingMedium),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(dimensions.paddingMedium)
+                ) {
+                    // Header del panel
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Filtros de Publicaciones",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        IconButton(
+                            onClick = { showFiltersPanel = false },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Cerrar",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(dimensions.spacingMedium))
+
+                    // Filtros principales
+                    Text(
+                        "Tipo de Publicación",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(dimensions.spacingSmall))
+
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        item {
+                            FilterChip(
+                                selected = selectedFilter == PublicationFilter.ALL,
+                                onClick = {
+                                    selectedFilter = PublicationFilter.ALL
+                                    searchText = ""
+                                    loadFilteredPublications(PublicationFilter.ALL)
+                                },
+                                label = { Text("Todas") },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            )
+                        }
+
+                        items(listOf(
+                            PublicationFilter.URGENT to "Urgentes",
+                            PublicationFilter.PINNED to "Fijadas",
+                            PublicationFilter.TRENDING to "Populares"
+                        )) { (filter, label) ->
+                            FilterChip(
+                                selected = selectedFilter == filter,
+                                onClick = {
+                                    selectedFilter = filter
+                                    searchText = ""
+                                    loadFilteredPublications(filter)
+                                },
+                                label = { Text(label) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            )
+                        }
+                    }
+
+                    // Filtro por categorías
+                    if (categories.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(dimensions.spacingMedium))
+
+                        Text(
+                            "Categoría",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(dimensions.spacingSmall))
+
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            item {
+                                FilterChip(
+                                    selected = selectedCategoryId == null,
+                                    onClick = {
+                                        selectedCategoryId = null
+                                        searchText = ""
+                                        viewModel.obtenerFeedInteligente(
+                                            userId = userId,
+                                            categoriaId = null,
+                                            limit = 50
+                                        )
+                                    },
+                                    label = { Text("Todas") },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                )
+                            }
+
+                            items(categories) { category ->
+                                FilterChip(
+                                    selected = selectedCategoryId == category.ID_CATEGORIA_PUBLICACION,
+                                    onClick = {
+                                        selectedCategoryId = category.ID_CATEGORIA_PUBLICACION
+                                        searchText = ""
+                                        viewModel.obtenerFeedInteligente(
+                                            userId = userId,
+                                            categoriaId = category.ID_CATEGORIA_PUBLICACION,
+                                            limit = 50
+                                        )
+                                    },
+                                    label = { Text(category.NOMBRE_CATEGORIA) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(dimensions.spacingSmall))
+                }
             }
         }
         }

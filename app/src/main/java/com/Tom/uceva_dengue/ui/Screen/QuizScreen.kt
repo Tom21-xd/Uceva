@@ -18,6 +18,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -57,7 +61,7 @@ fun QuizStartScreen(
                 title = {
                     Text(
                         "Evaluación de Conocimientos",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleMedium
                     )
                 },
                 navigationIcon = {
@@ -69,9 +73,11 @@ fun QuizStartScreen(
                     containerColor = Color(0xFF1E8449),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
-                )
+                ),
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Box(
             modifier = Modifier
@@ -81,6 +87,7 @@ fun QuizStartScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -254,7 +261,7 @@ private fun InfoCard(
 
             Text(
                 text = title,
-                fontSize = 32.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF212121),
                 textAlign = TextAlign.Center
@@ -264,10 +271,11 @@ private fun InfoCard(
 
             Text(
                 text = subtitle,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 color = Color(0xFF616161),
                 fontWeight = FontWeight.Normal,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 1
             )
         }
     }
@@ -374,6 +382,7 @@ fun QuizQuestionsScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     var elapsedSeconds by remember { mutableStateOf(0) }
+    var showExitDialog by remember { mutableStateOf(false) }
 
     // Timer
     LaunchedEffect(Unit) {
@@ -393,19 +402,19 @@ fun QuizQuestionsScreen(
             // TopAppBar compacto personalizado
             Surface(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 color = Color(0xFF1E8449),
                 shadowElevation = 4.dp
             ) {
                 Row(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
+                        .height(56.dp)
                         .padding(horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = onNavigateBack,
+                        onClick = { showExitDialog = true },
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
@@ -450,7 +459,8 @@ fun QuizQuestionsScreen(
                     }
                 }
             }
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Box(
             modifier = Modifier
@@ -461,6 +471,7 @@ fun QuizQuestionsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .imePadding()
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
@@ -693,6 +704,50 @@ fun QuizQuestionsScreen(
                     Text(error)
                 }
             }
+        }
+
+        // Exit Confirmation Dialog
+        if (showExitDialog) {
+            AlertDialog(
+                onDismissRequest = { showExitDialog = false },
+                title = {
+                    Text(
+                        "¿Abandonar Evaluación?",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text("Se perderá todo el progreso de esta evaluación. ¿Estás seguro de que deseas salir?")
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showExitDialog = false
+                            onNavigateBack()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFD32F2F)
+                        )
+                    ) {
+                        Text("Salir")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { showExitDialog = false }) {
+                        Text("Continuar")
+                    }
+                },
+                containerColor = Color.White,
+                iconContentColor = Color(0xFFD32F2F),
+                icon = {
+                    Icon(
+                        Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFD32F2F),
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            )
         }
     }
 }

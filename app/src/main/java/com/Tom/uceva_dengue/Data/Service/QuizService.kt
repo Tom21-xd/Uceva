@@ -31,23 +31,23 @@ interface QuizService {
     suspend fun getQuizHistory(@Path("userId") userId: Int): Response<List<QuizHistoryModel>>
 
     // Generate certificate
-    @POST("CertificateController/generate")
+    @POST("Certificate/generate")
     suspend fun generateCertificate(@Body request: GenerateCertificateRequest): Response<CertificateModel>
 
     // Get certificate by ID
-    @GET("CertificateController/{id}")
+    @GET("Certificate/{id}")
     suspend fun getCertificate(@Path("id") certificateId: Int): Response<CertificateModel>
 
     // Get user's certificates
-    @GET("CertificateController/user/{userId}")
+    @GET("Certificate/user/{userId}")
     suspend fun getUserCertificates(@Path("userId") userId: Int): Response<List<CertificateModel>>
 
     // Check certificate eligibility
-    @GET("CertificateController/eligible/{attemptId}")
+    @GET("Certificate/eligible/{attemptId}")
     suspend fun checkEligibility(@Path("attemptId") attemptId: Int): Response<CertificateEligibilityModel>
 
     // Download certificate PDF
-    @GET("CertificateController/{id}/download")
+    @GET("Certificate/{id}/download")
     @Streaming
     suspend fun downloadCertificate(@Path("id") certificateId: Int): Response<okhttp3.ResponseBody>
 }

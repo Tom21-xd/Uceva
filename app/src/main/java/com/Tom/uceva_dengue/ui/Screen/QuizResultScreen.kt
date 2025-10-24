@@ -41,7 +41,12 @@ fun QuizResultScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Resultados de la Evaluación") },
+                title = {
+                    Text(
+                        "Resultados de la Evaluación",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.Close, "Cerrar")
@@ -51,9 +56,11 @@ fun QuizResultScreen(
                     containerColor = if (result?.passed == true) Color(0xFF1E8449) else Color(0xFF757575),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
-                )
+                ),
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Box(
             modifier = Modifier

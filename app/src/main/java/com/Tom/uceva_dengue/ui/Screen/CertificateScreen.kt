@@ -56,7 +56,12 @@ fun CertificateScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mi Certificado") },
+                title = {
+                    Text(
+                        "Mi Certificado",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Volver")
@@ -66,9 +71,11 @@ fun CertificateScreen(
                     containerColor = Color(0xFF1E8449),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
-                )
+                ),
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Box(
             modifier = Modifier

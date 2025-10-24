@@ -5,7 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,9 +48,42 @@ data class InfoItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PreventionGuideScreen(
-    onNavigateToQuiz: () -> Unit = {}
+    onNavigateToQuiz: () -> Unit = {},
+    onNavigateToCertificate: () -> Unit = {},
+    userId: Int = 0,
+    viewModel: com.Tom.uceva_dengue.ui.viewModel.QuizViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     var expandedSections by remember { mutableStateOf(setOf(0)) } // Primera sección expandida por defecto
+    val certificate by viewModel.certificate.collectAsState()
+    val quizHistory by viewModel.quizHistory.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    // Debug: Log quiz history
+    LaunchedEffect(quizHistory) {
+        android.util.Log.d("PreventionGuide", "Quiz history size: ${quizHistory.size}")
+        quizHistory.forEach { attempt ->
+            android.util.Log.d("PreventionGuide", "Attempt ${attempt.attemptId}: status=${attempt.status}, score=${attempt.score}, passed=${attempt.passed}, hasCert=${attempt.hasCertificate}")
+        }
+    }
+
+    // Buscar el mejor intento completado
+    val bestCompletedAttempt = quizHistory
+        .filter {
+            android.util.Log.d("PreventionGuide", "Filtering attempt ${it.attemptId}: status=${it.status}, score=${it.score}")
+            it.status == "Completed" && it.score >= 80.0
+        }
+        .maxByOrNull { it.score }
+
+    LaunchedEffect(bestCompletedAttempt) {
+        android.util.Log.d("PreventionGuide", "Best attempt: ${bestCompletedAttempt?.attemptId}, score=${bestCompletedAttempt?.score}")
+    }
+
+    LaunchedEffect(userId) {
+        if (userId > 0) {
+            viewModel.loadUserCertificates(userId)
+            viewModel.loadQuizHistory(userId)
+        }
+    }
 
     val sections = listOf(
         // ¿Qué es el Dengue?
@@ -315,14 +348,47 @@ fun PreventionGuideScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Header moderno
-            item {
+            item(key = "header") {
                 ModernHeaderCard()
             }
 
+            // Certificate Card (if exists) or Generate Certificate Card (if approved attempt without certificate)
+            when {
+                certificate != null -> {
+                    item(key = "certificate_available") {
+                        android.util.Log.d("PreventionGuide", "Showing CertificateAvailableCard")
+                        CertificateAvailableCard(
+                            certificate = certificate!!,
+                            onViewCertificate = onNavigateToCertificate
+                        )
+                    }
+                }
+                bestCompletedAttempt != null -> {
+                    val attempt = bestCompletedAttempt!!
+                    item(key = "generate_certificate_${attempt.attemptId}") {
+                        android.util.Log.d(
+                            "PreventionGuide",
+                            "Showing GenerateCertificateCard for attempt ${attempt.attemptId}"
+                        )
+                        GenerateCertificateCard(
+                            attempt = attempt,
+                            onGenerateCertificate = {
+                                viewModel.generateCertificate(attempt.attemptId)
+                            },
+                            onNavigateToCertificate = onNavigateToCertificate,
+                            isLoading = isLoading
+                        )
+                    }
+                }
+            }
+
             // Secciones expandibles
-            items(sections.size) { index ->
+            itemsIndexed(
+                items = sections,
+                key = { index, section -> "section_${index}_${section.title}" }
+            ) { index, section ->
                 ExpandableSection(
-                    section = sections[index],
+                    section = section,
                     isExpanded = expandedSections.contains(index),
                     onToggle = {
                         expandedSections = if (expandedSections.contains(index)) {
@@ -335,12 +401,15 @@ fun PreventionGuideScreen(
             }
 
             // Quiz Button
-            item {
-                QuizCallToActionCard(onNavigateToQuiz)
+            item(key = "quiz_button") {
+                QuizCallToActionCard(
+                    onNavigateToQuiz = onNavigateToQuiz,
+                    hasCertificate = certificate != null || bestCompletedAttempt != null
+                )
             }
 
             // Footer
-            item {
+            item(key = "footer") {
                 ModernFooterCard()
             }
         }
@@ -348,7 +417,251 @@ fun PreventionGuideScreen(
 }
 
 @Composable
-private fun QuizCallToActionCard(onNavigateToQuiz: () -> Unit) {
+private fun GenerateCertificateCard(
+    attempt: com.Tom.uceva_dengue.Data.Model.QuizHistoryModel,
+    onGenerateCertificate: () -> Unit,
+    onNavigateToCertificate: () -> Unit,
+    isLoading: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF1E8449),
+                            Color(0xFF27AE60)
+                        )
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Trophy Icon
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = Color(0xFFFFD700)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "¡Aprobaste la Evaluación!",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Has obtenido ${attempt.score.toInt()}% de puntuación",
+                    fontSize = 15.sp,
+                    color = Color.White.copy(alpha = 0.95f),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Genera tu certificado digital ahora",
+                    fontSize = 13.sp,
+                    color = Color.White.copy(alpha = 0.9f),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Generate Certificate Button
+                Button(
+                    onClick = {
+                        onGenerateCertificate()
+                        onNavigateToCertificate()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF1E8449)
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 4.dp,
+                        pressedElevation = 8.dp
+                    ),
+                    enabled = !isLoading
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color(0xFF1E8449)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Generando...",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.CardMembership,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Generar Mi Certificado",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CertificateAvailableCard(
+    certificate: com.Tom.uceva_dengue.Data.Model.CertificateModel,
+    onViewCertificate: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFFFFD700),
+                            Color(0xFFFFA000)
+                        )
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Trophy Icon
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = Color.White
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "¡Tienes un Certificado!",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Has aprobado la evaluación con ${certificate.score.toInt()}%",
+                    fontSize = 15.sp,
+                    color = Color.White.copy(alpha = 0.95f),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Código: ${certificate.verificationCode}",
+                    fontSize = 13.sp,
+                    color = Color.White.copy(alpha = 0.9f),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // View/Download Certificate Button
+                Button(
+                    onClick = onViewCertificate,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color(0xFFFFA000)
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 4.dp,
+                        pressedElevation = 8.dp
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Download,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Ver y Descargar Certificado",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuizCallToActionCard(
+    onNavigateToQuiz: () -> Unit,
+    hasCertificate: Boolean = false
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -394,7 +707,7 @@ private fun QuizCallToActionCard(onNavigateToQuiz: () -> Unit) {
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = "Evalúa tus Conocimientos",
+                    text = if (hasCertificate) "Mejora tu Puntaje" else "Evalúa tus Conocimientos",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -405,7 +718,10 @@ private fun QuizCallToActionCard(onNavigateToQuiz: () -> Unit) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Pon a prueba lo que has aprendido sobre prevención del dengue. Responde 10 preguntas y obtén tu certificado.",
+                    text = if (hasCertificate)
+                        "Vuelve a realizar la evaluación para mejorar tu puntaje y obtener un nuevo certificado."
+                    else
+                        "Pon a prueba lo que has aprendido sobre prevención del dengue. Responde 10 preguntas y obtén tu certificado.",
                     fontSize = 15.sp,
                     color = Color.White.copy(alpha = 0.95f),
                     textAlign = TextAlign.Center,
@@ -449,7 +765,7 @@ private fun QuizCallToActionCard(onNavigateToQuiz: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Iniciar Evaluación",
+                        text = if (hasCertificate) "Repetir Evaluación" else "Iniciar Evaluación",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp

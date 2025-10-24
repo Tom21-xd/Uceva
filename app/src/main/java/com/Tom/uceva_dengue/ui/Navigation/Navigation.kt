@@ -246,7 +246,9 @@ fun NavigationCon(context: Context) {
                 }
                 composable(Rout.PreventionGuideScreen.name) {
                     PreventionGuideScreen(
-                        onNavigateToQuiz = { navController.navigate(Rout.QuizStartScreen.name) }
+                        onNavigateToQuiz = { navController.navigate(Rout.QuizStartScreen.name) },
+                        onNavigateToCertificate = { navController.navigate(Rout.CertificateScreen.name) },
+                        userId = user?.toIntOrNull() ?: 0
                     )
                 }
                 composable(Rout.CreatePublicationScreen.name) {
@@ -400,7 +402,11 @@ fun NavigationCon(context: Context) {
                     val quizViewModel: com.Tom.uceva_dengue.ui.viewModel.QuizViewModel = viewModel(viewModelStoreOwner = parentEntry)
 
                     QuizQuestionsScreen(
-                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateBack = {
+                            navController.navigate(Rout.PreventionGuideScreen.name) {
+                                popUpTo(Rout.PreventionGuideScreen.name) { inclusive = false }
+                            }
+                        },
                         onQuizFinished = { navController.navigate(Rout.QuizResultScreen.name) },
                         viewModel = quizViewModel
                     )

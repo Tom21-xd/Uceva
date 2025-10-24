@@ -5,11 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -46,6 +48,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -61,7 +64,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -82,6 +87,20 @@ fun UserManagementScreen(
     var userToDelete by remember { mutableStateOf<UserModel?>(null) }
     var deleteError by remember { mutableStateOf<String?>(null) }
 
+    // Configuración dinámica basada en el tamaño de pantalla
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val isCompactScreen = screenHeight < 700.dp
+
+    // Valores dinámicos de padding y espaciado - ULTRA optimizados
+    val headerPaddingHorizontal = 12.dp
+    val headerPaddingVertical = if (isCompactScreen) 6.dp else 8.dp
+    val searchToFilterSpacing = 4.dp
+    val filterChipSpacing = 4.dp
+    val afterHeaderSpacing = 4.dp
+    val filterChipFontSize = 11.sp
+    val filterIconSize = 12.dp
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
@@ -100,27 +119,26 @@ fun UserManagementScreen(
                 .padding(padding)
         ) {
             // Header compacto con búsqueda y filtros integrados
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+                    )
+                    .padding(
+                        horizontal = headerPaddingHorizontal,
+                        vertical = headerPaddingVertical
+                    )
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    // Barra de búsqueda compacta
+                    // Barra de búsqueda compacta optimizada
                     OutlinedTextField(
                         value = state.searchQuery,
                         onValueChange = { viewModel.searchUsers(it) },
                         placeholder = {
                             Text(
                                 "Buscar usuarios...",
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                             )
                         },
@@ -129,26 +147,28 @@ fun UserManagementScreen(
                                 Icons.Default.Search,
                                 contentDescription = null,
                                 tint = Color(0xFF5E81F4),
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         },
                         trailingIcon = {
                             if (state.searchQuery.isNotEmpty()) {
                                 IconButton(
                                     onClick = { viewModel.searchUsers("") },
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(24.dp)
                                 ) {
                                     Icon(
                                         Icons.Default.Clear,
                                         contentDescription = "Limpiar",
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(18.dp)
+                                        modifier = Modifier.size(14.dp)
                                     )
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(if (isCompactScreen) 42.dp else 46.dp),
+                        shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFF5E81F4),
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -156,15 +176,15 @@ fun UserManagementScreen(
                             unfocusedContainerColor = MaterialTheme.colorScheme.surface
                         ),
                         singleLine = true,
-                        textStyle = LocalTextStyle.current.copy(fontSize = 14.sp)
+                        textStyle = LocalTextStyle.current.copy(fontSize = 12.sp)
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(searchToFilterSpacing))
 
                     // Filtros compactos en fila
                     androidx.compose.foundation.lazy.LazyRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(filterChipSpacing)
                     ) {
                         item {
                             FilterChip(
@@ -173,12 +193,12 @@ fun UserManagementScreen(
                                 label = {
                                     Text(
                                         "Todos (${state.users.size})",
-                                        fontSize = 12.sp,
+                                        fontSize = filterChipFontSize,
                                         fontWeight = if (state.selectedRoleFilter == null) FontWeight.Bold else FontWeight.Normal
                                     )
                                 },
                                 leadingIcon = if (state.selectedRoleFilter == null) {
-                                    { Icon(Icons.Default.Check, null, Modifier.size(14.dp)) }
+                                    { Icon(Icons.Default.Check, null, Modifier.size(filterIconSize)) }
                                 } else null,
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Color(0xFF5E81F4),
@@ -190,15 +210,17 @@ fun UserManagementScreen(
                             FilterChip(
                                 selected = state.selectedRoleFilter == 1,
                                 onClick = { viewModel.filterByRole(1) },
-                                label = { Text("Usuarios", fontSize = 12.sp) },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Person,
-                                        null,
-                                        Modifier.size(14.dp),
-                                        tint = if (state.selectedRoleFilter == 1) Color.White else Color(0xFF2196F3)
-                                    )
-                                },
+                                label = { Text("Usuarios", fontSize = filterChipFontSize) },
+                                leadingIcon = if (state.selectedRoleFilter == 1) {
+                                    {
+                                        Icon(
+                                            Icons.Default.Person,
+                                            null,
+                                            Modifier.size(filterIconSize),
+                                            tint = Color.White
+                                        )
+                                    }
+                                } else null,
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Color(0xFF2196F3),
                                     selectedLabelColor = Color.White
@@ -209,15 +231,17 @@ fun UserManagementScreen(
                             FilterChip(
                                 selected = state.selectedRoleFilter == 2,
                                 onClick = { viewModel.filterByRole(2) },
-                                label = { Text("Admins", fontSize = 12.sp) },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.AdminPanelSettings,
-                                        null,
-                                        Modifier.size(14.dp),
-                                        tint = if (state.selectedRoleFilter == 2) Color.White else Color(0xFFFF9800)
-                                    )
-                                },
+                                label = { Text("Admins", fontSize = filterChipFontSize) },
+                                leadingIcon = if (state.selectedRoleFilter == 2) {
+                                    {
+                                        Icon(
+                                            Icons.Default.AdminPanelSettings,
+                                            null,
+                                            Modifier.size(filterIconSize),
+                                            tint = Color.White
+                                        )
+                                    }
+                                } else null,
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Color(0xFFFF9800),
                                     selectedLabelColor = Color.White
@@ -228,15 +252,17 @@ fun UserManagementScreen(
                             FilterChip(
                                 selected = state.selectedRoleFilter == 3,
                                 onClick = { viewModel.filterByRole(3) },
-                                label = { Text("Médicos", fontSize = 12.sp) },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.LocalHospital,
-                                        null,
-                                        Modifier.size(14.dp),
-                                        tint = if (state.selectedRoleFilter == 3) Color.White else Color(0xFF4CAF50)
-                                    )
-                                },
+                                label = { Text("Médicos", fontSize = filterChipFontSize) },
+                                leadingIcon = if (state.selectedRoleFilter == 3) {
+                                    {
+                                        Icon(
+                                            Icons.Default.LocalHospital,
+                                            null,
+                                            Modifier.size(filterIconSize),
+                                            tint = Color.White
+                                        )
+                                    }
+                                } else null,
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Color(0xFF4CAF50),
                                     selectedLabelColor = Color.White
@@ -244,10 +270,9 @@ fun UserManagementScreen(
                             )
                         }
                     }
-                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(afterHeaderSpacing))
 
             // Loading indicator
             if (state.isLoading) {

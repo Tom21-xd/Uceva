@@ -28,126 +28,111 @@ fun PublicationFiltersRow(
     onCategorySelected: (Int?) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
+    var expanded by remember { mutableStateOf(false) }
+
+    // Todo en una sola fila horizontal con scroll
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
         // Filtros principales
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                filter = PublicationFilter.ALL,
-                label = "Todas",
-                icon = Icons.Default.List,
-                selected = selectedFilter == PublicationFilter.ALL,
-                onClick = { onFilterSelected(PublicationFilter.ALL) }
-            )
+        FilterChip(
+            filter = PublicationFilter.ALL,
+            label = "Todas",
+            icon = Icons.Default.List,
+            selected = selectedFilter == PublicationFilter.ALL,
+            onClick = { onFilterSelected(PublicationFilter.ALL) }
+        )
 
-            FilterChip(
-                filter = PublicationFilter.URGENT,
-                label = "Urgentes",
-                icon = Icons.Default.PriorityHigh,
-                selected = selectedFilter == PublicationFilter.URGENT,
-                onClick = { onFilterSelected(PublicationFilter.URGENT) }
-            )
+        FilterChip(
+            filter = PublicationFilter.URGENT,
+            label = "Urgentes",
+            icon = Icons.Default.PriorityHigh,
+            selected = selectedFilter == PublicationFilter.URGENT,
+            onClick = { onFilterSelected(PublicationFilter.URGENT) }
+        )
 
-            FilterChip(
-                filter = PublicationFilter.PINNED,
-                label = "Fijadas",
-                icon = Icons.Default.PushPin,
-                selected = selectedFilter == PublicationFilter.PINNED,
-                onClick = { onFilterSelected(PublicationFilter.PINNED) }
-            )
+        FilterChip(
+            filter = PublicationFilter.PINNED,
+            label = "Fijadas",
+            icon = Icons.Default.PushPin,
+            selected = selectedFilter == PublicationFilter.PINNED,
+            onClick = { onFilterSelected(PublicationFilter.PINNED) }
+        )
 
-            FilterChip(
-                filter = PublicationFilter.TRENDING,
-                label = "Populares",
-                icon = Icons.Default.Whatshot,
-                selected = selectedFilter == PublicationFilter.TRENDING,
-                onClick = { onFilterSelected(PublicationFilter.TRENDING) }
-            )
-        }
+        FilterChip(
+            filter = PublicationFilter.TRENDING,
+            label = "Populares",
+            icon = Icons.Default.Whatshot,
+            selected = selectedFilter == PublicationFilter.TRENDING,
+            onClick = { onFilterSelected(PublicationFilter.TRENDING) }
+        )
 
-        // Filtro por categoría (si hay categorías disponibles)
+        // Filtro por categoría en la misma fila
         if (categories.isNotEmpty()) {
-            var expanded by remember { mutableStateOf(false) }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Categoría:",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            Box {
+                FilterChip(
+                    selected = selectedCategoryId != null,
+                    onClick = { expanded = true },
+                    label = {
+                        Text(
+                            selectedCategoryId?.let { id ->
+                                categories.find { it.ID_CATEGORIA_PUBLICACION == id }?.NOMBRE_CATEGORIA
+                            } ?: "Categorías"
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Category,
+                            contentDescription = "Categoría",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = "Expandir",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 )
 
-                Box {
-                    FilterChip(
-                        selected = selectedCategoryId != null,
-                        onClick = { expanded = true },
-                        label = {
-                            Text(
-                                selectedCategoryId?.let { id ->
-                                    categories.find { it.ID_CATEGORIA_PUBLICACION == id }?.NOMBRE_CATEGORIA
-                                } ?: "Todas las categorías"
-                            )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    // Opción "Todas"
+                    DropdownMenuItem(
+                        text = { Text("Todas las categorías") },
+                        onClick = {
+                            onCategorySelected(null)
+                            expanded = false
                         },
                         leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Category,
-                                contentDescription = "Categoría",
-                                modifier = Modifier.size(18.dp)
-                            )
-                        },
-                        trailingIcon = {
-                            Icon(
-                                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = "Expandir",
-                                modifier = Modifier.size(18.dp)
-                            )
+                            Icon(Icons.Default.ClearAll, contentDescription = null)
                         }
                     )
 
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        // Opción "Todas"
+                    HorizontalDivider()
+
+                    // Categorías disponibles
+                    categories.forEach { category ->
                         DropdownMenuItem(
-                            text = { Text("Todas las categorías") },
+                            text = { Text(category.NOMBRE_CATEGORIA) },
                             onClick = {
-                                onCategorySelected(null)
+                                onCategorySelected(category.ID_CATEGORIA_PUBLICACION)
                                 expanded = false
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.ClearAll, contentDescription = null)
+                                Icon(
+                                    imageVector = getCategoryIcon(category.ICONO),
+                                    contentDescription = null
+                                )
                             }
                         )
-
-                        HorizontalDivider()
-
-                        // Categorías disponibles
-                        categories.forEach { category ->
-                            DropdownMenuItem(
-                                text = { Text(category.NOMBRE_CATEGORIA) },
-                                onClick = {
-                                    onCategorySelected(category.ID_CATEGORIA_PUBLICACION)
-                                    expanded = false
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = getCategoryIcon(category.ICONO),
-                                        contentDescription = null
-                                    )
-                                }
-                            )
-                        }
                     }
                 }
             }

@@ -30,6 +30,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -69,6 +73,7 @@ fun LoginScreenModern(viewModel: AuthViewModel, navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -338,6 +343,7 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(max = 500.dp)
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(vertical = dimensions.spacingSmall),
         horizontalAlignment = Alignment.CenterHorizontally,

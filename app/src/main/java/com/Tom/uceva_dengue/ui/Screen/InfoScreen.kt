@@ -213,7 +213,7 @@ fun InfoScreen() {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Johan Ramírez",
+                        text = "Johan Stiven Ramírez Murcia",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         ),
