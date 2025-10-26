@@ -268,9 +268,8 @@ class QuizViewModel : ViewModel() {
                 val response = quizService.getUserCertificates(userId)
                 if (response.isSuccessful) {
                     val certificates = response.body() ?: emptyList()
-                    if (certificates.isNotEmpty()) {
-                        _certificate.value = certificates.first()
-                    }
+                    // Filter to get only the active certificate (one per user policy)
+                    _certificate.value = certificates.firstOrNull { it.status == "Active" }
                 } else {
                     _errorMessage.value = "Error al cargar certificado: ${response.code()}"
                 }

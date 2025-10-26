@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,15 +43,20 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
+import com.Tom.uceva_dengue.Data.Service.AuthRepository
 import com.Tom.uceva_dengue.R
 import com.Tom.uceva_dengue.ui.Components.Campo
 import com.Tom.uceva_dengue.ui.Components.ComboBox
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
+import com.Tom.uceva_dengue.utils.BiometricAuthStatus
+import com.Tom.uceva_dengue.utils.BiometricAuthenticator
+import com.Tom.uceva_dengue.utils.WindowSize
+import com.Tom.uceva_dengue.utils.findFragmentActivity
 import com.Tom.uceva_dengue.utils.rememberAppDimensions
 import com.Tom.uceva_dengue.utils.rememberWindowSize
-import com.Tom.uceva_dengue.utils.WindowSize
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -214,12 +220,68 @@ fun ModernTabs(viewModel: AuthViewModel, dimensions: com.Tom.uceva_dengue.utils.
 @Composable
 fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
     val dimensions = rememberAppDimensions()
+    val context = LocalContext.current
+    val activity = remember(context) { context.findFragmentActivity() }
+
+    // Estados existentes
     val correo by viewModel.correo.observeAsState(initial = "")
     val contra by viewModel.contra.observeAsState(initial = "")
     val loginEnabled by viewModel.loginEnabled.observeAsState(initial = false)
     val contravisible by viewModel.contravisible.observeAsState(initial = false)
     val loading by viewModel.loading.observeAsState(initial = false)
     val loginError by viewModel.loginError.observeAsState()
+
+    // NUEVO: Estados para biometría
+    var rememberWithBiometric by remember { mutableStateOf(false) }
+    val biometricAuthenticator = remember { BiometricAuthenticator(context) }
+    val authRepository = remember { AuthRepository(context) }
+    val biometricStatus = remember { biometricAuthenticator.canAuthenticate() }
+    var showBiometricError by remember { mutableStateOf(false) }
+    var biometricErrorMessage by remember { mutableStateOf("") }
+
+    // NUEVO: Detectar si hay biometría habilitada al abrir la pantalla
+    LaunchedEffect(Unit) {
+        val biometricEnabled = authRepository.isBiometricEnabled()
+        val savedEmail = authRepository.getSavedEmail()
+        val refreshToken = authRepository.getRefreshToken()
+
+        if (biometricEnabled &&
+            savedEmail != null &&
+            refreshToken != null &&
+            biometricStatus == BiometricAuthStatus.READY &&
+            activity != null) {
+
+            // Mostrar prompt biométrico automáticamente
+            biometricAuthenticator.authenticate(
+                activity = activity,
+                title = "Inicio de sesión rápido",
+                subtitle = "Usa tu huella o PIN para continuar",
+                onSuccess = {
+                    // Autenticación exitosa, usar refresh token
+                    viewModel.loginWithRefreshToken(
+                        refreshToken = refreshToken,
+                        onSuccess = {
+                            navController.navigate(Rout.HomeScreen.name) {
+                                popUpTo(Rout.LoginScreen.name) { inclusive = true }
+                            }
+                        },
+                        onError = { error ->
+                            biometricErrorMessage = error
+                            showBiometricError = true
+                        }
+                    )
+                },
+                onError = { code, message ->
+                    // Usuario canceló o error biométrico - mostrar login normal
+                    if (code != androidx.biometric.BiometricPrompt.ERROR_NEGATIVE_BUTTON &&
+                        code != androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED) {
+                        biometricErrorMessage = "Error biométrico: $message"
+                        showBiometricError = true
+                    }
+                }
+            )
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -246,6 +308,39 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
             onToggleVisibility = { viewModel.onContraVisibilityChange(!contravisible) }
         )
 
+        // NUEVO: Checkbox de biometría (solo si está disponible)
+        if (biometricStatus == BiometricAuthStatus.READY) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = rememberWithBiometric,
+                    onCheckedChange = { rememberWithBiometric = it },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Fingerprint,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Recordar con huella/PIN",
+                        fontSize = dimensions.textSizeMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+
         // Olvidaste contraseña
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -270,11 +365,40 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
             enabled = loginEnabled && !loading,
             loading = loading,
             onClick = {
-                viewModel.iniciosesioncorreo(correo, contra) {
+                viewModel.iniciosesioncorreo(correo, contra, rememberWithBiometric) {
                     navController.navigate(Rout.HomeScreen.name)
                 }
             }
         )
+
+        // NUEVO: Error de biometría
+        if (showBiometricError) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Error,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = biometricErrorMessage,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+        }
 
         // Error Dialog
         loginError?.let { error ->
@@ -303,6 +427,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

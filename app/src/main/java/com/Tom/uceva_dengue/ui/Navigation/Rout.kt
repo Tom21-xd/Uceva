@@ -2,6 +2,7 @@
 
 enum class Rout {
     LoginScreen,
+    BiometricGateScreen,
     HomeScreen,
     MapScreen,
     NotificationScreen,

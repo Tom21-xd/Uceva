@@ -201,8 +201,8 @@ fun CertificateScreen(
                     // Status Badge
                     Surface(
                         color = when (certificate!!.status) {
-                            "Activo" -> Color(0xFFE8F5E9)
-                            "Revocado" -> Color(0xFFFFEBEE)
+                            "Active" -> Color(0xFFE8F5E9)
+                            "Revoked" -> Color(0xFFFFEBEE)
                             else -> Color(0xFFF5F5F5)
                         },
                         shape = RoundedCornerShape(20.dp)
@@ -213,26 +213,26 @@ fun CertificateScreen(
                         ) {
                             Icon(
                                 when (certificate!!.status) {
-                                    "Activo" -> Icons.Default.CheckCircle
-                                    "Revocado" -> Icons.Default.Cancel
+                                    "Active" -> Icons.Default.CheckCircle
+                                    "Revoked" -> Icons.Default.Cancel
                                     else -> Icons.Default.Info
                                 },
                                 contentDescription = null,
                                 tint = when (certificate!!.status) {
-                                    "Activo" -> Color(0xFF1E8449)
-                                    "Revocado" -> Color(0xFFD32F2F)
+                                    "Active" -> Color(0xFF1E8449)
+                                    "Revoked" -> Color(0xFFD32F2F)
                                     else -> Color(0xFF757575)
                                 },
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "Estado: ${certificate!!.status}",
+                                "Estado: ${if (certificate!!.status == "Active") "Activo" else if (certificate!!.status == "Revoked") "Revocado" else certificate!!.status}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
                                 color = when (certificate!!.status) {
-                                    "Activo" -> Color(0xFF1E8449)
-                                    "Revocado" -> Color(0xFFD32F2F)
+                                    "Active" -> Color(0xFF1E8449)
+                                    "Revoked" -> Color(0xFFD32F2F)
                                     else -> Color(0xFF757575)
                                 }
                             )
@@ -261,7 +261,7 @@ fun CertificateScreen(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF1E8449)
                         ),
-                        enabled = !isDownloading && certificate!!.status == "Activo"
+                        enabled = !isDownloading && certificate!!.status == "Active"
                     ) {
                         if (isDownloading) {
                             CircularProgressIndicator(
@@ -290,7 +290,7 @@ fun CertificateScreen(
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = Color(0xFF1E8449)
                         ),
-                        enabled = certificate!!.status == "Activo"
+                        enabled = certificate!!.status == "Active"
                     ) {
                         Icon(Icons.Default.Share, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))

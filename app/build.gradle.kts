@@ -94,6 +94,9 @@ dependencies {
     // SignalR for real-time updates
     implementation("com.microsoft.signalr:signalr:8.0.0")
 
+    // Encrypted SharedPreferences for secure token storage
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

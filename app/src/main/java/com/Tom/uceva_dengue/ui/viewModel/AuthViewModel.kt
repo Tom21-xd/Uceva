@@ -81,26 +81,31 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val response = RetrofitClient.authService.login(LoginModel(email, password))
                 _loading.value = false
-                Log.d("NavigationCon", "Inicio de sesión exitoso. Respuesta: ${response.body()}")
-                if (response.isSuccessful) {
+                Log.d("AuthViewModel", "Inicio de sesión exitoso. Respuesta: ${response.body()}")
+                if (response.isSuccessful && response.body() != null) {
                     _loginError.value = null
-                    val userId = response.body()?.ID_USUARIO
-                    val user = userId.toString()
-                    val role = response.body()?.FK_ID_ROL
-                    val displayName = response.body()?.NOMBRE_USUARIO
-
+                    val authResponse = response.body()!!
+                    val user = authResponse.user
+                    val userId = user.ID_USUARIO
+                    val role = user.FK_ID_ROL
+                    val displayName = user.NOMBRE_USUARIO
 
                     val authRepository = AuthRepository(context)
 
-                    user?.let {
-                        authRepository.saveUserAndRole(it, role ?: 2, displayName)
-                    }
-                    Log.d("NavigationCon", "Inicio de sesión exitoso. Usuario: $user, Rol: $role, Nombre: $displayName")
+                    // Guardar usuario y rol (como antes)
+                    authRepository.saveUserAndRole(userId.toString(), role, displayName)
+
+                    // NUEVO: Guardar tokens de forma segura
+                    authRepository.saveTokens(
+                        accessToken = authResponse.accessToken,
+                        refreshToken = authResponse.refreshToken,
+                        expiresIn = authResponse.expiresIn
+                    )
+
+                    Log.d("AuthViewModel", "Tokens guardados. Usuario: $userId, Rol: $role")
 
                     // Send FCM token to backend after successful login
-                    userId?.let {
-                        sendFCMTokenToServer(it)
-                    }
+                    sendFCMTokenToServer(userId)
 
                     HomeScreen()
                 } else {
@@ -114,11 +119,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } catch (e: Exception) {
                 _loading.value = false
-                Log.e("LoginError", "Excepción en el login", e)
+                Log.e("AuthViewModel", "Excepción en el login", e)
                 _loginError.value = "Error de conexión. Revisa tu internet o inténtalo más tarde."
             }
         }
     }
+
     fun clearLoginError() {
         _loginError.value = null
     }
