@@ -1,6 +1,7 @@
 package com.Tom.uceva_dengue.ui.Menus
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Cases
 import androidx.compose.material.icons.filled.Close
@@ -63,6 +64,11 @@ sealed  class Items_Menu_lateral (
         Icons.Default.Bookmark,
         "Mis Guardados",
         Rout.SavedPublicationsScreen.name
+    )
+    object Item_Menu_Lateral10: Items_Menu_lateral(
+        Icons.Default.AdminPanelSettings,
+        "Gestión de Permisos",
+        Rout.PermissionsManagementScreen.name
     )
 
 

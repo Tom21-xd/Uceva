@@ -85,6 +85,7 @@ import com.Tom.uceva_dengue.ui.Screen.QuizStartScreen
 import com.Tom.uceva_dengue.ui.Screen.QuizQuestionsScreen
 import com.Tom.uceva_dengue.ui.Screen.QuizResultScreen
 import com.Tom.uceva_dengue.ui.Screen.CertificateScreen
+import com.Tom.uceva_dengue.ui.Screen.PermissionsManagementScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
@@ -439,6 +440,9 @@ fun NavigationCon(context: Context) {
                         viewModel = quizViewModel
                     )
                 }
+                composable(Rout.PermissionsManagementScreen.name) {
+                    PermissionsManagementScreen(viewModel = viewModel())
+                }
 
             }
         }
@@ -473,6 +477,7 @@ fun getTopBarTitle(route: String): String {
         Rout.QuizQuestionsScreen.name -> "Evaluación en Curso"
         Rout.QuizResultScreen.name -> "Resultados"
         Rout.CertificateScreen.name -> "Mi Certificado"
+        Rout.PermissionsManagementScreen.name -> "Gestión de Permisos"
         else -> "Mi Aplicación"
     }
 }

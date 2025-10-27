@@ -44,6 +44,7 @@ fun MenuLateral(
                 Items_Menu_lateral.Item_Menu_Lateral9, // Mis Guardados
                 Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
                 Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
+                Items_Menu_lateral.Item_Menu_Lateral10, // Gestión de Permisos (Solo Admin)
                 Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
                 Items_Menu_lateral.Item_Menu_Lateral3, // Información
                 Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
@@ -55,6 +56,7 @@ fun MenuLateral(
                 Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
                 Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
                 Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios (Solo Admin)
+                Items_Menu_lateral.Item_Menu_Lateral10, // Gestión de Permisos (Solo Admin)
                 Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
                 Items_Menu_lateral.Item_Menu_Lateral3, // Información
                 Items_Menu_lateral.Item_Menu_Lateral2 // Opciones

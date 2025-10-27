@@ -13,6 +13,7 @@ import com.Tom.uceva_dengue.Data.Service.FCMService
 import com.Tom.uceva_dengue.Data.Service.GenreService
 import com.Tom.uceva_dengue.Data.Service.HospitalService
 import com.Tom.uceva_dengue.Data.Service.NotificationService
+import com.Tom.uceva_dengue.Data.Service.PermissionService
 import com.Tom.uceva_dengue.Data.Service.PublicationService
 import com.Tom.uceva_dengue.Data.Service.PublicationCategoryService
 import com.Tom.uceva_dengue.Data.Service.PublicationTagService
@@ -121,5 +122,8 @@ object RetrofitClient {
     }
     val quizService : QuizService by lazy {
         retrofit.create(QuizService::class.java)
+    }
+    val permissionService : PermissionService by lazy {
+        retrofit.create(PermissionService::class.java)
     }
 }

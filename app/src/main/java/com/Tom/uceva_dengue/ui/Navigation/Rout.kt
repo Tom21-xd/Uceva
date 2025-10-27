@@ -28,5 +28,6 @@ enum class Rout {
     QuizStartScreen,
     QuizQuestionsScreen,
     QuizResultScreen,
-    CertificateScreen
+    CertificateScreen,
+    PermissionsManagementScreen
 }
