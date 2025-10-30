@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Cases
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.GroupWork
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
@@ -69,6 +70,11 @@ sealed  class Items_Menu_lateral (
         Icons.Default.AdminPanelSettings,
         "Gestión de Permisos",
         Rout.PermissionsManagementScreen.name
+    )
+    object Item_Menu_Lateral11: Items_Menu_lateral(
+        Icons.Default.GroupWork,
+        "Gestión de Roles",
+        Rout.RoleManagementScreen.name
     )
 
 

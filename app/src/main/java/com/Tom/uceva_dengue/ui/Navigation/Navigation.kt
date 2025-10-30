@@ -79,17 +79,16 @@ import com.Tom.uceva_dengue.ui.Screen.EditUserScreenFunctional
 import com.Tom.uceva_dengue.ui.Screen.SettingsScreen
 import com.Tom.uceva_dengue.ui.Screen.PostDetailScreen
 import com.Tom.uceva_dengue.ui.Screen.SavedPublicationsScreen
-import com.Tom.uceva_dengue.ui.Screen.CreateCaseEvolutionScreen
-import com.Tom.uceva_dengue.ui.Screen.CaseEvolutionHistoryScreen
 import com.Tom.uceva_dengue.ui.Screen.QuizStartScreen
 import com.Tom.uceva_dengue.ui.Screen.QuizQuestionsScreen
 import com.Tom.uceva_dengue.ui.Screen.QuizResultScreen
 import com.Tom.uceva_dengue.ui.Screen.CertificateScreen
 import com.Tom.uceva_dengue.ui.Screen.PermissionsManagementScreen
+import com.Tom.uceva_dengue.ui.Screen.RoleManagementScreen
+import com.Tom.uceva_dengue.ui.Screen.EditRolePermissionsScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
-import com.Tom.uceva_dengue.ui.viewModel.CaseEvolutionViewModel
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import kotlinx.coroutines.launch
 
@@ -351,38 +350,6 @@ fun NavigationCon(context: Context) {
                 composable(Rout.OlvContraseniaScreen.name) {
                     ForgotPasswordScreenModern(navController = navController)
                 }
-                composable(
-                    route = "${Rout.CreateCaseEvolutionScreen.name}/{caseId}/{typeOfDengueId}/{doctorId}",
-                    arguments = listOf(
-                        navArgument("caseId") { type = NavType.IntType },
-                        navArgument("typeOfDengueId") { type = NavType.IntType },
-                        navArgument("doctorId") { type = NavType.IntType }
-                    )
-                ) { backStackEntry ->
-                    val caseId = backStackEntry.arguments?.getInt("caseId") ?: 0
-                    val typeOfDengueId = backStackEntry.arguments?.getInt("typeOfDengueId") ?: 0
-                    val doctorId = backStackEntry.arguments?.getInt("doctorId") ?: 0
-                    val viewModel: CaseEvolutionViewModel = viewModel()
-                    CreateCaseEvolutionScreen(
-                        caseId = caseId,
-                        typeOfDengueId = typeOfDengueId,
-                        doctorId = doctorId,
-                        viewModel = viewModel,
-                        navController = navController
-                    )
-                }
-                composable(
-                    route = "${Rout.CaseEvolutionHistoryScreen.name}/{caseId}",
-                    arguments = listOf(navArgument("caseId") { type = NavType.IntType })
-                ) { backStackEntry ->
-                    val caseId = backStackEntry.arguments?.getInt("caseId") ?: 0
-                    val viewModel: CaseEvolutionViewModel = viewModel()
-                    CaseEvolutionHistoryScreen(
-                        caseId = caseId,
-                        viewModel = viewModel,
-                        navController = navController
-                    )
-                }
                 composable(Rout.QuizStartScreen.name) {
                     val parentEntry = remember(it) {
                         navController.getBackStackEntry(Rout.QuizStartScreen.name)
@@ -443,6 +410,23 @@ fun NavigationCon(context: Context) {
                 composable(Rout.PermissionsManagementScreen.name) {
                     PermissionsManagementScreen(viewModel = viewModel())
                 }
+                composable(Rout.RoleManagementScreen.name) {
+                    RoleManagementScreen(
+                        navController = navController,
+                        viewModel = viewModel()
+                    )
+                }
+                composable(
+                    route = "editRolePermissions/{roleId}",
+                    arguments = listOf(navArgument("roleId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val roleId = backStackEntry.arguments?.getInt("roleId") ?: 0
+                    EditRolePermissionsScreen(
+                        roleId = roleId,
+                        navController = navController,
+                        viewModel = viewModel()
+                    )
+                }
 
             }
         }
@@ -471,13 +455,13 @@ fun getTopBarTitle(route: String): String {
         Rout.EditUserScreen.name -> "Editar Usuario"
         Rout.PostDetailScreen.name -> "Detalle de Publicación"
         Rout.SavedPublicationsScreen.name -> "Mis Guardados"
-        Rout.CreateCaseEvolutionScreen.name -> "Nueva Evolución"
-        Rout.CaseEvolutionHistoryScreen.name -> "Historial de Evoluciones"
         Rout.QuizStartScreen.name -> "Evaluación"
         Rout.QuizQuestionsScreen.name -> "Evaluación en Curso"
         Rout.QuizResultScreen.name -> "Resultados"
         Rout.CertificateScreen.name -> "Mi Certificado"
         Rout.PermissionsManagementScreen.name -> "Gestión de Permisos"
+        Rout.RoleManagementScreen.name -> "Gestión de Roles"
+        "editRolePermissions" -> "Editar Permisos de Rol"
         else -> "Mi Aplicación"
     }
 }

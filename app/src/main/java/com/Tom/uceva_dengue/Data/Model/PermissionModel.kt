@@ -26,6 +26,7 @@ data class RolePermissionsResponse(
  * Request para actualizar permisos de un rol
  */
 data class UpdateRolePermissionsRequest(
+    @com.google.gson.annotations.SerializedName("PermissionIds")
     val permissionIds: List<Int>
 )
 

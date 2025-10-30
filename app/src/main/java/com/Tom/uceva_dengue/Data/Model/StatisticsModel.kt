@@ -69,3 +69,22 @@ data class TopHospitalStats(
     val fallecidos: Int,
     val porcentaje_del_total: Double
 )
+
+// Casos para mapa
+data class MapCase(
+    val ID_CASOREPORTADO: Int,
+    val LATITUD: Double,
+    val LONGITUD: Double,
+    val DESCRIPCION_CASO: String?,
+    val DIRECCION_CASO: String?,
+    val BARRIO_VEREDA: String?,
+    val NOMBRE_PACIENTE: String,
+    val NOMBRE_HOSPITAL: String,
+    val TIPO_DENGUE: String,
+    val FK_ID_TIPODENGUE: Int,
+    val ESTADO: String,
+    val FK_ID_ESTADO: Int,
+    val FECHA_REGISTRO: String,
+    val ANIO_REPORTE: Int?,
+    val EDAD_PACIENTE: Int?
+)

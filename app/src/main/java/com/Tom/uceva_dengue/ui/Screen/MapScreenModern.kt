@@ -136,6 +136,8 @@ fun MapScreenModern(viewModel: MapViewModel) {
     val dengueTypes by viewModel.dengueTypes.collectAsState()
     val selectedDengueTypeId by viewModel.selectedDengueTypeId.collectAsState()
     val selectedAgeGroup by viewModel.selectedAgeGroup.collectAsState()
+    val selectedYear by viewModel.selectedYear.collectAsState()
+    val availableYears by viewModel.availableYears.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     var showFiltersPanel by remember { mutableStateOf(false) }
@@ -840,6 +842,87 @@ fun MapScreenModern(viewModel: MapViewModel) {
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = getAgeGroupColor(groupId),
+                                        selectedLabelColor = Color.White
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    // Filtro de año
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+                    ) {
+                        Text(
+                            "Año de reporte",
+                            fontSize = dimensions.textSizeMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = textColor
+                        )
+
+                        // Chips en LazyRow horizontal scrollable
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+                        ) {
+                            // Chip "Todos los años" al inicio
+                            item {
+                                FilterChip(
+                                    selected = selectedYear == null,
+                                    onClick = { viewModel.updateSelectedYear(null) },
+                                    label = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            if (selectedYear == null) {
+                                                Icon(
+                                                    Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(dimensions.iconSmall)
+                                                )
+                                            }
+                                            Text(
+                                                "Todos",
+                                                fontSize = dimensions.textSizeSmall,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = PrimaryBlue,
+                                        selectedLabelColor = Color.White
+                                    )
+                                )
+                            }
+
+                            // Chips de años disponibles
+                            items(availableYears) { year ->
+                                FilterChip(
+                                    selected = selectedYear == year,
+                                    onClick = { viewModel.updateSelectedYear(year) },
+                                    label = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                        ) {
+                                            if (selectedYear == year) {
+                                                Icon(
+                                                    Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(dimensions.iconSmall)
+                                                )
+                                            }
+                                            Text(
+                                                year.toString(),
+                                                fontSize = dimensions.textSizeSmall,
+                                                fontWeight = FontWeight.Medium,
+                                                maxLines = 1
+                                            )
+                                        }
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = Color(0xFF00BCD4), // Cyan
                                         selectedLabelColor = Color.White
                                     )
                                 )

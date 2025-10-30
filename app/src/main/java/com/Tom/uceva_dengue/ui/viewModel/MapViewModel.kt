@@ -66,9 +66,18 @@ class MapViewModel : ViewModel() {
     private val _selectedAgeGroup = MutableStateFlow<Int?>(null)
     val selectedAgeGroup: StateFlow<Int?> = _selectedAgeGroup
 
+    // Filtro de año (null = todos los años)
+    private val _selectedYear = MutableStateFlow<Int?>(null)
+    val selectedYear: StateFlow<Int?> = _selectedYear
+
+    // Años disponibles para filtrar
+    private val _availableYears = MutableStateFlow<List<Int>>(emptyList())
+    val availableYears: StateFlow<List<Int>> = _availableYears
+
     private var isCasesFetched = false
     private var isHospitalsFetched = false
     private var isDengueTypesFetched = false
+    private var isYearsFetched = false
 
     fun fetchCases() {
 
@@ -189,15 +198,45 @@ class MapViewModel : ViewModel() {
             _loadingError.value = null
 
             try {
+                // Cargar años disponibles si aún no se han cargado
+                if (!isYearsFetched) {
+                    val yearsResponse = RetrofitClient.statisticsService.getAvailableYears()
+                    if (yearsResponse.isSuccessful && yearsResponse.body() != null) {
+                        _availableYears.value = yearsResponse.body()!!
+                        isYearsFetched = true
+                    }
+                }
+
                 // Lanzar todas las peticiones en paralelo
-                val casesDeferred = async { RetrofitClient.caseService.getCases() }
+                // Usar endpoint mapCases con filtro de año en lugar de getCases
+                val casesDeferred = async { RetrofitClient.statisticsService.getMapCases(_selectedYear.value) }
                 val hospitalsDeferred = async { RetrofitClient.hospitalService.getHospitals() }
                 val dengueTypesDeferred = async { RetrofitClient.dengueService.getTypesOfDengue() }
 
                 // Esperar a que todas completen
                 val casesResponse = casesDeferred.await()
                 if (casesResponse.body() != null) {
-                    _cases.value = casesResponse.body()!!
+                    // Convertir MapCase a CaseModel (temporal, se necesitaría un mapper o usar MapCase directamente)
+                    // Por ahora mantenemos la estructura existente
+                    _cases.value = casesResponse.body()!!.map { mapCase ->
+                        CaseModel(
+                            ID_CASOREPORTADO = mapCase.ID_CASOREPORTADO,
+                            DESCRIPCION_CASOREPORTADO = mapCase.DESCRIPCION_CASO ?: "",
+                            DIRECCION_CASOREPORTADO = "${mapCase.LATITUD}:${mapCase.LONGITUD}",
+                            FECHA_CASOREPORTADO = mapCase.FECHA_REGISTRO,
+                            FK_ID_TIPODENGUE = mapCase.FK_ID_TIPODENGUE,
+                            FK_ID_ESTADOCASO = mapCase.FK_ID_ESTADO,
+                            FK_ID_HOSPITAL = null, // MapCase no expone el ID del hospital
+                            FK_ID_PACIENTE = null, // MapCase no expone el ID del paciente
+                            FK_ID_PERSONALMEDICO = null,
+                            ANIO_REPORTE = mapCase.ANIO_REPORTE,
+                            EDAD_PACIENTE = mapCase.EDAD_PACIENTE,
+                            NOMBRE_TEMPORAL = mapCase.NOMBRE_PACIENTE,
+                            BARRIO_VEREDA = mapCase.BARRIO_VEREDA,
+                            LATITUD = mapCase.LATITUD,
+                            LONGITUD = mapCase.LONGITUD
+                        )
+                    }
                     isCasesFetched = true
                 }
 
@@ -235,15 +274,40 @@ class MapViewModel : ViewModel() {
             _loadingError.value = null
 
             try {
+                // Recargar años disponibles
+                val yearsResponse = RetrofitClient.statisticsService.getAvailableYears()
+                if (yearsResponse.isSuccessful && yearsResponse.body() != null) {
+                    _availableYears.value = yearsResponse.body()!!
+                    isYearsFetched = true
+                }
+
                 // Lanzar todas las peticiones en paralelo
-                val casesDeferred = async { RetrofitClient.caseService.getCases() }
+                val casesDeferred = async { RetrofitClient.statisticsService.getMapCases(_selectedYear.value) }
                 val hospitalsDeferred = async { RetrofitClient.hospitalService.getHospitals() }
                 val dengueTypesDeferred = async { RetrofitClient.dengueService.getTypesOfDengue() }
 
                 // Esperar a que todas completen
                 val casesResponse = casesDeferred.await()
                 if (casesResponse.body() != null) {
-                    _cases.value = casesResponse.body()!!
+                    _cases.value = casesResponse.body()!!.map { mapCase ->
+                        CaseModel(
+                            ID_CASOREPORTADO = mapCase.ID_CASOREPORTADO,
+                            DESCRIPCION_CASOREPORTADO = mapCase.DESCRIPCION_CASO ?: "",
+                            DIRECCION_CASOREPORTADO = "${mapCase.LATITUD}:${mapCase.LONGITUD}",
+                            FECHA_CASOREPORTADO = mapCase.FECHA_REGISTRO,
+                            FK_ID_TIPODENGUE = mapCase.FK_ID_TIPODENGUE,
+                            FK_ID_ESTADOCASO = mapCase.FK_ID_ESTADO,
+                            FK_ID_HOSPITAL = null,
+                            FK_ID_PACIENTE = null,
+                            FK_ID_PERSONALMEDICO = null,
+                            ANIO_REPORTE = mapCase.ANIO_REPORTE,
+                            EDAD_PACIENTE = mapCase.EDAD_PACIENTE,
+                            NOMBRE_TEMPORAL = mapCase.NOMBRE_PACIENTE,
+                            BARRIO_VEREDA = mapCase.BARRIO_VEREDA,
+                            LATITUD = mapCase.LATITUD,
+                            LONGITUD = mapCase.LONGITUD
+                        )
+                    }
                     isCasesFetched = true
                 }
 
@@ -302,6 +366,14 @@ class MapViewModel : ViewModel() {
     fun updateSelectedAgeGroup(ageGroup: Int?) {
         _selectedAgeGroup.value = ageGroup
         filterCasesByProximity()
+    }
+
+    /**
+     * Actualiza el año seleccionado (null = todos los años)
+     */
+    fun updateSelectedYear(year: Int?) {
+        _selectedYear.value = year
+        loadAllData() // Recargar datos con el nuevo filtro de año
     }
 
     /**

@@ -38,36 +38,36 @@ fun MenuLateral(
 ) {
     fun getMenuItemsByRole(role: Int): List<Items_Menu_lateral> {
         return when (role) {
-            1 -> listOf(
+            1 -> listOf( // Admin - Acceso completo
                 Items_Menu_lateral.Item_Menu_Lateral4, // Home
                 Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
                 Items_Menu_lateral.Item_Menu_Lateral9, // Mis Guardados
                 Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
                 Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
-                Items_Menu_lateral.Item_Menu_Lateral10, // Gestión de Permisos (Solo Admin)
+                Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios
+                Items_Menu_lateral.Item_Menu_Lateral11, // Gestión de Roles
+                Items_Menu_lateral.Item_Menu_Lateral10, // Gestión de Permisos
                 Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
                 Items_Menu_lateral.Item_Menu_Lateral3, // Información
                 Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
             )
-            2 -> listOf(
+            2 -> listOf( // Usuario - Acceso limitado (sin gestión administrativa)
                 Items_Menu_lateral.Item_Menu_Lateral4, // Home
                 Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
                 Items_Menu_lateral.Item_Menu_Lateral9, // Mis Guardados
-                Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
-                Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
-                Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios (Solo Admin)
-                Items_Menu_lateral.Item_Menu_Lateral10, // Gestión de Permisos (Solo Admin)
                 Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
                 Items_Menu_lateral.Item_Menu_Lateral3, // Información
                 Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
             )
-            3 -> listOf(
+            3 -> listOf( // Personal Médico - Acceso completo (igual que Admin)
                 Items_Menu_lateral.Item_Menu_Lateral4, // Home
                 Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
                 Items_Menu_lateral.Item_Menu_Lateral9, // Mis Guardados
                 Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
                 Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
-                Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios (Personal Médico)
+                Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios
+                Items_Menu_lateral.Item_Menu_Lateral11, // Gestión de Roles
+                Items_Menu_lateral.Item_Menu_Lateral10, // Gestión de Permisos
                 Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
                 Items_Menu_lateral.Item_Menu_Lateral3, // Información
                 Items_Menu_lateral.Item_Menu_Lateral2 // Opciones

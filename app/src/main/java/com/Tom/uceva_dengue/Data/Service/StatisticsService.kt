@@ -29,4 +29,12 @@ interface StatisticsService {
     // HU-008: Top hospitales por casos
     @GET("Statistics/topHospitals")
     suspend fun getTopHospitals(@Query("limit") limit: Int?): Response<List<TopHospitalStats>>
+
+    // Casos para mapa con filtro por año
+    @GET("Statistics/mapCases")
+    suspend fun getMapCases(@Query("year") year: Int?): Response<List<MapCase>>
+
+    // Años disponibles para filtrar
+    @GET("Statistics/availableYears")
+    suspend fun getAvailableYears(): Response<List<Int>>
 }

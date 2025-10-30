@@ -3,7 +3,6 @@ package com.Tom.uceva_dengue.Data.Api
 import com.Tom.uceva_dengue.Data.Service.AuthService
 import com.Tom.uceva_dengue.Data.Service.BloodTypeService
 import com.Tom.uceva_dengue.Data.Service.CaseService
-import com.Tom.uceva_dengue.Data.Service.CaseEvolutionService
 import com.Tom.uceva_dengue.Data.Service.CaseStateService
 import com.Tom.uceva_dengue.Data.Service.CityService
 import com.Tom.uceva_dengue.Data.Service.DengueService
@@ -107,9 +106,6 @@ object RetrofitClient {
     }
     val publicationTagService : PublicationTagService by lazy {
         retrofit.create(PublicationTagService::class.java)
-    }
-    val caseEvolutionService : CaseEvolutionService by lazy {
-        retrofit.create(CaseEvolutionService::class.java)
     }
     val caseStateService : CaseStateService by lazy {
         retrofit.create(CaseStateService::class.java)

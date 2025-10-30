@@ -16,13 +16,35 @@ data class CaseModel(
     val FK_ID_ESTADOCASO: Int = 0,
 
     @SerializedName("FK_ID_HOSPITAL")
-    val FK_ID_HOSPITAL: Int = 0,
+    val FK_ID_HOSPITAL: Int? = null,
 
     @SerializedName("FK_ID_TIPODENGUE")
     val FK_ID_TIPODENGUE: Int = 0,
 
     @SerializedName("FK_ID_PACIENTE")
-    val FK_ID_PACIENTE: Int = 0,
+    val FK_ID_PACIENTE: Int? = null,
+
+    // Campos epidemiológicos (modelo nuevo)
+    @SerializedName("ANIO_REPORTE")
+    val ANIO_REPORTE: Int? = null,
+
+    @SerializedName("EDAD_PACIENTE")
+    val EDAD_PACIENTE: Int? = null,
+
+    @SerializedName("NOMBRE_TEMPORAL")
+    val NOMBRE_TEMPORAL: String? = null,
+
+    @SerializedName("BARRIO_VEREDA")
+    val BARRIO_VEREDA: String? = null,
+
+    @SerializedName("LATITUD")
+    val LATITUD: Double? = null,
+
+    @SerializedName("LONGITUD")
+    val LONGITUD: Double? = null,
+
+    @SerializedName("FK_ID_USUARIO_REGISTRO")
+    val FK_ID_USUARIO_REGISTRO: Int? = null,
 
     @SerializedName("FK_ID_PERSONALMEDICO")
     val FK_ID_PERSONALMEDICO: Int? = null,
@@ -57,13 +79,13 @@ data class CaseModel(
         get() = ESTADO?.NOMBRE_ESTADOCASO ?: ""
 
     val NOMBRE_HOSPITAL: String
-        get() = HOSPITAL?.NOMBRE_HOSPITAL ?: ""
+        get() = HOSPITAL?.NOMBRE_HOSPITAL ?: "No asignado"
 
     val NOMBRE_TIPODENGUE: String
         get() = TIPO_DENGUE?.NOMBRE_TIPODENGUE ?: ""
 
     val NOMBRE_PACIENTE: String
-        get() = PACIENTE?.NOMBRE_USUARIO ?: ""
+        get() = NOMBRE_TEMPORAL ?: PACIENTE?.NOMBRE_USUARIO ?: "Anónimo"
 
     val NOMBRE_PERSONALMEDICO: String
         get() = PERSONAL_MEDICO?.NOMBRE_USUARIO ?: ""

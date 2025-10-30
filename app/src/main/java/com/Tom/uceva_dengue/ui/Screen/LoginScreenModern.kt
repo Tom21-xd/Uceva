@@ -51,10 +51,7 @@ import com.Tom.uceva_dengue.ui.Components.Campo
 import com.Tom.uceva_dengue.ui.Components.ComboBox
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
-import com.Tom.uceva_dengue.utils.BiometricAuthStatus
-import com.Tom.uceva_dengue.utils.BiometricAuthenticator
 import com.Tom.uceva_dengue.utils.WindowSize
-import com.Tom.uceva_dengue.utils.findFragmentActivity
 import com.Tom.uceva_dengue.utils.rememberAppDimensions
 import com.Tom.uceva_dengue.utils.rememberWindowSize
 
@@ -221,7 +218,7 @@ fun ModernTabs(viewModel: AuthViewModel, dimensions: com.Tom.uceva_dengue.utils.
 fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
     val dimensions = rememberAppDimensions()
     val context = LocalContext.current
-    val activity = remember(context) { context.findFragmentActivity() }
+    // val activity = remember(context) { context.findFragmentActivity() }
 
     // Estados existentes
     val correo by viewModel.correo.observeAsState(initial = "")
@@ -231,7 +228,8 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
     val loading by viewModel.loading.observeAsState(initial = false)
     val loginError by viewModel.loginError.observeAsState()
 
-    // NUEVO: Estados para biometría
+    // NUEVO: Estados para biometría - COMENTADO TEMPORALMENTE (falta implementación)
+    /*
     var rememberWithBiometric by remember { mutableStateOf(false) }
     val biometricAuthenticator = remember { BiometricAuthenticator(context) }
     val authRepository = remember { AuthRepository(context) }
@@ -282,6 +280,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
             )
         }
     }
+    */
 
     Column(
         modifier = Modifier
@@ -308,8 +307,8 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
             onToggleVisibility = { viewModel.onContraVisibilityChange(!contravisible) }
         )
 
-        // NUEVO: Checkbox de biometría (solo si está disponible)
-        if (biometricStatus == BiometricAuthStatus.READY) {
+        // NUEVO: Checkbox de biometría (solo si está disponible) - COMENTADO
+        /* if (biometricStatus == BiometricAuthStatus.READY) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -339,7 +338,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
                     )
                 }
             }
-        }
+        } */
 
         // Olvidaste contraseña
         Row(
@@ -365,14 +364,14 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
             enabled = loginEnabled && !loading,
             loading = loading,
             onClick = {
-                viewModel.iniciosesioncorreo(correo, contra, rememberWithBiometric) {
+                viewModel.iniciosesioncorreo(correo, contra) {
                     navController.navigate(Rout.HomeScreen.name)
                 }
             }
         )
 
-        // NUEVO: Error de biometría
-        if (showBiometricError) {
+        // NUEVO: Error de biometría - COMENTADO
+        /* if (showBiometricError) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -398,7 +397,7 @@ fun ModernLogin(viewModel: AuthViewModel, navController: NavController) {
                     )
                 }
             }
-        }
+        } */
 
         // Error Dialog
         loginError?.let { error ->

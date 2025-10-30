@@ -23,11 +23,10 @@ enum class Rout {
     EditUserScreen,
     PostDetailScreen,
     SavedPublicationsScreen,
-    CreateCaseEvolutionScreen,
-    CaseEvolutionHistoryScreen,
     QuizStartScreen,
     QuizQuestionsScreen,
     QuizResultScreen,
     CertificateScreen,
-    PermissionsManagementScreen
+    PermissionsManagementScreen,
+    RoleManagementScreen
 }

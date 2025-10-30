@@ -269,7 +269,8 @@ fun CaseDetailsScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(spacerMedium)
                                 ) {
-                                    // Botón para ver historial
+                                    // ELIMINADO: Botones de evolución clínica (módulo eliminado)
+                                    /* Botón para ver historial
                                     OutlinedButton(
                                         onClick = {
                                             navController.navigate("${com.Tom.uceva_dengue.ui.Navigation.Rout.CaseEvolutionHistoryScreen.name}/${c.ID_CASOREPORTADO}")
@@ -305,6 +306,7 @@ fun CaseDetailsScreen(
                                         Spacer(modifier = Modifier.width(paddingSmall))
                                         Text("Nueva Evolución", fontWeight = FontWeight.SemiBold)
                                     }
+                                    */
                                 }
                             }
 
