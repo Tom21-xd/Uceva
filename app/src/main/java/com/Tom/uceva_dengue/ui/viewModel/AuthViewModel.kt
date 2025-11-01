@@ -104,6 +104,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
                     Log.d("AuthViewModel", "Tokens guardados. Usuario: $userId, Rol: $role")
 
+                    // NUEVO: Guardar permisos del usuario directamente desde la respuesta del login
+                    Log.d("AuthViewModel", "Permisos recibidos en login: ${authResponse.permissions.size}")
+                    Log.d("AuthViewModel", "Permisos: ${authResponse.permissions}")
+                    authRepository.saveUserPermissions(
+                        userId = userId,
+                        roleId = role,
+                        roleName = authResponse.user.NOMBRE_ROL ?: "Sin rol",
+                        permissions = authResponse.permissions
+                    )
+                    Log.d("AuthViewModel", "Permisos guardados exitosamente")
+
                     // Send FCM token to backend after successful login
                     sendFCMTokenToServer(userId)
 
@@ -127,6 +138,38 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearLoginError() {
         _loginError.value = null
+    }
+
+    // Function to load user permissions from backend
+    private suspend fun loadUserPermissions(authRepository: AuthRepository) {
+        try {
+            Log.d("AuthViewModel", "=== CARGANDO PERMISOS ===")
+            val response = RetrofitClient.permissionService.getCurrentUserPermissions()
+            Log.d("AuthViewModel", "Response code: ${response.code()}")
+
+            if (response.isSuccessful && response.body() != null) {
+                val permissionsData = response.body()!!
+                Log.d("AuthViewModel", "UserId: ${permissionsData.userId}")
+                Log.d("AuthViewModel", "RoleId: ${permissionsData.roleId}")
+                Log.d("AuthViewModel", "RoleName: ${permissionsData.roleName}")
+                Log.d("AuthViewModel", "Total Permissions: ${permissionsData.totalPermissions}")
+                Log.d("AuthViewModel", "Permissions: ${permissionsData.permissions}")
+
+                authRepository.saveUserPermissions(
+                    userId = permissionsData.userId,
+                    roleId = permissionsData.roleId,
+                    roleName = permissionsData.roleName,
+                    permissions = permissionsData.permissions
+                )
+                Log.d("AuthViewModel", "Permisos guardados en DataStore exitosamente")
+            } else {
+                Log.e("AuthViewModel", "Error al cargar permisos - Code: ${response.code()}")
+                Log.e("AuthViewModel", "Error body: ${response.errorBody()?.string()}")
+            }
+        } catch (e: Exception) {
+            Log.e("AuthViewModel", "Excepción al cargar permisos: ${e.message}", e)
+            e.printStackTrace()
+        }
     }
 
     // Function to send FCM token to backend
@@ -396,6 +439,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                             usuario.NOMBRE_USUARIO
                         )
                         Log.d("Registro", "Sesión iniciada automáticamente. Usuario: ${usuario.ID_USUARIO}, Rol: ${usuario.FK_ID_ROL}, Nombre: ${usuario.NOMBRE_USUARIO}")
+
+                        // NUEVO: Cargar permisos del usuario después de registro
+                        // Nota: El backend debe retornar tokens en el registro también
+                        // Por ahora, intentamos cargar permisos si están disponibles
+                        try {
+                            loadUserPermissions(authRepository)
+                        } catch (e: Exception) {
+                            Log.w("Registro", "No se pudieron cargar permisos inmediatamente tras registro: ${e.message}")
+                        }
 
                         // Send FCM token to backend after successful registration
                         sendFCMTokenToServer(usuario.ID_USUARIO)

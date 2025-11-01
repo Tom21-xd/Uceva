@@ -25,8 +25,10 @@
     import androidx.compose.ui.unit.sp
     import androidx.navigation.NavHostController
     import com.Tom.uceva_dengue.Data.Model.CaseModel
+    import com.Tom.uceva_dengue.ui.Components.RequirePermission
     import com.Tom.uceva_dengue.ui.Navigation.Rout
     import com.Tom.uceva_dengue.ui.viewModel.CaseViewModel
+    import com.Tom.uceva_dengue.utils.PermissionCode
     import com.Tom.uceva_dengue.utils.rememberAppDimensions
     import com.Tom.uceva_dengue.utils.rememberWindowSize
 
@@ -201,8 +203,8 @@
                     }
                 }
 
-            // Solo Administrador (2) y Personal Médico (3) pueden crear casos
-            if (role == 2 || role == 3) {
+            // Solo usuarios con permiso CASE_CREATE pueden crear casos
+            RequirePermission(permission = PermissionCode.CASE_CREATE) {
                 FloatingActionButton(
                     onClick = { navController.navigate(Rout.CreateCaseScreen.name) },
                     shape = RoundedCornerShape(50),

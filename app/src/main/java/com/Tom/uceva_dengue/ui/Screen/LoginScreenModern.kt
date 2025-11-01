@@ -560,10 +560,9 @@ fun ModernRegister(viewModel: AuthViewModel, navController: NavController) {
                 confirmButton = {
                     TextButton(onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            val selectedDate = java.time.Instant.ofEpochMilli(millis)
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate()
-                            val formattedDate = selectedDate.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                            // Using SimpleDateFormat for API 24 compatibility
+                            val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                            val formattedDate = dateFormat.format(java.util.Date(millis))
                             viewModel.onRegisterChange(email, password, firstName, lastName, bloodTypeId, cityId, address, genderId, formattedDate)
                         }
                         showDatePicker = false

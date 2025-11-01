@@ -255,61 +255,6 @@ fun CaseDetailsScreen(
                                 }
                             }
 
-                            // Botones de evolución clínica
-                            if (!isEditing) {
-                                Text(
-                                    text = "Evolución Clínica",
-                                    fontSize = fontSizeLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.padding(top = paddingSmall, bottom = iconBackgroundRadius)
-                                )
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(spacerMedium)
-                                ) {
-                                    // ELIMINADO: Botones de evolución clínica (módulo eliminado)
-                                    /* Botón para ver historial
-                                    OutlinedButton(
-                                        onClick = {
-                                            navController.navigate("${com.Tom.uceva_dengue.ui.Navigation.Rout.CaseEvolutionHistoryScreen.name}/${c.ID_CASOREPORTADO}")
-                                        },
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(buttonHeight),
-                                        shape = RoundedCornerShape(iconBackgroundRadius)
-                                    ) {
-                                        Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(iconSizeSmall))
-                                        Spacer(modifier = Modifier.width(paddingSmall))
-                                        Text("Ver Historial", fontWeight = FontWeight.SemiBold)
-                                    }
-
-                                    // Botón para crear nueva evolución
-                                    Button(
-                                        onClick = {
-                                            val dengueTypeId = c.FK_ID_TIPODENGUE ?: 1
-                                            val doctorId = c.FK_ID_PERSONALMEDICO ?: 1
-                                            navController.navigate(
-                                                "${com.Tom.uceva_dengue.ui.Navigation.Rout.CreateCaseEvolutionScreen.name}/${c.ID_CASOREPORTADO}/$dengueTypeId/$doctorId"
-                                            )
-                                        },
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(buttonHeight),
-                                        shape = RoundedCornerShape(iconBackgroundRadius),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.primary
-                                        )
-                                    ) {
-                                        Icon(Icons.Default.MedicalServices, contentDescription = null, modifier = Modifier.size(iconSizeSmall))
-                                        Spacer(modifier = Modifier.width(paddingSmall))
-                                        Text("Nueva Evolución", fontWeight = FontWeight.SemiBold)
-                                    }
-                                    */
-                                }
-                            }
-
                             Spacer(modifier = Modifier.height(bottomPadding))
                         }
                     }

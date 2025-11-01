@@ -1,6 +1,7 @@
 package com.Tom.uceva_dengue.ui.Screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.Data.Model.RoleModel
+import com.Tom.uceva_dengue.Data.Model.Permission
 import com.Tom.uceva_dengue.ui.viewModel.RoleManagementViewModel
 import com.Tom.uceva_dengue.utils.rememberAppDimensions
 
@@ -38,158 +40,181 @@ fun RoleManagementScreen(
 ) {
     val dimensions = rememberAppDimensions()
     val roles by viewModel.roles.collectAsState()
+    val allPermissions by viewModel.allPermissions.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val successMessage by viewModel.successMessage.collectAsState()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf<RoleModel?>(null) }
+    var expandedRoleId by remember { mutableStateOf<Int?>(null) }
 
-    // Mostrar mensajes
-    LaunchedEffect(errorMessage) {
-        errorMessage?.let {
-            // Aquí podrías mostrar un Snackbar
+    // Cargar permisos al iniciar
+    LaunchedEffect(Unit) {
+        viewModel.loadAllPermissions()
+    }
+
+    // Cargar permisos del rol cuando se expande
+    LaunchedEffect(expandedRoleId) {
+        expandedRoleId?.let {
+            viewModel.loadRolePermissions(it)
         }
     }
 
-    LaunchedEffect(successMessage) {
-        successMessage?.let {
-            // Aquí podrías mostrar un Snackbar
-            viewModel.clearMessages()
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Gestión de Roles",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.loadRoles() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refrescar")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PrimaryBlue,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
-                )
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showCreateDialog = true },
-                containerColor = PrimaryBlue,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier.shadow(8.dp, CircleShape)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Crear rol")
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(dimensions.paddingMedium)
+    ) {
+        when {
+            isLoading && roles.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryBlue)
+                }
             }
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when {
-                isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = PrimaryBlue)
-                    }
-                }
 
-                roles.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(dimensions.paddingMedium)
-                        ) {
-                            Icon(
-                                Icons.Default.GroupWork,
-                                contentDescription = null,
-                                modifier = Modifier.size(dimensions.iconExtraLarge),
-                                tint = Color.Gray
-                            )
-                            Text(
-                                "No hay roles disponibles",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Gray
-                            )
-                        }
-                    }
-                }
-
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(dimensions.paddingMedium),
+            roles.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(dimensions.paddingMedium)
                     ) {
-                        items(roles) { role ->
-                            RoleCard(
-                                role = role,
-                                onEditClick = {
-                                    navController.navigate("editRolePermissions/${role.ID_ROL}")
-                                },
-                                onDeleteClick = {
-                                    showDeleteDialog = role
-                                },
-                                dimensions = dimensions
-                            )
-                        }
+                        Icon(
+                            Icons.Default.GroupWork,
+                            contentDescription = null,
+                            modifier = Modifier.size(dimensions.iconExtraLarge),
+                            tint = Color.Gray
+                        )
+                        Text(
+                            "No hay roles disponibles",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Gray
+                        )
                     }
                 }
             }
 
-            // Mensajes de error
-            errorMessage?.let {
-                Card(
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(dimensions.paddingMedium)
+                ) {
+                    items(roles) { role ->
+                        RoleCardWithPermissions(
+                            role = role,
+                            isExpanded = expandedRoleId == role.ID_ROL,
+                            allPermissions = allPermissions.flatMap { it.Permissions },
+                            rolePermissions = if (expandedRoleId == role.ID_ROL) {
+                                viewModel.rolePermissions.value?.permissions ?: emptyList()
+                            } else {
+                                emptyList()
+                            },
+                            onExpandClick = {
+                                expandedRoleId = if (expandedRoleId == role.ID_ROL) null else role.ID_ROL
+                            },
+                            onSavePermissions = { selectedIds ->
+                                viewModel.updateRolePermissions(role.ID_ROL, selectedIds) {
+                                    // Opcional: cerrar expansion después de guardar
+                                }
+                            },
+                            onDeleteClick = {
+                                showDeleteDialog = role
+                            },
+                            dimensions = dimensions,
+                            isLoadingPermissions = isLoading && expandedRoleId == role.ID_ROL
+                        )
+                    }
+
+                    // Espacio al final para el FAB
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
+                    }
+                }
+            }
+        }
+
+        // FAB para crear rol
+        FloatingActionButton(
+            onClick = { showCreateDialog = true },
+            containerColor = PrimaryBlue,
+            contentColor = Color.White,
+            shape = CircleShape,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .shadow(8.dp, CircleShape)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Crear rol")
+        }
+
+        // Mensajes de error
+        errorMessage?.let {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                colors = CardDefaults.cardColors(
+                    containerColor = DangerRed.copy(alpha = 0.9f)
+                ),
+                shape = RoundedCornerShape(dimensions.paddingSmall)
+            ) {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(dimensions.paddingMedium)
-                        .align(Alignment.TopCenter),
-                    colors = CardDefaults.cardColors(
-                        containerColor = DangerRed.copy(alpha = 0.9f)
-                    ),
-                    shape = RoundedCornerShape(dimensions.paddingSmall)
+                        .padding(dimensions.paddingMedium),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(dimensions.paddingMedium),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            it,
-                            color = Color.White,
-                            modifier = Modifier.weight(1f)
+                    Text(
+                        it,
+                        color = Color.White,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { viewModel.clearMessages() }) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Cerrar",
+                            tint = Color.White
                         )
-                        IconButton(onClick = { viewModel.clearMessages() }) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Cerrar",
-                                tint = Color.White
-                            )
-                        }
+                    }
+                }
+            }
+        }
+
+        // Mensajes de éxito
+        successMessage?.let {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                colors = CardDefaults.cardColors(
+                    containerColor = SuccessGreen.copy(alpha = 0.9f)
+                ),
+                shape = RoundedCornerShape(dimensions.paddingSmall)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(dimensions.paddingMedium),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        it,
+                        color = Color.White,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { viewModel.clearMessages() }) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Cerrar",
+                            tint = Color.White
+                        )
                     }
                 }
             }
@@ -243,12 +268,21 @@ fun RoleManagementScreen(
 }
 
 @Composable
-fun RoleCard(
+fun RoleCardWithPermissions(
     role: RoleModel,
-    onEditClick: () -> Unit,
+    isExpanded: Boolean,
+    allPermissions: List<Permission>,
+    rolePermissions: List<Permission>,
+    onExpandClick: () -> Unit,
+    onSavePermissions: (List<Int>) -> Unit,
     onDeleteClick: () -> Unit,
-    dimensions: com.Tom.uceva_dengue.utils.AppDimensions
+    dimensions: com.Tom.uceva_dengue.utils.AppDimensions,
+    isLoadingPermissions: Boolean
 ) {
+    var selectedPermissionIds by remember(rolePermissions) {
+        mutableStateOf(rolePermissions.map { it.id }.toSet())
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -258,88 +292,185 @@ fun RoleCard(
             containerColor = Color.White
         )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(dimensions.paddingMedium),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(dimensions.paddingMedium)
         ) {
+            // Encabezado del rol
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingMedium),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(dimensions.iconLarge)
-                        .background(PrimaryBlue.copy(alpha = 0.1f), CircleShape),
-                    contentAlignment = Alignment.Center
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(dimensions.paddingMedium),
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Icon(
-                        Icons.Default.Group,
-                        contentDescription = null,
-                        tint = PrimaryBlue,
-                        modifier = Modifier.size(dimensions.iconMedium)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(dimensions.iconLarge)
+                            .background(PrimaryBlue.copy(alpha = 0.1f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Group,
+                            contentDescription = null,
+                            tint = PrimaryBlue,
+                            modifier = Modifier.size(dimensions.iconMedium)
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            role.NOMBRE_ROL,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(
+                                        if (role.ESTADO_ROL) SuccessGreen else Color.Gray,
+                                        CircleShape
+                                    )
+                            )
+                            Text(
+                                if (role.ESTADO_ROL) "Activo" else "Inactivo",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                    }
                 }
 
-                Column {
-                    Text(
-                        role.NOMBRE_ROL,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                Row(horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)) {
+                    IconButton(
+                        onClick = onExpandClick,
+                        modifier = Modifier
+                            .background(PrimaryBlue.copy(alpha = 0.1f), CircleShape)
+                            .size(dimensions.iconLarge)
                     ) {
-                        Box(
+                        Icon(
+                            if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = if (isExpanded) "Contraer" else "Expandir",
+                            tint = PrimaryBlue,
+                            modifier = Modifier.size(dimensions.iconSmall)
+                        )
+                    }
+
+                    // Solo permitir eliminar roles personalizados (ID > 3)
+                    if (role.ID_ROL > 3) {
+                        IconButton(
+                            onClick = onDeleteClick,
                             modifier = Modifier
-                                .size(8.dp)
-                                .background(
-                                    if (role.ESTADO_ROL) SuccessGreen else Color.Gray,
-                                    CircleShape
-                                )
-                        )
-                        Text(
-                            if (role.ESTADO_ROL) "Activo" else "Inactivo",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
+                                .background(DangerRed.copy(alpha = 0.1f), CircleShape)
+                                .size(dimensions.iconLarge)
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Eliminar",
+                                tint = DangerRed,
+                                modifier = Modifier.size(dimensions.iconSmall)
+                            )
+                        }
                     }
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)) {
-                IconButton(
-                    onClick = onEditClick,
-                    modifier = Modifier
-                        .background(PrimaryBlue.copy(alpha = 0.1f), CircleShape)
-                        .size(dimensions.iconLarge)
-                ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Editar permisos",
-                        tint = PrimaryBlue,
-                        modifier = Modifier.size(dimensions.iconSmall)
-                    )
-                }
+            // Sección expandible de permisos
+            if (isExpanded) {
+                Spacer(modifier = Modifier.height(dimensions.paddingMedium))
+                Divider()
+                Spacer(modifier = Modifier.height(dimensions.paddingMedium))
 
-                // Solo permitir eliminar roles personalizados (ID > 3)
-                if (role.ID_ROL > 3) {
-                    IconButton(
-                        onClick = onDeleteClick,
+                if (isLoadingPermissions) {
+                    Box(
                         modifier = Modifier
-                            .background(DangerRed.copy(alpha = 0.1f), CircleShape)
-                            .size(dimensions.iconLarge)
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "Eliminar",
-                            tint = DangerRed,
-                            modifier = Modifier.size(dimensions.iconSmall)
+                        CircularProgressIndicator(color = PrimaryBlue, modifier = Modifier.size(32.dp))
+                    }
+                } else {
+                    Text(
+                        "Permisos del Rol",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = dimensions.paddingSmall)
+                    )
+
+                    // Agrupar permisos por categoría
+                    val groupedPermissions = allPermissions.groupBy { it.category ?: "Sin categoría" }
+
+                    groupedPermissions.forEach { (category, permissions) ->
+                        Text(
+                            category,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = PrimaryBlue,
+                            modifier = Modifier.padding(vertical = dimensions.paddingSmall)
                         )
+
+                        permissions.forEach { permission ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedPermissionIds = if (permission.id in selectedPermissionIds) {
+                                            selectedPermissionIds - permission.id
+                                        } else {
+                                            selectedPermissionIds + permission.id
+                                        }
+                                    }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = permission.id in selectedPermissionIds,
+                                    onCheckedChange = {
+                                        selectedPermissionIds = if (it) {
+                                            selectedPermissionIds + permission.id
+                                        } else {
+                                            selectedPermissionIds - permission.id
+                                        }
+                                    },
+                                    colors = CheckboxDefaults.colors(checkedColor = PrimaryBlue)
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        permission.name,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    permission.description?.let { desc ->
+                                        Text(
+                                            desc,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Botón de guardar
+                    Spacer(modifier = Modifier.height(dimensions.paddingMedium))
+                    Button(
+                        onClick = { onSavePermissions(selectedPermissionIds.toList()) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        shape = RoundedCornerShape(dimensions.paddingSmall)
+                    ) {
+                        Icon(Icons.Default.Save, contentDescription = null)
+                        Spacer(modifier = Modifier.width(dimensions.paddingSmall))
+                        Text("Guardar Permisos")
                     }
                 }
             }

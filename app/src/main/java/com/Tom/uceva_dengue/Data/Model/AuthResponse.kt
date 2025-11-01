@@ -8,7 +8,8 @@ data class AuthResponse(
     val user: UserModel,
     val accessToken: String,
     val refreshToken: String,
-    val expiresIn: Int // En segundos
+    val expiresIn: Int, // En segundos
+    val permissions: List<String> = emptyList() // Permisos del usuario
 )
 
 /**

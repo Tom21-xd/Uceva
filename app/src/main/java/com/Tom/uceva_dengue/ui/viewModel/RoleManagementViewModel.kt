@@ -82,17 +82,28 @@ class RoleManagementViewModel : ViewModel() {
             _errorMessage.value = null
 
             try {
+                Log.d("RoleManagement", "=== LOADING ALL PERMISSIONS ===")
                 val response = permissionService.getAllPermissions()
+                Log.d("RoleManagement", "Response code: ${response.code()}")
+                Log.d("RoleManagement", "Response successful: ${response.isSuccessful}")
+
                 if (response.isSuccessful && response.body() != null) {
                     _allPermissions.value = response.body()!!.data
                     Log.d("RoleManagement", "Permisos cargados: ${_allPermissions.value.size} categorías")
+                    _allPermissions.value.forEach { category ->
+                        Log.d("RoleManagement", "  Categoría: ${category.Category}, Permisos: ${category.TotalPermissions}")
+                    }
                 } else {
+                    val errorBody = response.errorBody()?.string()
                     _errorMessage.value = "Error al cargar permisos: ${response.message()}"
-                    Log.e("RoleManagement", "Error: ${response.errorBody()?.string()}")
+                    Log.e("RoleManagement", "Error response code: ${response.code()}")
+                    Log.e("RoleManagement", "Error message: ${response.message()}")
+                    Log.e("RoleManagement", "Error body: $errorBody")
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Error de conexión: ${e.localizedMessage}"
                 Log.e("RoleManagement", "Exception al cargar permisos", e)
+                e.printStackTrace()
             } finally {
                 _isLoading.value = false
             }
@@ -108,17 +119,29 @@ class RoleManagementViewModel : ViewModel() {
             _errorMessage.value = null
 
             try {
+                Log.d("RoleManagement", "=== LOADING ROLE PERMISSIONS FOR ROLE ID: $roleId ===")
                 val response = permissionService.getRolePermissions(roleId)
+                Log.d("RoleManagement", "Response code: ${response.code()}")
+                Log.d("RoleManagement", "Response successful: ${response.isSuccessful}")
+
                 if (response.isSuccessful && response.body() != null) {
                     _rolePermissions.value = response.body()!!
+                    Log.d("RoleManagement", "Rol: ${_rolePermissions.value?.roleName}")
                     Log.d("RoleManagement", "Permisos del rol $roleId: ${_rolePermissions.value?.totalPermissions}")
+                    _rolePermissions.value?.permissions?.forEach { perm ->
+                        Log.d("RoleManagement", "  - ${perm.name} (${perm.code})")
+                    }
                 } else {
+                    val errorBody = response.errorBody()?.string()
                     _errorMessage.value = "Error al cargar permisos del rol: ${response.message()}"
-                    Log.e("RoleManagement", "Error: ${response.errorBody()?.string()}")
+                    Log.e("RoleManagement", "Error response code: ${response.code()}")
+                    Log.e("RoleManagement", "Error message: ${response.message()}")
+                    Log.e("RoleManagement", "Error body: $errorBody")
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Error de conexión: ${e.localizedMessage}"
                 Log.e("RoleManagement", "Exception al cargar permisos del rol", e)
+                e.printStackTrace()
             } finally {
                 _isLoading.value = false
             }

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 
@@ -76,6 +77,10 @@ sealed  class Items_Menu_lateral (
         "Gestión de Roles",
         Rout.RoleManagementScreen.name
     )
-
+    object Item_Menu_Lateral12: Items_Menu_lateral(
+        Icons.Default.Upload,
+        "Importar Casos",
+        Rout.ImportCasesScreen.name
+    )
 
 }

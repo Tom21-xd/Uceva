@@ -83,9 +83,8 @@ import com.Tom.uceva_dengue.ui.Screen.QuizStartScreen
 import com.Tom.uceva_dengue.ui.Screen.QuizQuestionsScreen
 import com.Tom.uceva_dengue.ui.Screen.QuizResultScreen
 import com.Tom.uceva_dengue.ui.Screen.CertificateScreen
-import com.Tom.uceva_dengue.ui.Screen.PermissionsManagementScreen
 import com.Tom.uceva_dengue.ui.Screen.RoleManagementScreen
-import com.Tom.uceva_dengue.ui.Screen.EditRolePermissionsScreen
+import com.Tom.uceva_dengue.ui.Screen.ImportCasesScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
@@ -407,22 +406,14 @@ fun NavigationCon(context: Context) {
                         viewModel = quizViewModel
                     )
                 }
-                composable(Rout.PermissionsManagementScreen.name) {
-                    PermissionsManagementScreen(viewModel = viewModel())
-                }
                 composable(Rout.RoleManagementScreen.name) {
                     RoleManagementScreen(
                         navController = navController,
                         viewModel = viewModel()
                     )
                 }
-                composable(
-                    route = "editRolePermissions/{roleId}",
-                    arguments = listOf(navArgument("roleId") { type = NavType.IntType })
-                ) { backStackEntry ->
-                    val roleId = backStackEntry.arguments?.getInt("roleId") ?: 0
-                    EditRolePermissionsScreen(
-                        roleId = roleId,
+                composable(Rout.ImportCasesScreen.name) {
+                    ImportCasesScreen(
                         navController = navController,
                         viewModel = viewModel()
                     )
@@ -459,9 +450,8 @@ fun getTopBarTitle(route: String): String {
         Rout.QuizQuestionsScreen.name -> "Evaluación en Curso"
         Rout.QuizResultScreen.name -> "Resultados"
         Rout.CertificateScreen.name -> "Mi Certificado"
-        Rout.PermissionsManagementScreen.name -> "Gestión de Permisos"
         Rout.RoleManagementScreen.name -> "Gestión de Roles"
-        "editRolePermissions" -> "Editar Permisos de Rol"
+        Rout.ImportCasesScreen.name -> "Importar Casos"
         else -> "Mi Aplicación"
     }
 }

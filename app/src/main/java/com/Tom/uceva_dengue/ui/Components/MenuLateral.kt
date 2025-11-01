@@ -1,5 +1,6 @@
 package com.Tom.uceva_dengue.ui.Components
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,19 +17,41 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.Tom.uceva_dengue.Data.Service.AuthRepository
 import com.Tom.uceva_dengue.ui.Menus.Items_Menu_lateral
 import com.Tom.uceva_dengue.ui.Navigation.Rout
 import com.Tom.uceva_dengue.ui.Navigation.currentRoute
+import com.Tom.uceva_dengue.utils.PermissionChecker
+import com.Tom.uceva_dengue.utils.UserPermissionsManager
 import kotlinx.coroutines.launch
+
+/**
+ * Maps menu items to their required permissions
+ */
+private fun getMenuItemPermissions(item: Items_Menu_lateral): List<String> {
+    return when (item) {
+        is Items_Menu_lateral.Item_Menu_Lateral1 -> PermissionChecker.MenuPermissions.PROFILE
+        is Items_Menu_lateral.Item_Menu_Lateral2 -> PermissionChecker.MenuPermissions.OPTIONS
+        is Items_Menu_lateral.Item_Menu_Lateral3 -> PermissionChecker.MenuPermissions.INFO
+        is Items_Menu_lateral.Item_Menu_Lateral4 -> PermissionChecker.MenuPermissions.HOME
+        is Items_Menu_lateral.Item_Menu_Lateral5 -> PermissionChecker.MenuPermissions.CASES
+        is Items_Menu_lateral.Item_Menu_Lateral6 -> PermissionChecker.MenuPermissions.HOSPITALS
+        is Items_Menu_lateral.Item_Menu_Lateral7 -> PermissionChecker.MenuPermissions.USER_MANAGEMENT
+        is Items_Menu_lateral.Item_Menu_Lateral8 -> PermissionChecker.MenuPermissions.PREVENTION_GUIDE
+        is Items_Menu_lateral.Item_Menu_Lateral9 -> PermissionChecker.MenuPermissions.SAVED_PUBLICATIONS
+        is Items_Menu_lateral.Item_Menu_Lateral10 -> PermissionChecker.MenuPermissions.PERMISSIONS_MANAGEMENT
+        is Items_Menu_lateral.Item_Menu_Lateral11 -> PermissionChecker.MenuPermissions.ROLE_MANAGEMENT
+        is Items_Menu_lateral.Item_Menu_Lateral12 -> PermissionChecker.MenuPermissions.IMPORT_CASES
+        else -> emptyList()
+    }
+}
 
 @Composable
 fun MenuLateral(
@@ -36,55 +59,52 @@ fun MenuLateral(
     drawerState: DrawerState,
     authRepository: AuthRepository,
 ) {
-    fun getMenuItemsByRole(role: Int): List<Items_Menu_lateral> {
-        return when (role) {
-            1 -> listOf( // Admin - Acceso completo
-                Items_Menu_lateral.Item_Menu_Lateral4, // Home
-                Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
-                Items_Menu_lateral.Item_Menu_Lateral9, // Mis Guardados
-                Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
-                Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
-                Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios
-                Items_Menu_lateral.Item_Menu_Lateral11, // Gestión de Roles
-                Items_Menu_lateral.Item_Menu_Lateral10, // Gestión de Permisos
-                Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
-                Items_Menu_lateral.Item_Menu_Lateral3, // Información
-                Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
-            )
-            2 -> listOf( // Usuario - Acceso limitado (sin gestión administrativa)
-                Items_Menu_lateral.Item_Menu_Lateral4, // Home
-                Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
-                Items_Menu_lateral.Item_Menu_Lateral9, // Mis Guardados
-                Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
-                Items_Menu_lateral.Item_Menu_Lateral3, // Información
-                Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
-            )
-            3 -> listOf( // Personal Médico - Acceso completo (igual que Admin)
-                Items_Menu_lateral.Item_Menu_Lateral4, // Home
-                Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
-                Items_Menu_lateral.Item_Menu_Lateral9, // Mis Guardados
-                Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
-                Items_Menu_lateral.Item_Menu_Lateral6,  // Hospitales
-                Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios
-                Items_Menu_lateral.Item_Menu_Lateral11, // Gestión de Roles
-                Items_Menu_lateral.Item_Menu_Lateral10, // Gestión de Permisos
-                Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
-                Items_Menu_lateral.Item_Menu_Lateral3, // Información
-                Items_Menu_lateral.Item_Menu_Lateral2 // Opciones
-            )
-            else -> listOf(
-                Items_Menu_lateral.Item_Menu_Lateral1,
-                Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
-                Items_Menu_lateral.Item_Menu_Lateral3,
-                Items_Menu_lateral.Item_Menu_Lateral4
-            )
-        }
-    }
-    val role = authRepository.getRole()
-    val menuItems = getMenuItemsByRole(role)
-
+    val context = LocalContext.current
+    val permissionsManager = remember { UserPermissionsManager.getInstance(context) }
     val coroutineScope = rememberCoroutineScope()
     val isLoading = remember { mutableStateOf(false) }
+
+    // All possible menu items in desired order
+    val allMenuItems = listOf(
+        Items_Menu_lateral.Item_Menu_Lateral4, // Home
+        Items_Menu_lateral.Item_Menu_Lateral1, // Perfil
+        Items_Menu_lateral.Item_Menu_Lateral9, // Mis Guardados
+        Items_Menu_lateral.Item_Menu_Lateral5, // Casos de dengue
+        Items_Menu_lateral.Item_Menu_Lateral12, // Importar Casos
+        Items_Menu_lateral.Item_Menu_Lateral6, // Hospitales
+        Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios
+        Items_Menu_lateral.Item_Menu_Lateral11, // Gestión de Roles
+        Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
+        Items_Menu_lateral.Item_Menu_Lateral3, // Información
+        Items_Menu_lateral.Item_Menu_Lateral2  // Opciones
+    )
+
+    // Filter menu items based on user permissions
+    // Observe permissions changes in real-time
+    val userPermissions by permissionsManager.getUserPermissionsFlow().collectAsState(initial = emptyList())
+
+    // Recalculate visible items whenever permissions change
+    val visibleMenuItems = remember(userPermissions) {
+        Log.d("MenuLateral", "=== PERMISSION DEBUG ===")
+        Log.d("MenuLateral", "User permissions count: ${userPermissions.size}")
+        Log.d("MenuLateral", "User permissions: $userPermissions")
+
+        val items = allMenuItems.filter { item ->
+            val requiredPermissions = getMenuItemPermissions(item)
+            // If no permissions required, show the item
+            if (requiredPermissions.isEmpty()) {
+                Log.d("MenuLateral", "Item ${item.title} - No permissions required, showing")
+                return@filter true
+            }
+            // Otherwise, check if user has all required permissions
+            val hasPermissions = requiredPermissions.all { it in userPermissions }
+            Log.d("MenuLateral", "Item ${item.title} - Required: $requiredPermissions, Has: $hasPermissions")
+            hasPermissions
+        }
+
+        Log.d("MenuLateral", "Visible menu items: ${items.size} of ${allMenuItems.size}")
+        items
+    }
 
     ModalDrawerSheet(
         modifier = Modifier.width(250.dp)
@@ -97,7 +117,7 @@ fun MenuLateral(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                menuItems.forEach { item ->
+                visibleMenuItems.forEach { item ->
                     NavigationDrawerItem(
                         label = {
                             Row(

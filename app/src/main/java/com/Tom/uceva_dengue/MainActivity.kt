@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import com.Tom.uceva_dengue.ui.Navigation.NavigationCon
 import com.Tom.uceva_dengue.ui.theme.Uceva_dengueTheme
 import com.Tom.uceva_dengue.utils.ThemeMode
@@ -24,6 +25,10 @@ class MainActivity : ComponentActivity() {
         Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
             Log.e("APP_CRASH", "Error inesperado", throwable)
         }
+
+        // IMPORTANTE: Inicializar RetrofitClient con el contexto de la app
+        RetrofitClient.initialize(applicationContext)
+
         // Inicializar Firebase Cloud Messaging y obtener el token
         initializeFCM()
         setContent {

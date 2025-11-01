@@ -1,13 +1,16 @@
 package com.Tom.uceva_dengue.Data.Service
 
 import android.content.Context
+import android.util.Log
 import com.Tom.uceva_dengue.utils.SecureTokenManager
+import com.Tom.uceva_dengue.utils.UserPermissionsManager
 
 
 class AuthRepository(context: Context) {
 
     private val sharedPreferences = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
     private val tokenManager = SecureTokenManager(context)
+    private val permissionsManager = UserPermissionsManager.getInstance(context)
 
     // ========== Métodos existentes ==========
 
@@ -33,7 +36,7 @@ class AuthRepository(context: Context) {
         return sharedPreferences.getInt("user_role", 0)
     }
 
-    fun clearUserSession() {
+    suspend fun clearUserSession() {
         val editor = sharedPreferences.edit()
         editor.remove("username")
         editor.remove("user_role")
@@ -42,6 +45,9 @@ class AuthRepository(context: Context) {
 
         // Limpiar tokens también
         tokenManager.clearTokens()
+
+        // Limpiar permisos
+        permissionsManager.clearPermissions()
     }
 
     // ========== Nuevos métodos para tokens ==========
@@ -88,8 +94,53 @@ class AuthRepository(context: Context) {
         tokenManager.saveTokenExpiration(expirationTime)
     }
 
-    fun clearAllData() {
+    suspend fun clearAllData() {
         clearUserSession()
         tokenManager.clearAll()
+    }
+
+    // ========== Métodos para permisos ==========
+
+    /**
+     * Guarda los permisos del usuario
+     */
+    suspend fun saveUserPermissions(
+        userId: Int,
+        roleId: Int,
+        roleName: String,
+        permissions: List<String>
+    ) {
+        Log.d("AuthRepository", "Guardando permisos - UserId: $userId, RoleId: $roleId, RoleName: $roleName")
+        Log.d("AuthRepository", "Permisos a guardar: $permissions (Total: ${permissions.size})")
+        permissionsManager.saveUserPermissions(userId, roleId, roleName, permissions)
+        Log.d("AuthRepository", "Permisos guardados exitosamente en UserPermissionsManager")
+    }
+
+    /**
+     * Obtiene los permisos del usuario
+     */
+    suspend fun getUserPermissions(): List<String> {
+        return permissionsManager.getUserPermissions()
+    }
+
+    /**
+     * Verifica si el usuario tiene un permiso específico
+     */
+    suspend fun hasPermission(permission: String): Boolean {
+        return permissionsManager.hasPermission(permission)
+    }
+
+    /**
+     * Verifica si hay permisos cargados
+     */
+    suspend fun hasPermissionsLoaded(): Boolean {
+        return permissionsManager.hasPermissionsLoaded()
+    }
+
+    /**
+     * Obtiene el permissionsManager para uso directo
+     */
+    fun getPermissionsManager(): UserPermissionsManager {
+        return permissionsManager
     }
 }

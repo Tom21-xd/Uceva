@@ -1,7 +1,10 @@
 package com.Tom.uceva_dengue.Data.Api
 
+import android.content.Context
+import com.Tom.uceva_dengue.Data.Service.AuthRepository
 import com.Tom.uceva_dengue.Data.Service.AuthService
 import com.Tom.uceva_dengue.Data.Service.BloodTypeService
+import com.Tom.uceva_dengue.Data.Service.CaseImportService
 import com.Tom.uceva_dengue.Data.Service.CaseService
 import com.Tom.uceva_dengue.Data.Service.CaseStateService
 import com.Tom.uceva_dengue.Data.Service.CityService
@@ -21,6 +24,7 @@ import com.Tom.uceva_dengue.Data.Service.RoleService
 import com.Tom.uceva_dengue.Data.Service.StatisticsService
 import com.Tom.uceva_dengue.Data.Service.SymptomService
 import com.Tom.uceva_dengue.Data.Service.UserService
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -36,6 +40,38 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
     private const val BASE_URL = "https://api.prometeondev.com/"
+    private var appContext: Context? = null
+
+    /**
+     * Initialize RetrofitClient with application context
+     * Call this from your Application class or MainActivity
+     */
+    fun initialize(context: Context) {
+        appContext = context.applicationContext
+    }
+
+    /**
+     * Auth interceptor that adds Bearer token to all requests
+     */
+    private val authInterceptor = Interceptor { chain ->
+        val original = chain.request()
+
+        // Get token from AuthRepository
+        val token = appContext?.let { ctx ->
+            AuthRepository(ctx).getAccessToken()
+        }
+
+        // Add Authorization header if token exists
+        val request = if (!token.isNullOrEmpty()) {
+            original.newBuilder()
+                .header("Authorization", "Bearer $token")
+                .build()
+        } else {
+            original
+        }
+
+        chain.proceed(request)
+    }
 
     private val okHttpClient: OkHttpClient by lazy {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -46,6 +82,7 @@ object RetrofitClient {
             .connectTimeout(60, TimeUnit.SECONDS)  // Timeout de conexión: 60 segundos
             .readTimeout(60, TimeUnit.SECONDS)     // Timeout de lectura: 60 segundos
             .writeTimeout(60, TimeUnit.SECONDS)    // Timeout de escritura: 60 segundos
+            .addInterceptor(authInterceptor)       // Auth interceptor PRIMERO
             .addInterceptor(loggingInterceptor)    // Logging para debug
             .build()
     }
@@ -121,5 +158,8 @@ object RetrofitClient {
     }
     val permissionService : PermissionService by lazy {
         retrofit.create(PermissionService::class.java)
+    }
+    val caseImportService : CaseImportService by lazy {
+        retrofit.create(CaseImportService::class.java)
     }
 }
