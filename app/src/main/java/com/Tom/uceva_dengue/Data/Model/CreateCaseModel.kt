@@ -10,9 +10,9 @@ data class CreateCaseModel(
 
     // Campos epidemiológicos nuevos
     val anio_reporte: Int? = null,
-    val edad_paciente: Int? = null,
+    val edad: Int? = null,
     val nombre_temporal: String? = null,
-    val barrio_vereda: String? = null,
+    val barrio: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null
 )

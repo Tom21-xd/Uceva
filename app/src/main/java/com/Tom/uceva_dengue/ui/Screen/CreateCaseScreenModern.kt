@@ -254,36 +254,19 @@ fun CreateCaseScreenModern(
                 Button(
                     onClick = {
                         isCreatingCase = true
-                        if (!isExistingUser) {
-                            // Primero registrar el nuevo usuario usando AuthViewModel
-                            viewModel.createCaseWithNewUser(
-                                authViewModel = authViewModel,
-                                idPersonalMedico = user?.toInt() ?: 0,
-                                onSuccess = {
-                                    isCreatingCase = false
-                                    Toast.makeText(context, "Caso creado exitosamente", Toast.LENGTH_SHORT).show()
-                                    navController.navigate(Rout.CaseScreen.name)
-                                },
-                                onError = { errorMsg ->
-                                    isCreatingCase = false
-                                    Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
-                                }
-                            )
-                        } else {
-                            // Usuario existente, crear caso directamente
-                            viewModel.createCase(
-                                idPersonalMedico = user?.toInt() ?: 0,
-                                onSuccess = {
-                                    isCreatingCase = false
-                                    Toast.makeText(context, "Caso creado exitosamente", Toast.LENGTH_SHORT).show()
-                                    navController.navigate(Rout.CaseScreen.name)
-                                },
-                                onError = { errorMsg ->
-                                    isCreatingCase = false
-                                    Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
-                                }
-                            )
-                        }
+                        // Para casos anónimos o con usuario existente, usar createCase directamente
+                        viewModel.createCase(
+                            idPersonalMedico = user?.toInt() ?: 0,
+                            onSuccess = {
+                                isCreatingCase = false
+                                Toast.makeText(context, "Caso creado exitosamente", Toast.LENGTH_SHORT).show()
+                                navController.navigate(Rout.CaseScreen.name)
+                            },
+                            onError = { errorMsg ->
+                                isCreatingCase = false
+                                Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
+                            }
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -399,6 +382,7 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
     val primaryColor = MaterialTheme.colorScheme.primary
     val surfaceColor = MaterialTheme.colorScheme.surface
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val outlineColor = MaterialTheme.colorScheme.outline
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Toggle usuario existente
@@ -438,7 +422,7 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
                     )
                 )
                 Text(
-                    text = "Nuevo Usuario",
+                    text = "Caso Anónimo",
                     fontSize = 14.sp,
                     color = onSurfaceColor
                 )
@@ -463,13 +447,68 @@ fun PatientSectionModern(viewModel: CreateCaseViewModel, authViewModel: com.Tom.
 
             selectedUser?.let { SelectedUserCardModern(it) }
         } else {
-            com.Tom.uceva_dengue.ui.Components.RegistrationForm(
-                viewModel = authViewModel,
-                showMedicalPersonnelOption = false,
-                showTitle = false,
-                showPasswordField = false,
-                medicalPersonnelData = null
-            )
+            // Formulario simplificado para caso anónimo/sin usuario
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = primaryColor.copy(alpha = 0.05f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Información del Paciente (Opcional)",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = onSurfaceColor
+                    )
+
+                    // Nombre temporal
+                    val tempName by viewModel.temporaryName.collectAsState()
+                    OutlinedTextField(
+                        value = tempName,
+                        onValueChange = { viewModel.setTemporaryName(it) },
+                        label = { Text("Nombre (opcional)") },
+                        placeholder = { Text("Ej: Paciente #123 o nombre del paciente") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = primaryColor,
+                            unfocusedBorderColor = outlineColor
+                        ),
+                        singleLine = true
+                    )
+
+                    // Edad
+                    val age by viewModel.age.collectAsState()
+                    OutlinedTextField(
+                        value = age,
+                        onValueChange = { viewModel.setAge(it) },
+                        label = { Text("Edad (opcional)") },
+                        placeholder = { Text("Ej: 25") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = primaryColor,
+                            unfocusedBorderColor = outlineColor
+                        ),
+                        singleLine = true,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                        )
+                    )
+
+                    Text(
+                        text = "Nota: Para casos anónimos o epidemiológicos, proporciona al menos la edad del paciente.",
+                        fontSize = 11.sp,
+                        color = onSurfaceColor.copy(alpha = 0.6f),
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                    )
+                }
+            }
         }
     }
 }
@@ -921,14 +960,17 @@ fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewM
     val description by viewModel.description.collectAsState()
     val departamentos by viewModel.departamentos.collectAsState()
     val ciudades by viewModel.municipios.collectAsState()
+    val year by viewModel.year.collectAsState()
+    val neighborhood by viewModel.neighborhood.collectAsState()
 
     val cityName: String by viewModel.cityName.observeAsState(initial = "")
     val selectedHospital by viewModel.selectedHospital.observeAsState(initial = "")
     val department: String by viewModel.department.observeAsState(initial = "")
-    
+
     val primaryColor = MaterialTheme.colorScheme.primary
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
     val outlineColor = MaterialTheme.colorScheme.outline
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
     var searchText by remember { mutableStateOf("") }
     var searchLocation by remember { mutableStateOf<LatLng?>(null) }
@@ -957,44 +999,155 @@ fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewM
     ) == PackageManager.PERMISSION_GRANTED
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ComboBox(
-            selectedValue = department,
-            options = departamentos.map { it.NOMBRE_DEPARTAMENTO },
-            label = "Departamento",
-            enabled = true
-        ) { nuevoDepartamento ->
-            val departamentoSeleccionado = departamentos.firstOrNull { it.NOMBRE_DEPARTAMENTO == nuevoDepartamento }
-            departamentoSeleccionado?.ID_DEPARTAMENTO?.let {
-                viewModel.fetchMunicipios(it.toString())
-                viewModel.setDepartment(nuevoDepartamento)
-                viewModel.setCityName("")
+        // Año del reporte con toggle
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+        var isCurrentYear by remember { mutableStateOf(true) }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = primaryColor.copy(alpha = 0.05f)
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Año del Caso",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = onSurfaceColor
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    FilterChip(
+                        selected = isCurrentYear,
+                        onClick = {
+                            isCurrentYear = true
+                            viewModel.setYear(currentYear)
+                        },
+                        label = { Text("Año Actual ($currentYear)") },
+                        modifier = Modifier.weight(1f),
+                        leadingIcon = if (isCurrentYear) {
+                            { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                        } else null
+                    )
+
+                    FilterChip(
+                        selected = !isCurrentYear,
+                        onClick = { isCurrentYear = false },
+                        label = { Text("Año Anterior") },
+                        modifier = Modifier.weight(1f),
+                        leadingIcon = if (!isCurrentYear) {
+                            { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                        } else null
+                    )
+                }
+
+                if (!isCurrentYear) {
+                    val years = (currentYear - 1 downTo 1980).toList()
+                    ComboBox(
+                        selectedValue = year.toString(),
+                        options = years.map { it.toString() },
+                        label = "Seleccionar Año"
+                    ) { selectedYear ->
+                        viewModel.setYear(selectedYear.toIntOrNull() ?: (currentYear - 1))
+                    }
+                }
             }
         }
+        // Hospital y ubicación (opcional)
+        var showLocationDetails by remember { mutableStateOf(false) }
 
-        ComboBox(
-            selectedValue = cityName,
-            options = ciudades.map { it.NOMBRE_MUNICIPIO ?: "" },
-            label = "Municipio",
-            enabled = department.isNotBlank()
-        ) { nuevaCiudad ->
-            val ciudadSeleccionada = ciudades.firstOrNull { it.NOMBRE_MUNICIPIO == nuevaCiudad }
-            ciudadSeleccionada?.let {
-                viewModel.setCityName(nuevaCiudad)
-                viewModel.setCityId(it.ID_MUNICIPIO)
-                viewModel.setSelectedHospital("", 0)
-                viewModel.fetchHospitals(it.ID_MUNICIPIO)
-            }
-        }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showLocationDetails = !showLocationDetails },
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = primaryColor
+                        )
+                        Text(
+                            text = "Hospital y Ubicación Detallada (Opcional)",
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp
+                        )
+                    }
+                    Icon(
+                        if (showLocationDetails) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = primaryColor
+                    )
+                }
 
-        ComboBox(
-            selectedValue = selectedHospital,
-            options = hospitals.map { it.NOMBRE_HOSPITAL ?: "" },
-            label = "Hospital",
-            enabled = cityName.isNotBlank()
-        ) { hospital ->
-            val hospitalSeleccionado = hospitals.firstOrNull { it.NOMBRE_HOSPITAL == hospital }
-            hospitalSeleccionado?.let {
-                viewModel.setSelectedHospital(it.NOMBRE_HOSPITAL, it.ID_HOSPITAL)
+                AnimatedVisibility(visible = showLocationDetails) {
+                    Column(
+                        modifier = Modifier.padding(top = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        ComboBox(
+                            selectedValue = department,
+                            options = departamentos.map { it.NOMBRE_DEPARTAMENTO },
+                            label = "Departamento",
+                            enabled = true
+                        ) { nuevoDepartamento ->
+                            val departamentoSeleccionado = departamentos.firstOrNull { it.NOMBRE_DEPARTAMENTO == nuevoDepartamento }
+                            departamentoSeleccionado?.ID_DEPARTAMENTO?.let {
+                                viewModel.fetchMunicipios(it.toString())
+                                viewModel.setDepartment(nuevoDepartamento)
+                                viewModel.setCityName("")
+                            }
+                        }
+
+                        ComboBox(
+                            selectedValue = cityName,
+                            options = ciudades.map { it.NOMBRE_MUNICIPIO ?: "" },
+                            label = "Municipio",
+                            enabled = department.isNotBlank()
+                        ) { nuevaCiudad ->
+                            val ciudadSeleccionada = ciudades.firstOrNull { it.NOMBRE_MUNICIPIO == nuevaCiudad }
+                            ciudadSeleccionada?.let {
+                                viewModel.setCityName(nuevaCiudad)
+                                viewModel.setCityId(it.ID_MUNICIPIO)
+                                viewModel.setSelectedHospital("", 0)
+                                viewModel.fetchHospitals(it.ID_MUNICIPIO)
+                            }
+                        }
+
+                        ComboBox(
+                            selectedValue = selectedHospital,
+                            options = hospitals.map { it.NOMBRE_HOSPITAL ?: "" },
+                            label = "Hospital",
+                            enabled = cityName.isNotBlank()
+                        ) { hospital ->
+                            val hospitalSeleccionado = hospitals.firstOrNull { it.NOMBRE_HOSPITAL == hospital }
+                            hospitalSeleccionado?.let {
+                                viewModel.setSelectedHospital(it.NOMBRE_HOSPITAL, it.ID_HOSPITAL)
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -1007,6 +1160,21 @@ fun LocationSectionModern(viewModel: CreateCaseViewModel, mapViewModel: MapViewM
                 .height(120.dp),
             shape = RoundedCornerShape(12.dp),
             maxLines = 4,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = primaryColor,
+                unfocusedBorderColor = outlineColor
+            )
+        )
+
+        // Barrio o Vereda
+        OutlinedTextField(
+            value = neighborhood,
+            onValueChange = viewModel::setNeighborhood,
+            label = { Text("Barrio o Vereda") },
+            placeholder = { Text("Ej: Aguaclara, Centro, etc.") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = primaryColor,
                 unfocusedBorderColor = outlineColor

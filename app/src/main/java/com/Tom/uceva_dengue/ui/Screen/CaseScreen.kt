@@ -60,9 +60,7 @@
             hasViewPermission = permissionsManager.hasPermission(PermissionCode.CASE_VIEW_ALL)
         }
 
-        val estados = listOf("Todos") + caseStates.map { it.NOMBRE_ESTADOCASO }
-        val tiposDengue = listOf("Todos")+TypeOfDengue.map { it.NOMBRE_TIPODENGUE }
-        var selectedEstadoIndex by remember { mutableStateOf(0) }
+        val tiposDengue = listOf("Todos") + TypeOfDengue.map { it.NOMBRE_TIPODENGUE }
         var selectedTipoDengueIndex by remember { mutableStateOf(0) }
         var searchQuery by remember { mutableStateOf("") }
 
@@ -143,7 +141,7 @@
                         value = searchQuery,
                         onValueChange = {
                             searchQuery = it
-                            caseViewModel.filterCasesByState(estados[selectedEstadoIndex])
+                            caseViewModel.filterCasesByTypeOfDengue(tiposDengue[selectedTipoDengueIndex])
                         },
                         placeholder = { Text("Buscar por nombre o ID") },
                         leadingIcon = {
@@ -156,51 +154,34 @@
                     Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
                     ScrollableTabRow(
-                        selectedTabIndex = selectedEstadoIndex,
+                        selectedTabIndex = selectedTipoDengueIndex,
                         modifier = Modifier.fillMaxWidth(),
                         edgePadding = 0.dp,
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = Color(0xFF00796B),
                         indicator = { tabPositions ->
-                            if (tabPositions.isNotEmpty() && selectedEstadoIndex < tabPositions.size) {
+                            if (tabPositions.isNotEmpty() && selectedTipoDengueIndex < tabPositions.size) {
                                 TabRowDefaults.Indicator(
                                     Modifier
-                                        .tabIndicatorOffset(tabPositions[selectedEstadoIndex])
+                                        .tabIndicatorOffset(tabPositions[selectedTipoDengueIndex])
                                         .background(Color(0xFF00796B))
                                         .height(3.dp)
                                 )
                             }
                         }
                     ) {
-                        /*tiposDengue.forEachIndexed { index, typeDengue ->
+                        tiposDengue.forEachIndexed { index, tipoDengue ->
                             Tab(
                                 selected = selectedTipoDengueIndex == index,
                                 onClick = {
                                     selectedTipoDengueIndex = index
-                                    caseViewModel.filterCasesByTypeOfDengue(typeDengue)
+                                    caseViewModel.filterCasesByTypeOfDengue(tipoDengue)
                                 },
                                 text = {
                                     Text(
-                                        text = typeDengue,
+                                        text = tipoDengue,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (selectedTipoDengueIndex == index) Color(0xFF00796B) else Color.Gray
-                                    )
-                                }
-                            )
-                        }*/
-
-                        estados.forEachIndexed { index, estado ->
-                            Tab(
-                                selected = selectedEstadoIndex == index,
-                                onClick = {
-                                    selectedEstadoIndex = index
-                                    caseViewModel.filterCasesByState(estado)
-                                },
-                                text = {
-                                    Text(
-                                        text = estado,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (selectedEstadoIndex == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = if (selectedTipoDengueIndex == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             )
@@ -330,12 +311,48 @@
                     Spacer(modifier = Modifier.width(dimensions.spacingMedium))
 
                     Column {
-                        Text(
-                            text = case.NOMBRE_PACIENTE,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = dimensions.textSizeLarge,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        // Nombre del paciente con badge si es anónimo
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = case.NOMBRE_PACIENTE,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = dimensions.textSizeLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            // Badge de caso anónimo
+                            if (case.FK_ID_PACIENTE == null) {
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer
+                                ) {
+                                    Text(
+                                        text = "Anónimo",
+                                        fontSize = 10.sp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Mostrar edad y año para casos epidemiológicos
+                        if (case.EDAD_PACIENTE != null || case.ANIO_REPORTE != null) {
+                            val infoText = buildString {
+                                case.EDAD_PACIENTE?.let { append("Edad: $it años") }
+                                if (case.EDAD_PACIENTE != null && case.ANIO_REPORTE != null) append(" • ")
+                                case.ANIO_REPORTE?.let { append("Año: $it") }
+                            }
+                            Text(
+                                text = infoText,
+                                fontSize = dimensions.textSizeSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
                         Text(
                             text = "Estado: ${case.NOMBRE_ESTADOCASO}",
                             fontSize = dimensions.textSizeMedium,
@@ -347,6 +364,18 @@
                             fontSize = dimensions.textSizeSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+
+                        // Mostrar barrio si existe
+                        case.BARRIO_VEREDA?.let { barrio ->
+                            if (barrio.isNotBlank()) {
+                                Text(
+                                    text = "Barrio: $barrio",
+                                    fontSize = dimensions.textSizeSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
                         Text(
                             text = "Dirección: ${case.DIRECCION_CASOREPORTADO}",
                             fontSize = dimensions.textSizeSmall,

@@ -116,6 +116,19 @@ class CreateCaseViewModel : ViewModel() {
     private val _locationCoordinates = MutableStateFlow<LatLng?>(null)
     val locationCoordinates: StateFlow<LatLng?> = _locationCoordinates.asStateFlow()
 
+    // Campos epidemiológicos
+    private val _year = MutableStateFlow(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR))
+    val year: StateFlow<Int> = _year.asStateFlow()
+
+    private val _age = MutableStateFlow("")
+    val age: StateFlow<String> = _age.asStateFlow()
+
+    private val _temporaryName = MutableStateFlow("")
+    val temporaryName: StateFlow<String> = _temporaryName.asStateFlow()
+
+    private val _neighborhood = MutableStateFlow("")
+    val neighborhood: StateFlow<String> = _neighborhood.asStateFlow()
+
     // Estado de carga consolidado
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -125,6 +138,22 @@ class CreateCaseViewModel : ViewModel() {
 
     fun setLocationCoordinates(latLng: LatLng) {
         _locationCoordinates.value = latLng
+    }
+
+    fun setYear(year: Int) {
+        _year.value = year
+    }
+
+    fun setAge(age: String) {
+        _age.value = age
+    }
+
+    fun setTemporaryName(name: String) {
+        _temporaryName.value = name
+    }
+
+    fun setNeighborhood(neighborhood: String) {
+        _neighborhood.value = neighborhood
     }
 
 
@@ -462,21 +491,33 @@ class CreateCaseViewModel : ViewModel() {
             try {
                 val tipoDengueId = _selectedDengueTypeID.value
 
-                // Solo para usuario existente
-                val idPaciente = _selectedUser.value?.ID_USUARIO ?: run {
-                    onError("Debe seleccionar un usuario existente")
-                    return@launch
+                // Para usuario existente o caso anónimo
+                val idPaciente = _selectedUser.value?.ID_USUARIO
+
+                // Validación: si no hay usuario, debe haber al menos edad o nombre temporal
+                if (idPaciente == null) {
+                    val hasMinimalInfo = _age.value.isNotBlank() || _temporaryName.value.isNotBlank()
+                    if (!hasMinimalInfo) {
+                        onError("Para casos anónimos, proporciona al menos la edad o el nombre del paciente")
+                        return@launch
+                    }
                 }
 
                 val coordenadas = _locationCoordinates.value?.let { "${it.latitude}:${it.longitude}" } ?: ""
 
                 val request = CreateCaseModel(
                     descripcion = _description.value,
-                    id_hospital = _idhospital.value ?: 0,
+                    id_hospital = if (_idhospital.value != 0) _idhospital.value else null,
                     id_tipoDengue = tipoDengueId,
                     id_paciente = idPaciente,
                     id_personalMedico = idPersonalMedico,
-                    direccion = coordenadas
+                    direccion = coordenadas,
+                    anio_reporte = _year.value,
+                    edad = _age.value.toIntOrNull(),
+                    nombre_temporal = _temporaryName.value.ifBlank { null },
+                    barrio = _neighborhood.value.ifBlank { null },
+                    latitud = _locationCoordinates.value?.latitude,
+                    longitud = _locationCoordinates.value?.longitude
                 )
                 Log.d("CreateCaseViewModel", "Request: $request")
 
@@ -527,11 +568,17 @@ class CreateCaseViewModel : ViewModel() {
 
                         val request = com.Tom.uceva_dengue.Data.Model.CreateCaseModel(
                             descripcion = _description.value,
-                            id_hospital = _idhospital.value ?: 0,
+                            id_hospital = if (_idhospital.value != 0) _idhospital.value else null,
                             id_tipoDengue = tipoDengueId,
                             id_paciente = userId,
                             id_personalMedico = idPersonalMedico,
-                            direccion = coordenadas
+                            direccion = coordenadas,
+                            anio_reporte = _year.value,
+                            edad = _age.value.toIntOrNull(),
+                            nombre_temporal = _temporaryName.value.ifBlank { null },
+                            barrio = _neighborhood.value.ifBlank { null },
+                            latitud = _locationCoordinates.value?.latitude,
+                            longitud = _locationCoordinates.value?.longitude
                         )
 
                         val caseResponse = RetrofitClient.caseService.createCase(request)
