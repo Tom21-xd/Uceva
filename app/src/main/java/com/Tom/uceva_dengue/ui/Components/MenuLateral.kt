@@ -96,8 +96,8 @@ fun MenuLateral(
                 Log.d("MenuLateral", "Item ${item.title} - No permissions required, showing")
                 return@filter true
             }
-            // Otherwise, check if user has all required permissions
-            val hasPermissions = requiredPermissions.all { it in userPermissions }
+            // Otherwise, check if user has ANY of the required permissions (OR logic)
+            val hasPermissions = requiredPermissions.any { it in userPermissions }
             Log.d("MenuLateral", "Item ${item.title} - Required: $requiredPermissions, Has: $hasPermissions")
             hasPermissions
         }

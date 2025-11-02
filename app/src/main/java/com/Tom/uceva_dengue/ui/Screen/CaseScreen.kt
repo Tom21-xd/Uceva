@@ -11,6 +11,7 @@
     import androidx.compose.material.icons.filled.Add
     import androidx.compose.material.icons.filled.Edit
     import androidx.compose.material.icons.filled.Error
+    import androidx.compose.material.icons.filled.Info
     import androidx.compose.material.icons.filled.Search
     import androidx.compose.material3.*
     import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -20,7 +21,9 @@
     import androidx.compose.ui.Modifier
     import androidx.compose.ui.draw.clip
     import androidx.compose.ui.graphics.Color
+    import androidx.compose.ui.platform.LocalContext
     import androidx.compose.ui.text.font.FontWeight
+    import androidx.compose.ui.text.style.TextAlign
     import androidx.compose.ui.unit.dp
     import androidx.compose.ui.unit.sp
     import androidx.navigation.NavHostController
@@ -29,20 +32,33 @@
     import com.Tom.uceva_dengue.ui.Navigation.Rout
     import com.Tom.uceva_dengue.ui.viewModel.CaseViewModel
     import com.Tom.uceva_dengue.utils.PermissionCode
+    import com.Tom.uceva_dengue.utils.UserPermissionsManager
     import com.Tom.uceva_dengue.utils.rememberAppDimensions
     import com.Tom.uceva_dengue.utils.rememberWindowSize
+    import kotlinx.coroutines.launch
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun CaseScreen(caseViewModel: CaseViewModel, role: Int, navController: NavHostController) {
         val dimensions = rememberAppDimensions()
         val windowSize = rememberWindowSize()
+        val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
+        val permissionsManager = remember { UserPermissionsManager.getInstance(context) }
+
         val cases by caseViewModel.filteredCases.collectAsState()
         val caseStates by caseViewModel.caseStates.collectAsState()
         val TypeOfDengue by caseViewModel.typeDengue.collectAsState()
         val isLoading by caseViewModel.isLoading.collectAsState()
         val loadingError by caseViewModel.loadingError.collectAsState()
         val isRefreshing by caseViewModel.isRefreshing.collectAsState()
+
+        // Check if user has permission to view all cases
+        var hasViewPermission by remember { mutableStateOf(false) }
+
+        LaunchedEffect(Unit) {
+            hasViewPermission = permissionsManager.hasPermission(PermissionCode.CASE_VIEW_ALL)
+        }
 
         val estados = listOf("Todos") + caseStates.map { it.NOMBRE_ESTADOCASO }
         val tiposDengue = listOf("Todos")+TypeOfDengue.map { it.NOMBRE_TIPODENGUE }
@@ -193,12 +209,61 @@
 
                     Spacer(modifier = Modifier.height(dimensions.spacingMedium))
 
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(cases) { case ->
-                            CasoDengueCard(case, role, navController, dimensions)
+                    // Show list only if user has VIEW permission
+                    if (hasViewPermission) {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(cases) { case ->
+                                CasoDengueCard(case, role, navController, dimensions)
+                            }
+                        }
+                    } else {
+                        // Show informative message when user doesn't have VIEW permission
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(dimensions.paddingMedium),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                ),
+                                shape = RoundedCornerShape(dimensions.paddingMedium)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(dimensions.paddingLarge)
+                                        .fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = "Información",
+                                        modifier = Modifier.size(64.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.height(dimensions.spacingMedium))
+                                    Text(
+                                        text = "No tienes permiso para ver la lista de casos",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(dimensions.spacingSmall))
+                                    Text(
+                                        text = "Puedes reportar un nuevo caso de dengue usando el botón de abajo",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
                         }
                     }
                 }

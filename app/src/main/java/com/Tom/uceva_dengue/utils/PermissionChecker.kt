@@ -68,7 +68,14 @@ object PermissionChecker {
         val PROFILE = listOf(PermissionCode.USER_VIEW) // View own profile
         val OPTIONS = emptyList<String>() // Everyone can access options
         val INFO = emptyList<String>() // Everyone can access info
-        val CASES = listOf(PermissionCode.CASE_VIEW_ALL) // View all cases
+        val CASES = listOf(
+            PermissionCode.CASE_VIEW_ALL,
+            PermissionCode.CASE_CREATE,
+            PermissionCode.CASE_UPDATE,
+            PermissionCode.CASE_DELETE,
+            PermissionCode.CASE_IMPORT_CSV,
+            PermissionCode.CASE_EXPORT
+        ) // View cases if user has ANY case-related permission
         val HOSPITALS = listOf(PermissionCode.HOSPITAL_VIEW)
         val USER_MANAGEMENT = listOf(PermissionCode.USER_VIEW_ALL) // View all users
         val PREVENTION_GUIDE = emptyList<String>() // Everyone can access guide
