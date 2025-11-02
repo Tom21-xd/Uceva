@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.Tom.uceva_dengue"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -96,6 +96,10 @@ dependencies {
 
     // Encrypted SharedPreferences for secure token storage
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Apache POI for Excel file reading (.xls and .xlsx)
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

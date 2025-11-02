@@ -17,7 +17,8 @@ interface CaseImportService {
     @Multipart
     @POST("api/CaseImport/import-csv")
     suspend fun importCsv(
-        @Part file: MultipartBody.Part
+        @Part file: MultipartBody.Part,
+        @Part("columnMapping") columnMapping: okhttp3.RequestBody?
     ): Response<CaseImportResultDto>
 
     /**
@@ -27,7 +28,8 @@ interface CaseImportService {
     @Multipart
     @POST("api/CaseImport/import-excel")
     suspend fun importExcel(
-        @Part file: MultipartBody.Part
+        @Part file: MultipartBody.Part,
+        @Part("columnMapping") columnMapping: okhttp3.RequestBody?
     ): Response<CaseImportResultDto>
 
     /**

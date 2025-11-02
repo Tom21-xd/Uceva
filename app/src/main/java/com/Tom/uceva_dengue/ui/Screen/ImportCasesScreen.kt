@@ -42,9 +42,13 @@ fun ImportCasesScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val importResult by viewModel.importResult.collectAsState()
+    val showMappingScreen by viewModel.showMappingScreen.collectAsState()
+    val detectedColumns by viewModel.detectedColumns.collectAsState()
+    val columnMapping by viewModel.columnMapping.collectAsState()
 
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
     var selectedFileName by remember { mutableStateOf<String?>(null) }
+    var selectedFile by remember { mutableStateOf<File?>(null) }
     var fileType by remember { mutableStateOf<String?>(null) }
 
     // Launcher para seleccionar archivo
@@ -55,6 +59,21 @@ fun ImportCasesScreen(
             selectedFileUri = it
             selectedFileName = getFileName(context, it)
             fileType = context.contentResolver.getType(it)
+
+            // Copiar archivo y extraer columnas automáticamente
+            val file = copyUriToFile(context, it, selectedFileName ?: "temp_file")
+            selectedFile = file
+            file?.let { f ->
+                when {
+                    selectedFileName?.endsWith(".csv", ignoreCase = true) == true -> {
+                        viewModel.extractCsvColumns(f)
+                    }
+                    selectedFileName?.endsWith(".xls", ignoreCase = true) == true ||
+                    selectedFileName?.endsWith(".xlsx", ignoreCase = true) == true -> {
+                        viewModel.extractExcelColumns(f)
+                    }
+                }
+            }
         }
     }
 
@@ -213,6 +232,17 @@ fun ImportCasesScreen(
                 }
             }
 
+            // Pantalla de Mapeo de Columnas
+            if (showMappingScreen && detectedColumns.isNotEmpty()) {
+                ColumnMappingSection(
+                    detectedColumns = detectedColumns,
+                    columnMapping = columnMapping,
+                    onMappingUpdate = { field, column -> viewModel.updateColumnMapping(field, column) },
+                    onClearMapping = { field -> viewModel.clearColumnMapping(field) },
+                    dimensions = dimensions
+                )
+            }
+
             // Botón importar
             Button(
                 onClick = {
@@ -361,6 +391,128 @@ fun ResultRow(label: String, value: String, color: Color = Color.DarkGray) {
             fontWeight = FontWeight.Bold,
             color = color
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ColumnMappingSection(
+    detectedColumns: List<String>,
+    columnMapping: Map<String, String>,
+    onMappingUpdate: (String, String) -> Unit,
+    onClearMapping: (String) -> Unit,
+    dimensions: com.Tom.uceva_dengue.utils.AppDimensions
+) {
+    // Campos del sistema que necesitan mapeo
+    val systemFields = listOf(
+        "año" to "Año del Caso",
+        "edad" to "Edad del Paciente",
+        "tipoDengue" to "Tipo de Dengue",
+        "sexo" to "Sexo/Género",
+        "barrio" to "Barrio o Vereda",
+        "latitud" to "Latitud",
+        "longitud" to "Longitud",
+        "descripcion" to "Descripción (Opcional)"
+    )
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+        shape = RoundedCornerShape(dimensions.paddingMedium)
+    ) {
+        Column(modifier = Modifier.padding(dimensions.paddingMedium)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.CompareArrows,
+                    contentDescription = null,
+                    tint = Color(0xFF1976D2),
+                    modifier = Modifier.size(dimensions.iconMedium)
+                )
+                Spacer(modifier = Modifier.width(dimensions.paddingSmall))
+                Text(
+                    "Mapeo de Columnas",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1976D2)
+                )
+            }
+            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+            Text(
+                "Relaciona los campos del sistema con las columnas de tu archivo.",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.DarkGray
+            )
+            Spacer(modifier = Modifier.height(dimensions.paddingMedium))
+
+            // Lista de mapeos
+            systemFields.forEach { (fieldKey, fieldLabel) ->
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        fieldLabel,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.DarkGray
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    var expanded by remember { mutableStateOf(false) }
+                    val selectedColumn = columnMapping[fieldKey]
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(
+                            onClick = { expanded = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = selectedColumn ?: "Seleccionar columna...",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    maxLines = 1,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                            }
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            detectedColumns.forEach { column ->
+                                DropdownMenuItem(
+                                    text = { Text(column) },
+                                    onClick = {
+                                        onMappingUpdate(fieldKey, column)
+                                        expanded = false
+                                    }
+                                )
+                            }
+                            if (selectedColumn != null) {
+                                HorizontalDivider()
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            "Limpiar",
+                                            color = DangerRed,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    },
+                                    onClick = {
+                                        onClearMapping(fieldKey)
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(dimensions.paddingMedium))
+            }
+        }
     }
 }
 
