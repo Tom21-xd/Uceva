@@ -316,7 +316,7 @@ fun ImportCasesScreen(
                             ResultRow("Casos fallidos:", result.failedImports.toString(), DangerRed)
                         }
 
-                        if (result.errors.isNotEmpty()) {
+                        if (!result.errors.isNullOrEmpty()) {
                             Spacer(modifier = Modifier.height(dimensions.paddingMedium))
                             Text(
                                 "Errores:",
@@ -325,16 +325,16 @@ fun ImportCasesScreen(
                                 color = DangerRed
                             )
                             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-                            result.errors.take(5).forEach { error ->
+                            result.errors?.take(5)?.forEach { error ->
                                 Text(
                                     "• Fila ${error.row}: ${error.error}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color.DarkGray
                                 )
                             }
-                            if (result.errors.size > 5) {
+                            if ((result.errors?.size ?: 0) > 5) {
                                 Text(
-                                    "... y ${result.errors.size - 5} errores más",
+                                    "... y ${(result.errors?.size ?: 0) - 5} errores más",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color.Gray
                                 )
@@ -407,12 +407,10 @@ fun ColumnMappingSection(
     val systemFields = listOf(
         "año" to "Año del Caso",
         "edad" to "Edad del Paciente",
-        "tipoDengue" to "Tipo de Dengue",
-        "sexo" to "Sexo/Género",
+        "clasificacion" to "Clasificación/Tipo de Dengue",
         "barrio" to "Barrio o Vereda",
         "latitud" to "Latitud",
-        "longitud" to "Longitud",
-        "descripcion" to "Descripción (Opcional)"
+        "longitud" to "Longitud"
     )
 
     Card(

@@ -1,6 +1,6 @@
 package com.Tom.uceva_dengue.Data.Service
 
-import com.Tom.uceva_dengue.Data.Model.CaseImportResultDto
+import com.Tom.uceva_dengue.Data.Model.CaseImportResponse
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -19,7 +19,7 @@ interface CaseImportService {
     suspend fun importCsv(
         @Part file: MultipartBody.Part,
         @Part("columnMapping") columnMapping: okhttp3.RequestBody?
-    ): Response<CaseImportResultDto>
+    ): Response<CaseImportResponse>
 
     /**
      * Importa casos desde un archivo Excel
@@ -30,7 +30,7 @@ interface CaseImportService {
     suspend fun importExcel(
         @Part file: MultipartBody.Part,
         @Part("columnMapping") columnMapping: okhttp3.RequestBody?
-    ): Response<CaseImportResultDto>
+    ): Response<CaseImportResponse>
 
     /**
      * Descarga la plantilla CSV para importar casos

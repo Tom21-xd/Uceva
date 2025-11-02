@@ -39,7 +39,7 @@ sealed  class Items_Menu_lateral (
     )
     object Item_Menu_Lateral4: Items_Menu_lateral(
         Icons.Default.Home,
-        "Home",
+        "Inicio",
         Rout.HomeScreen.name
     )
     object Item_Menu_Lateral5: Items_Menu_lateral(

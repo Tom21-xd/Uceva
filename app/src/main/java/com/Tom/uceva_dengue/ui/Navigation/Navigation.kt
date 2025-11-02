@@ -215,7 +215,31 @@ fun NavigationCon(context: Context) {
             NavHost(
                 navController = navController,
                 startDestination = startDestination,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                enterTransition = {
+                    slideInHorizontally(
+                        initialOffsetX = { fullWidth -> fullWidth },
+                        animationSpec = tween(300)
+                    ) + fadeIn(animationSpec = tween(300))
+                },
+                exitTransition = {
+                    slideOutHorizontally(
+                        targetOffsetX = { fullWidth -> -fullWidth / 4 },
+                        animationSpec = tween(300)
+                    ) + fadeOut(animationSpec = tween(300))
+                },
+                popEnterTransition = {
+                    slideInHorizontally(
+                        initialOffsetX = { fullWidth -> -fullWidth / 4 },
+                        animationSpec = tween(300)
+                    ) + fadeIn(animationSpec = tween(300))
+                },
+                popExitTransition = {
+                    slideOutHorizontally(
+                        targetOffsetX = { fullWidth -> fullWidth },
+                        animationSpec = tween(300)
+                    ) + fadeOut(animationSpec = tween(300))
+                }
             ) {
                 composable(Rout.LoginScreen.name) {
                     LoginScreenModern(viewModel = viewModel<AuthViewModel>(), navController = navController)
@@ -275,33 +299,7 @@ fun NavigationCon(context: Context) {
                         role = role
                     )
                 }
-                composable(
-                    route = Rout.CreateHospitalScreen.name,
-                    enterTransition = {
-                        slideInHorizontally(
-                            initialOffsetX = { fullWidth -> fullWidth },
-                            animationSpec = tween(300)
-                        ) + fadeIn(animationSpec = tween(300))
-                    },
-                    exitTransition = {
-                        slideOutHorizontally(
-                            targetOffsetX = { fullWidth -> -fullWidth / 4 },
-                            animationSpec = tween(300)
-                        ) + fadeOut(animationSpec = tween(300))
-                    },
-                    popEnterTransition = {
-                        slideInHorizontally(
-                            initialOffsetX = { fullWidth -> -fullWidth / 4 },
-                            animationSpec = tween(300)
-                        ) + fadeIn(animationSpec = tween(300))
-                    },
-                    popExitTransition = {
-                        slideOutHorizontally(
-                            targetOffsetX = { fullWidth -> fullWidth },
-                            animationSpec = tween(300)
-                        ) + fadeOut(animationSpec = tween(300))
-                    }
-                ) {
+                composable(Rout.CreateHospitalScreen.name) {
                     CreateHospitalScreen(
                         navController = navController,
                         viewModel = viewModel()

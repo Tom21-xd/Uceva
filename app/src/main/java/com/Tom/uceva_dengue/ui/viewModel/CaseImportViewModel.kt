@@ -74,8 +74,9 @@ class CaseImportViewModel : ViewModel() {
                 val response = caseImportService.importCsv(body, mappingJson)
 
                 if (response.isSuccessful && response.body() != null) {
-                    _importResult.value = response.body()
-                    Log.d("CaseImport", "Importación exitosa: ${response.body()?.successfulImports} casos")
+                    val importResponse = response.body()!!
+                    _importResult.value = importResponse.data
+                    Log.d("CaseImport", "Importación exitosa: ${importResponse.data.successfulImports} casos")
                 } else {
                     val errorBody = response.errorBody()?.string()
                     _errorMessage.value = "Error al importar: ${response.message()}"
@@ -118,8 +119,9 @@ class CaseImportViewModel : ViewModel() {
                 val response = caseImportService.importExcel(body, mappingJson)
 
                 if (response.isSuccessful && response.body() != null) {
-                    _importResult.value = response.body()
-                    Log.d("CaseImport", "Importación exitosa: ${response.body()?.successfulImports} casos")
+                    val importResponse = response.body()!!
+                    _importResult.value = importResponse.data
+                    Log.d("CaseImport", "Importación exitosa: ${importResponse.data.successfulImports} casos")
                 } else {
                     val errorBody = response.errorBody()?.string()
                     _errorMessage.value = "Error al importar: ${response.message()}"
