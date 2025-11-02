@@ -219,26 +219,26 @@ fun NavigationCon(context: Context) {
                 enterTransition = {
                     slideInHorizontally(
                         initialOffsetX = { fullWidth -> fullWidth },
-                        animationSpec = tween(300)
-                    ) + fadeIn(animationSpec = tween(300))
+                        animationSpec = tween(250)
+                    ) + fadeIn(animationSpec = tween(200))
                 },
                 exitTransition = {
                     slideOutHorizontally(
                         targetOffsetX = { fullWidth -> -fullWidth / 4 },
-                        animationSpec = tween(300)
-                    ) + fadeOut(animationSpec = tween(300))
+                        animationSpec = tween(250)
+                    ) + fadeOut(animationSpec = tween(200))
                 },
                 popEnterTransition = {
                     slideInHorizontally(
                         initialOffsetX = { fullWidth -> -fullWidth / 4 },
-                        animationSpec = tween(300)
-                    ) + fadeIn(animationSpec = tween(300))
+                        animationSpec = tween(250)
+                    ) + fadeIn(animationSpec = tween(200))
                 },
                 popExitTransition = {
                     slideOutHorizontally(
                         targetOffsetX = { fullWidth -> fullWidth },
-                        animationSpec = tween(300)
-                    ) + fadeOut(animationSpec = tween(300))
+                        animationSpec = tween(250)
+                    ) + fadeOut(animationSpec = tween(200))
                 }
             ) {
                 composable(Rout.LoginScreen.name) {

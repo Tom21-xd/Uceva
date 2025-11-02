@@ -434,7 +434,7 @@ class CreateCaseViewModel : ViewModel() {
             _address.value = ""
         }
     }
-
+    
     fun setPatientFirstName(firstName: String) {
         _patientFirstName.value = firstName
     }

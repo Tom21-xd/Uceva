@@ -4,13 +4,8 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -139,57 +134,86 @@ fun MapScreenModern(viewModel: MapViewModel) {
     val selectedYear by viewModel.selectedYear.collectAsState()
     val availableYears by viewModel.availableYears.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val viewModelSearchLocation by viewModel.searchLocation.collectAsState()
+    val epidemicStats by viewModel.epidemicStats.collectAsState()
 
     var showFiltersPanel by remember { mutableStateOf(false) }
+    var showDashboardPanel by remember { mutableStateOf(false) }
 
-    // Usar casos filtrados para el heatmap
-    val heatmapPoints = remember(filteredCases) {
-        filteredCases.mapNotNull {
-            it.DIRECCION_CASOREPORTADO?.let { address ->
-                parseLatLngFromString(address)
-            }
-        }
-    }
+    // Usar casos filtrados para el heatmap - Optimizado con derivedStateOf
+    val heatmapPoints by remember {
+        derivedStateOf {
+            filteredCases.mapNotNull { case ->
+                // Priorizar campos LATITUD y LONGITUD separados (nuevo formato)
+                val lat = case.LATITUD
+                val lng = case.LONGITUD
 
-    // Contar casos por hospital (basado en proximidad de coordenadas) - usar casos filtrados
-    val casesPerHospital = remember(filteredCases, hospitals) {
-        val casesMap = mutableMapOf<Int, Int>()
-        hospitals.forEach { hospital ->
-            val hospitalLat = hospital.LATITUD_HOSPITAL?.toDoubleOrNull()
-            val hospitalLng = hospital.LONGITUD_HOSPITAL?.toDoubleOrNull()
-
-            if (hospitalLat != null && hospitalLng != null) {
-                val casosEnHospital = filteredCases.count { caso ->
-                    val casoLatLng = caso.DIRECCION_CASOREPORTADO?.let { parseLatLngFromString(it) }
-                    if (casoLatLng != null) {
-                        // Calcular distancia aproximada (0.01 grados ≈ 1 km)
-                        val distance = Math.sqrt(
-                            Math.pow(hospitalLat - casoLatLng.latitude, 2.0) +
-                            Math.pow(hospitalLng - casoLatLng.longitude, 2.0)
-                        )
-                        distance < 0.05 // Casos dentro de ~5km del hospital
-                    } else false
+                if (lat != null && lng != null) {
+                    LatLng(lat, lng)
+                } else {
+                    // Fallback: parsear DIRECCION_CASOREPORTADO para compatibilidad con datos antiguos
+                    case.DIRECCION_CASOREPORTADO?.let { address ->
+                        parseLatLngFromString(address)
+                    }
                 }
-                casesMap[hospital.ID_HOSPITAL] = casosEnHospital
             }
         }
-        casesMap
     }
 
-    val hospitalMarkers = remember(hospitals, casesPerHospital) {
-        hospitals.mapNotNull { hospital ->
-            val latitud = hospital.LATITUD_HOSPITAL?.toDoubleOrNull()
-            val longitud = hospital.LONGITUD_HOSPITAL?.toDoubleOrNull()
+    // Contar casos por hospital - Optimizado con derivedStateOf para evitar recalcular en cada recomposición
+    val casesPerHospital by remember {
+        derivedStateOf {
+            val casesMap = mutableMapOf<Int, Int>()
+            hospitals.forEach { hospital ->
+                val hospitalLat = hospital.LATITUD_HOSPITAL?.toDoubleOrNull()
+                val hospitalLng = hospital.LONGITUD_HOSPITAL?.toDoubleOrNull()
 
-            if (latitud != null && longitud != null) {
-                HospitalMarkerItem(
-                    latLng = LatLng(latitud, longitud),
-                    nombre = hospital.NOMBRE_HOSPITAL ?: "Hospital",
-                    direccion = hospital.DIRECCION_HOSPITAL ?: "",
-                    hospitalId = hospital.ID_HOSPITAL,
-                    casosCount = casesPerHospital[hospital.ID_HOSPITAL] ?: 0
-                )
-            } else null
+                if (hospitalLat != null && hospitalLng != null) {
+                    val casosEnHospital = filteredCases.count { caso ->
+                        // Priorizar campos LATITUD y LONGITUD separados
+                        val casoLat = caso.LATITUD
+                        val casoLng = caso.LONGITUD
+
+                        val casoLatLng = if (casoLat != null && casoLng != null) {
+                            LatLng(casoLat, casoLng)
+                        } else {
+                            // Fallback: parsear DIRECCION_CASOREPORTADO
+                            caso.DIRECCION_CASOREPORTADO?.let { parseLatLngFromString(it) }
+                        }
+
+                        if (casoLatLng != null) {
+                            // Calcular distancia aproximada (0.01 grados ≈ 1 km)
+                            val distance = Math.sqrt(
+                                Math.pow(hospitalLat - casoLatLng.latitude, 2.0) +
+                                Math.pow(hospitalLng - casoLatLng.longitude, 2.0)
+                            )
+                            distance < 0.05 // Casos dentro de ~5km del hospital
+                        } else false
+                    }
+                    casesMap[hospital.ID_HOSPITAL] = casosEnHospital
+                }
+            }
+            casesMap
+        }
+    }
+
+    // Optimizar marcadores de hospitales con derivedStateOf
+    val hospitalMarkers by remember {
+        derivedStateOf {
+            hospitals.mapNotNull { hospital ->
+                val latitud = hospital.LATITUD_HOSPITAL?.toDoubleOrNull()
+                val longitud = hospital.LONGITUD_HOSPITAL?.toDoubleOrNull()
+
+                if (latitud != null && longitud != null) {
+                    HospitalMarkerItem(
+                        latLng = LatLng(latitud, longitud),
+                        nombre = hospital.NOMBRE_HOSPITAL ?: "Hospital",
+                        direccion = hospital.DIRECCION_HOSPITAL ?: "",
+                        hospitalId = hospital.ID_HOSPITAL,
+                        casosCount = casesPerHospital[hospital.ID_HOSPITAL] ?: 0
+                    )
+                } else null
+            }
         }
     }
 
@@ -206,13 +230,16 @@ fun MapScreenModern(viewModel: MapViewModel) {
         }
     }
 
-    val heatmapProvider = remember(heatmapPoints) {
-        if (heatmapPoints.isNotEmpty()) {
-            HeatmapTileProvider.Builder()
-                .data(heatmapPoints)
-                .build()
-        } else {
-            null
+    // Optimizar heatmap provider con derivedStateOf
+    val heatmapProvider by remember {
+        derivedStateOf {
+            if (heatmapPoints.isNotEmpty()) {
+                HeatmapTileProvider.Builder()
+                    .data(heatmapPoints)
+                    .build()
+            } else {
+                null
+            }
         }
     }
 
@@ -301,10 +328,10 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 )
             ) {
                 // Heatmap
-                if (heatmapProvider != null) {
+                heatmapProvider?.let { provider ->
                     TileOverlay(
                         state = tileOverlayState,
-                        tileProvider = heatmapProvider
+                        tileProvider = provider
                     )
                 }
 
@@ -323,7 +350,45 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     Marker(
                         state = MarkerState(position = it),
                         title = "Ubicación buscada",
-                        snippet = searchText
+                        snippet = searchText,
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                    )
+                }
+
+                // Círculo de radio alrededor de la ubicación activa (búsqueda o usuario)
+                val activeLocation = viewModelSearchLocation ?: userLocation
+                activeLocation?.let { center ->
+                    // Círculo con animación sutil de opacidad
+                    val animatedAlpha by rememberInfiniteTransition(label = "radiusAlpha").animateFloat(
+                        initialValue = 0.08f,
+                        targetValue = 0.12f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(3000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "radiusAlpha"
+                    )
+
+                    Circle(
+                        center = center,
+                        radius = (filterRadiusKm * 1000).toDouble(), // Convertir km a metros
+                        strokeColor = if (viewModelSearchLocation != null) Color(0xFFFF6B35) else WarningOrange,
+                        fillColor = if (viewModelSearchLocation != null)
+                            Color(0xFFFF6B35).copy(alpha = animatedAlpha)
+                        else
+                            WarningOrange.copy(alpha = animatedAlpha),
+                        strokeWidth = 2.5f
+                    )
+
+                    // Marcador central de la ubicación activa
+                    Marker(
+                        state = MarkerState(position = center),
+                        title = if (viewModelSearchLocation != null) "🔍 Punto de búsqueda" else "📍 Mi ubicación",
+                        snippet = "${filteredCases.size} casos en ${filterRadiusKm.toInt()}km",
+                        icon = BitmapDescriptorFactory.defaultMarker(
+                            if (viewModelSearchLocation != null) BitmapDescriptorFactory.HUE_ORANGE
+                            else BitmapDescriptorFactory.HUE_CYAN
+                        )
                     )
                 }
 
@@ -385,6 +450,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                                             val location = geocodeAddress(context, searchText)
                                             if (location != null) {
                                                 searchLocation = location
+                                                viewModel.updateSearchLocation(location) // Actualizar ViewModel para filtro de radio
                                                 cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 16f)
                                             }
                                         }
@@ -416,6 +482,22 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 .padding(dimensions.paddingMedium),
             verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
         ) {
+            // Botón de dashboard epidemiológico
+            FloatingActionButton(
+                onClick = { showDashboardPanel = !showDashboardPanel },
+                containerColor = if (showDashboardPanel) Color(0xFF8E44AD) else Color.White,
+                contentColor = if (showDashboardPanel) Color.White else Color(0xFF8E44AD),
+                shape = CircleShape,
+                modifier = Modifier
+                    .size(dimensions.iconExtraLarge)
+                    .shadow(8.dp, CircleShape)
+            ) {
+                Icon(
+                    Icons.Default.BarChart,
+                    contentDescription = "Dashboard Epidemiológico"
+                )
+            }
+
             // Botón de filtros
             FloatingActionButton(
                 onClick = { showFiltersPanel = !showFiltersPanel },
@@ -479,6 +561,43 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     Icon(Icons.Default.MyLocation, contentDescription = "Mi ubicación")
                 }
             }
+
+            // Botón de zoom a todos los casos
+            if (heatmapPoints.isNotEmpty()) {
+                FloatingActionButton(
+                    onClick = {
+                        // Calcular bounds de todos los casos visibles
+                        val bounds = com.google.android.gms.maps.model.LatLngBounds.builder()
+                        heatmapPoints.forEach { point ->
+                            bounds.include(point)
+                        }
+                        try {
+                            val latLngBounds = bounds.build()
+                            cameraPositionState.position = CameraPosition.fromLatLngZoom(
+                                latLngBounds.center,
+                                12f
+                            )
+                        } catch (e: Exception) {
+                            // Si solo hay un punto, hacer zoom simple
+                            heatmapPoints.firstOrNull()?.let {
+                                cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 14f)
+                            }
+                        }
+                    },
+                    containerColor = SuccessGreen.copy(alpha = 0.9f),
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .size(dimensions.iconLarge)
+                        .shadow(6.dp, CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.ZoomOutMap,
+                        contentDescription = "Ver todos los casos",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
 
         // Info compacta en la parte inferior - scrollable horizontalmente
@@ -499,25 +618,35 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
             ) {
                 item {
+                    // Contador animado de casos
+                    val animatedCount by animateIntAsState(
+                        targetValue = filteredCases.size,
+                        animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+                        label = "casesCount"
+                    )
+
                     Card(
                         shape = RoundedCornerShape(dimensions.paddingSmall),
                         colors = CardDefaults.cardColors(
                             containerColor = PrimaryBlue.copy(alpha = 0.15f)
-                        )
+                        ),
+                        modifier = Modifier.clickable {
+                            showDashboardPanel = !showDashboardPanel
+                        }
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = dimensions.paddingSmall, vertical = dimensions.paddingSmall),
+                            modifier = Modifier.padding(horizontal = dimensions.paddingMedium, vertical = dimensions.paddingSmall),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Icon(
-                                Icons.Default.Circle,
+                                Icons.Default.Assessment,
                                 contentDescription = "Casos",
-                                modifier = Modifier.size(dimensions.paddingSmall),
+                                modifier = Modifier.size(16.dp),
                                 tint = PrimaryBlue
                             )
                             Text(
-                                "${heatmapPoints.size}",
+                                "$animatedCount casos",
                                 fontSize = dimensions.textSizeSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryBlue
@@ -554,7 +683,58 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     }
                 }
 
-                if (userLocation != null) {
+                // Indicador de ubicación activa con radio
+                if (viewModelSearchLocation != null) {
+                    // Cuando hay una búsqueda activa, mostrar chip destacado para volver
+                    item {
+                        Card(
+                            shape = RoundedCornerShape(dimensions.paddingSmall),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFFF6B35).copy(alpha = 0.2f)
+                            ),
+                            modifier = Modifier.clickable {
+                                viewModel.clearSearchLocation()
+                                searchLocation = null
+                                searchText = ""
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = dimensions.paddingMedium, vertical = dimensions.paddingSmall),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.TravelExplore,
+                                    contentDescription = "Búsqueda",
+                                    modifier = Modifier.size(18.dp),
+                                    tint = Color(0xFFFF6B35)
+                                )
+                                Text(
+                                    searchText.take(15).ifEmpty { "Búsqueda" },
+                                    fontSize = dimensions.textSizeSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFF6B35),
+                                    maxLines = 1
+                                )
+                                Surface(
+                                    shape = CircleShape,
+                                    color = Color(0xFFFF6B35),
+                                    modifier = Modifier.size(20.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = "Cerrar",
+                                        tint = Color.White,
+                                        modifier = Modifier
+                                            .padding(4.dp)
+                                            .size(12.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else if (userLocation != null) {
+                    // Cuando solo hay ubicación del usuario, mostrar chip simple
                     item {
                         Card(
                             shape = RoundedCornerShape(dimensions.paddingSmall),
@@ -563,14 +743,14 @@ fun MapScreenModern(viewModel: MapViewModel) {
                             )
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = dimensions.paddingSmall, vertical = dimensions.paddingSmall),
+                                modifier = Modifier.padding(horizontal = dimensions.paddingMedium, vertical = dimensions.paddingSmall),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.LocationOn,
-                                    contentDescription = "Radio",
-                                    modifier = Modifier.size(dimensions.paddingSmall),
+                                    Icons.Default.MyLocation,
+                                    contentDescription = "Mi ubicación",
+                                    modifier = Modifier.size(16.dp),
                                     tint = WarningOrange
                                 )
                                 Text(
@@ -583,7 +763,57 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         }
                     }
                 }
+
+                // Botón de acceso rápido para año actual
+                item {
+                    Card(
+                        shape = RoundedCornerShape(dimensions.paddingSmall),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF00BCD4).copy(alpha = 0.15f)
+                        ),
+                        modifier = Modifier.clickable {
+                            viewModel.updateSelectedYear(2025)
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = dimensions.paddingMedium, vertical = dimensions.paddingSmall),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.CalendarToday,
+                                contentDescription = "Año actual",
+                                modifier = Modifier.size(14.dp),
+                                tint = Color(0xFF00BCD4)
+                            )
+                            Text(
+                                "2025",
+                                fontSize = dimensions.textSizeSmall,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF00BCD4)
+                            )
+                        }
+                    }
+                }
             }
+        }
+
+        // Panel de Dashboard Epidemiológico
+        AnimatedVisibility(
+            visible = showDashboardPanel,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn() + expandVertically(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut() + shrinkVertically(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            EpidemicDashboardPanel(
+                stats = epidemicStats,
+                onClose = { showDashboardPanel = false },
+                isDarkTheme = isDarkTheme,
+                dimensions = dimensions,
+                cardBackgroundColor = cardBackgroundColor,
+                textColor = textColor,
+                textSecondaryColor = textSecondaryColor
+            )
         }
 
         // Panel de filtros desplegable
@@ -726,8 +956,11 @@ fun MapScreenModern(viewModel: MapViewModel) {
                                 )
                             }
 
-                            // Chips de tipos de dengue
-                            items(dengueTypes) { dengueType ->
+                            // Chips de tipos de dengue - Optimizado con key
+                            items(
+                                items = dengueTypes,
+                                key = { it.ID_TIPODENGUE }
+                            ) { dengueType ->
                                 FilterChip(
                                     selected = selectedDengueTypeId == dengueType.ID_TIPODENGUE,
                                     onClick = { viewModel.updateSelectedDengueType(dengueType.ID_TIPODENGUE) },
@@ -849,7 +1082,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                         }
                     }
 
-                    // Filtro de año
+                    // Filtro de año con Dropdown
                     Column(
                         verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
                     ) {
@@ -860,71 +1093,114 @@ fun MapScreenModern(viewModel: MapViewModel) {
                             color = textColor
                         )
 
-                        // Chips en LazyRow horizontal scrollable
-                        LazyRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+                        var yearDropdownExpanded by remember { mutableStateOf(false) }
+
+                        // Botón del selector de año
+                        OutlinedCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { yearDropdownExpanded = true },
+                            colors = CardDefaults.outlinedCardColors(
+                                containerColor = if (selectedYear != null) Color(0xFF00BCD4).copy(alpha = 0.1f) else Color.Transparent
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (selectedYear != null) Color(0xFF00BCD4) else textSecondaryColor.copy(alpha = 0.3f)
+                            )
                         ) {
-                            // Chip "Todos los años" al inicio
-                            item {
-                                FilterChip(
-                                    selected = selectedYear == null,
-                                    onClick = { viewModel.updateSelectedYear(null) },
-                                    label = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                        ) {
-                                            if (selectedYear == null) {
-                                                Icon(
-                                                    Icons.Default.Check,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(dimensions.iconSmall)
-                                                )
-                                            }
-                                            Text(
-                                                "Todos",
-                                                fontSize = dimensions.textSizeSmall,
-                                                fontWeight = FontWeight.Medium
-                                            )
-                                        }
-                                    },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = PrimaryBlue,
-                                        selectedLabelColor = Color.White
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(dimensions.paddingMedium),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.DateRange,
+                                        contentDescription = null,
+                                        tint = if (selectedYear != null) Color(0xFF00BCD4) else textSecondaryColor,
+                                        modifier = Modifier.size(dimensions.iconSmall)
                                     )
+                                    Text(
+                                        text = selectedYear?.toString() ?: "Todos los años",
+                                        fontSize = dimensions.textSizeMedium,
+                                        fontWeight = if (selectedYear != null) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (selectedYear != null) Color(0xFF00BCD4) else textColor
+                                    )
+                                }
+                                Icon(
+                                    if (yearDropdownExpanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    tint = textSecondaryColor
                                 )
                             }
+                        }
 
-                            // Chips de años disponibles
-                            items(availableYears) { year ->
-                                FilterChip(
-                                    selected = selectedYear == year,
-                                    onClick = { viewModel.updateSelectedYear(year) },
-                                    label = {
+                        // DropdownMenu para años
+                        DropdownMenu(
+                            expanded = yearDropdownExpanded,
+                            onDismissRequest = { yearDropdownExpanded = false },
+                            modifier = Modifier.fillMaxWidth(0.9f)
+                        ) {
+                            // Opción "Todos los años"
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        if (selectedYear == null) {
+                                            Icon(
+                                                Icons.Default.Check,
+                                                contentDescription = null,
+                                                tint = PrimaryBlue,
+                                                modifier = Modifier.size(dimensions.iconSmall)
+                                            )
+                                        }
+                                        Text(
+                                            "Todos los años",
+                                            fontWeight = if (selectedYear == null) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    viewModel.updateSelectedYear(null)
+                                    yearDropdownExpanded = false
+                                }
+                            )
+
+                            Divider()
+
+                            // Años disponibles
+                            availableYears.forEach { year ->
+                                DropdownMenuItem(
+                                    text = {
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             if (selectedYear == year) {
                                                 Icon(
                                                     Icons.Default.Check,
                                                     contentDescription = null,
+                                                    tint = Color(0xFF00BCD4),
                                                     modifier = Modifier.size(dimensions.iconSmall)
                                                 )
                                             }
                                             Text(
                                                 year.toString(),
-                                                fontSize = dimensions.textSizeSmall,
-                                                fontWeight = FontWeight.Medium,
-                                                maxLines = 1
+                                                fontWeight = if (selectedYear == year) FontWeight.Bold else FontWeight.Normal
                                             )
                                         }
                                     },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = Color(0xFF00BCD4), // Cyan
-                                        selectedLabelColor = Color.White
-                                    )
+                                    onClick = {
+                                        viewModel.updateSelectedYear(year)
+                                        yearDropdownExpanded = false
+                                    }
                                 )
                             }
                         }
@@ -956,6 +1232,391 @@ private fun getAgeGroupColor(groupId: Int): Color {
         4 -> Color(0xFFFF9800)  // 50-64 años - Naranja
         5 -> Color(0xFFF44336)  // 65+ años - Rojo
         else -> Color(0xFF5E81F4) // Default - Azul
+    }
+}
+
+@Composable
+fun EpidemicDashboardPanel(
+    stats: MapViewModel.EpidemicStats,
+    onClose: () -> Unit,
+    isDarkTheme: Boolean,
+    dimensions: com.Tom.uceva_dengue.utils.AppDimensions,
+    cardBackgroundColor: Color,
+    textColor: Color,
+    textSecondaryColor: Color
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.75f)
+            .padding(dimensions.paddingSmall)
+            .shadow(16.dp, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(dimensions.paddingLarge),
+            verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        "📊 Dashboard Epidemiológico",
+                        fontSize = dimensions.textSizeExtraLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF8E44AD)
+                    )
+                    Text(
+                        "Actualizado: ${stats.lastUpdate}",
+                        fontSize = dimensions.textSizeSmall,
+                        color = textSecondaryColor
+                    )
+                }
+                IconButton(onClick = onClose) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Cerrar",
+                        tint = textSecondaryColor
+                    )
+                }
+            }
+
+            HorizontalDivider(color = textSecondaryColor.copy(alpha = 0.2f))
+
+            // Indicador de nivel de riesgo
+            val riskColor = when (stats.riskLevel) {
+                "CRÍTICO" -> Color(0xFFE74C3C)
+                "ALTO" -> Color(0xFFE67E22)
+                "MODERADO" -> WarningOrange
+                else -> SuccessGreen
+            }
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = riskColor.copy(alpha = 0.15f)),
+                shape = RoundedCornerShape(dimensions.paddingMedium)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(dimensions.paddingMedium),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+                    ) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = riskColor,
+                            modifier = Modifier.size(dimensions.iconLarge)
+                        )
+                        Column {
+                            Text(
+                                "Nivel de Riesgo",
+                                fontSize = dimensions.textSizeSmall,
+                                color = textSecondaryColor
+                            )
+                            Text(
+                                stats.riskLevel,
+                                fontSize = dimensions.textSizeLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = riskColor
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Tarjetas de resumen
+            Text(
+                "Resumen General",
+                fontSize = dimensions.textSizeLarge,
+                fontWeight = FontWeight.Bold,
+                color = textColor
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+            ) {
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Assessment,
+                    label = "Total Casos",
+                    value = stats.totalCases.toString(),
+                    color = PrimaryBlue,
+                    dimensions = dimensions,
+                    textSecondaryColor = textSecondaryColor
+                )
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.LocalHospital,
+                    label = "Activos",
+                    value = stats.activeCases.toString(),
+                    color = DangerRed,
+                    dimensions = dimensions,
+                    textSecondaryColor = textSecondaryColor
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+            ) {
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.CheckCircle,
+                    label = "Recuperados",
+                    value = stats.recoveredCases.toString(),
+                    color = SuccessGreen,
+                    dimensions = dimensions,
+                    textSecondaryColor = textSecondaryColor
+                )
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Dangerous,
+                    label = "Fallecidos",
+                    value = stats.deceasedCases.toString(),
+                    color = Color(0xFF5D4157),
+                    dimensions = dimensions,
+                    textSecondaryColor = textSecondaryColor
+                )
+            }
+
+            // Distribución por tipo de dengue
+            if (stats.casesByType.isNotEmpty()) {
+                HorizontalDivider(color = textSecondaryColor.copy(alpha = 0.2f))
+
+                Text(
+                    "Casos por Tipo de Dengue",
+                    fontSize = dimensions.textSizeLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor
+                )
+
+                stats.casesByType.forEach { (type, count) ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .background(
+                                        when {
+                                            type.contains("Clásico", ignoreCase = true) -> Color(0xFFFF6B6B)
+                                            type.contains("Hemorrágico", ignoreCase = true) -> Color(0xFFFF8C42)
+                                            type.contains("Grave", ignoreCase = true) -> Color(0xFFE53935)
+                                            else -> PrimaryBlue
+                                        },
+                                        CircleShape
+                                    )
+                            )
+                            Text(
+                                type,
+                                fontSize = dimensions.textSizeMedium,
+                                color = textColor
+                            )
+                        }
+                        Text(
+                            count.toString(),
+                            fontSize = dimensions.textSizeMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = textColor
+                        )
+                    }
+                }
+            }
+
+            // Distribución por grupo etario
+            if (stats.casesByAgeGroup.isNotEmpty()) {
+                HorizontalDivider(color = textSecondaryColor.copy(alpha = 0.2f))
+
+                Text(
+                    "Casos por Grupo de Edad",
+                    fontSize = dimensions.textSizeLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor
+                )
+
+                stats.casesByAgeGroup.toList().sortedBy {
+                    when {
+                        it.first.startsWith("0-4") -> 1
+                        it.first.startsWith("5-14") -> 2
+                        it.first.startsWith("15-49") -> 3
+                        it.first.startsWith("50-64") -> 4
+                        else -> 5
+                    }
+                }.forEach { (ageGroup, count) ->
+                    val percentage = (count.toFloat() / stats.totalCases * 100).toInt()
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                ageGroup,
+                                fontSize = dimensions.textSizeMedium,
+                                color = textColor
+                            )
+                            Text(
+                                "$count ($percentage%)",
+                                fontSize = dimensions.textSizeMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor
+                            )
+                        }
+
+                        // Barra de progreso
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .background(textSecondaryColor.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(percentage / 100f)
+                                    .fillMaxHeight()
+                                    .background(
+                                        when {
+                                            ageGroup.startsWith("0-4") -> Color(0xFF9C27B0)
+                                            ageGroup.startsWith("5-14") -> Color(0xFF2196F3)
+                                            ageGroup.startsWith("15-49") -> Color(0xFF4CAF50)
+                                            ageGroup.startsWith("50-64") -> Color(0xFFFF9800)
+                                            else -> Color(0xFFF44336)
+                                        },
+                                        RoundedCornerShape(4.dp)
+                                    )
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Áreas más afectadas
+            if (stats.mostAffectedAreas.isNotEmpty()) {
+                HorizontalDivider(color = textSecondaryColor.copy(alpha = 0.2f))
+
+                Text(
+                    "🔥 Zonas Más Afectadas",
+                    fontSize = dimensions.textSizeLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor
+                )
+
+                stats.mostAffectedAreas.forEachIndexed { index, (area, count) ->
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = when (index) {
+                                0 -> DangerRed.copy(alpha = 0.15f)
+                                1 -> WarningOrange.copy(alpha = 0.15f)
+                                else -> PrimaryBlue.copy(alpha = 0.1f)
+                            }
+                        ),
+                        shape = RoundedCornerShape(dimensions.paddingSmall)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(dimensions.paddingMedium),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+                            ) {
+                                Text(
+                                    "#${index + 1}",
+                                    fontSize = dimensions.textSizeMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = when (index) {
+                                        0 -> DangerRed
+                                        1 -> WarningOrange
+                                        else -> PrimaryBlue
+                                    }
+                                )
+                                Text(
+                                    area,
+                                    fontSize = dimensions.textSizeMedium,
+                                    color = textColor
+                                )
+                            }
+                            Text(
+                                "$count casos",
+                                fontSize = dimensions.textSizeMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StatCard(
+    modifier: Modifier = Modifier,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String,
+    color: Color,
+    dimensions: com.Tom.uceva_dengue.utils.AppDimensions,
+    textSecondaryColor: Color
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.15f)),
+        shape = RoundedCornerShape(dimensions.paddingMedium)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensions.paddingMedium),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(dimensions.iconLarge)
+            )
+            Text(
+                value,
+                fontSize = dimensions.textSizeExtraLarge,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+            Text(
+                label,
+                fontSize = dimensions.textSizeSmall,
+                color = textSecondaryColor,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
     }
 }
 
