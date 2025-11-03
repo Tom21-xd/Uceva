@@ -24,6 +24,7 @@ import com.Tom.uceva_dengue.Data.Service.RoleService
 import com.Tom.uceva_dengue.Data.Service.StatisticsService
 import com.Tom.uceva_dengue.Data.Service.SymptomService
 import com.Tom.uceva_dengue.Data.Service.UserService
+import com.Tom.uceva_dengue.Data.Service.UserApprovalService
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -161,5 +162,8 @@ object RetrofitClient {
     }
     val caseImportService : CaseImportService by lazy {
         retrofit.create(CaseImportService::class.java)
+    }
+    val userApprovalService : UserApprovalService by lazy {
+        retrofit.create(UserApprovalService::class.java)
     }
 }

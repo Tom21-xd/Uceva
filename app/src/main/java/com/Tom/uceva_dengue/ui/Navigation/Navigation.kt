@@ -85,6 +85,7 @@ import com.Tom.uceva_dengue.ui.Screen.QuizResultScreen
 import com.Tom.uceva_dengue.ui.Screen.CertificateScreen
 import com.Tom.uceva_dengue.ui.Screen.RoleManagementScreen
 import com.Tom.uceva_dengue.ui.Screen.ImportCasesScreen
+import com.Tom.uceva_dengue.ui.Screen.UserApprovalScreen
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
@@ -414,6 +415,12 @@ fun NavigationCon(context: Context) {
                     ImportCasesScreen(
                         navController = navController,
                         viewModel = viewModel()
+                    )
+                }
+                composable(Rout.UserApprovalScreen.name) {
+                    UserApprovalScreen(
+                        viewModel = viewModel(),
+                        onNavigateBack = { navController.popBackStack() }
                     )
                 }
 

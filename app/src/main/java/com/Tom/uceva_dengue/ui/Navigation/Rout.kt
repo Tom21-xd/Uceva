@@ -29,5 +29,6 @@ enum class Rout {
     CertificateScreen,
     PermissionsManagementScreen,
     RoleManagementScreen,
-    ImportCasesScreen
+    ImportCasesScreen,
+    UserApprovalScreen
 }
