@@ -33,8 +33,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserApprovalScreen(
-    viewModel: UserApprovalViewModel = viewModel(),
-    onNavigateBack: () -> Unit
+    viewModel: UserApprovalViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val pendingRequests by viewModel.pendingRequests.observeAsState(emptyList())
@@ -67,41 +66,23 @@ fun UserApprovalScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Solicitudes de Aprobación",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            if (isLoading && pendingRequests.isEmpty()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        when {
+            isLoading && pendingRequests.isEmpty() -> {
                 // Loading inicial
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
-            } else if (pendingRequests.isEmpty()) {
+            }
+            !isLoading && pendingRequests.isEmpty() -> {
                 // Sin solicitudes
                 EmptyStateView()
-            } else {
+            }
+            else -> {
                 // Lista de solicitudes
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -112,7 +93,10 @@ fun UserApprovalScreen(
                         InfoCard(count = pendingRequests.size)
                     }
 
-                    items(pendingRequests) { request ->
+                    items(
+                        items = pendingRequests,
+                        key = { it.id }
+                    ) { request ->
                         ApprovalRequestCard(
                             request = request,
                             onApprove = { viewModel.showApproveDialog(request) },
@@ -121,42 +105,46 @@ fun UserApprovalScreen(
                     }
                 }
             }
+        }
 
-            // Loading overlay cuando se procesa una acción
-            if (isLoading && pendingRequests.isNotEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Color.White)
-                }
+        // Loading overlay cuando se procesa una acción
+        if (isLoading && pendingRequests.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
             }
         }
     }
 
     // Diálogo de aprobación
-    if (showApproveDialog && selectedRequest != null) {
-        ApproveDialog(
-            request = selectedRequest!!,
-            availableRoles = availableRoles,
-            onConfirm = { roleId ->
-                viewModel.approveUser(selectedRequest!!.userId, roleId)
-            },
-            onDismiss = { viewModel.dismissDialogs() }
-        )
+    if (showApproveDialog) {
+        selectedRequest?.let { request ->
+            ApproveDialog(
+                request = request,
+                availableRoles = availableRoles,
+                onConfirm = { roleId ->
+                    viewModel.approveUser(request.userId, roleId)
+                },
+                onDismiss = { viewModel.dismissDialogs() }
+            )
+        }
     }
 
     // Diálogo de rechazo
-    if (showRejectDialog && selectedRequest != null) {
-        RejectDialog(
-            request = selectedRequest!!,
-            onConfirm = { reason ->
-                viewModel.rejectUser(selectedRequest!!.userId, reason)
-            },
-            onDismiss = { viewModel.dismissDialogs() }
-        )
+    if (showRejectDialog) {
+        selectedRequest?.let { request ->
+            RejectDialog(
+                request = request,
+                onConfirm = { reason ->
+                    viewModel.rejectUser(request.userId, reason)
+                },
+                onDismiss = { viewModel.dismissDialogs() }
+            )
+        }
     }
 }
 
@@ -228,14 +216,14 @@ fun ApprovalRequestCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = request.userName,
+                        text = request.userName ?: "Sin nombre",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = request.userEmail,
+                        text = request.userEmail ?: "Sin email",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -267,7 +255,7 @@ fun ApprovalRequestCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = request.requestedRoleName,
+                        text = request.requestedRoleName ?: "Sin especificar",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.secondary
@@ -289,7 +277,7 @@ fun ApprovalRequestCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Solicitado el: ${formatDate(request.requestDate)}",
+                    text = "Solicitado el: ${formatDate(request.requestDate ?: "")}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -445,12 +433,12 @@ fun ApproveDialog(
 
                 // Información del usuario
                 Text(
-                    text = "Usuario: ${request.userName}",
+                    text = "Usuario: ${request.userName ?: "Sin nombre"}",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = request.userEmail,
+                    text = request.userEmail ?: "Sin email",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -567,12 +555,12 @@ fun RejectDialog(
 
                 // Información del usuario
                 Text(
-                    text = "Usuario: ${request.userName}",
+                    text = "Usuario: ${request.userName ?: "Sin nombre"}",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = request.userEmail,
+                    text = request.userEmail ?: "Sin email",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

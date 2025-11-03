@@ -38,4 +38,14 @@ interface AuthService {
     @POST("Auth/recoverPassword")
     suspend fun recoverPassword(@Body body: RecoverPasswordRequest): Response<RecoverPasswordResponse>
 
+    @POST("Auth/register-with-rethus")
+    suspend fun registerWithRethus(
+        @Body body: RegisterUserModel,
+        @Query("tipoIdentificacion") tipoIdentificacion: String? = null,
+        @Query("numeroIdentificacion") numeroIdentificacion: String? = null,
+        @Query("primerNombre") primerNombre: String? = null,
+        @Query("primerApellido") primerApellido: String? = null,
+        @Query("rolSolicitado") rolSolicitado: Int? = null
+    ): Response<RegisterResponse>
+
 }

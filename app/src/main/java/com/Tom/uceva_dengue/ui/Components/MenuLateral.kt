@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
@@ -49,6 +50,7 @@ private fun getMenuItemPermissions(item: Items_Menu_lateral): List<String> {
         is Items_Menu_lateral.Item_Menu_Lateral10 -> PermissionChecker.MenuPermissions.PERMISSIONS_MANAGEMENT
         is Items_Menu_lateral.Item_Menu_Lateral11 -> PermissionChecker.MenuPermissions.ROLE_MANAGEMENT
         is Items_Menu_lateral.Item_Menu_Lateral12 -> PermissionChecker.MenuPermissions.IMPORT_CASES
+        is Items_Menu_lateral.Item_Menu_Lateral13 -> PermissionChecker.MenuPermissions.USER_APPROVAL
         else -> emptyList()
     }
 }
@@ -73,6 +75,7 @@ fun MenuLateral(
         Items_Menu_lateral.Item_Menu_Lateral12, // Importar Casos
         Items_Menu_lateral.Item_Menu_Lateral6, // Hospitales
         Items_Menu_lateral.Item_Menu_Lateral7, // Gestión de Usuarios
+        Items_Menu_lateral.Item_Menu_Lateral13, // Aprobar Usuarios
         Items_Menu_lateral.Item_Menu_Lateral11, // Gestión de Roles
         Items_Menu_lateral.Item_Menu_Lateral8, // Guía de Prevención
         Items_Menu_lateral.Item_Menu_Lateral3, // Información
@@ -110,14 +113,20 @@ fun MenuLateral(
         modifier = Modifier.width(250.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.fillMaxSize()
         ) {
-            Column {
-                visibleMenuItems.forEach { item ->
+            // Lista de opciones del menú con scroll
+            androidx.compose.foundation.lazy.LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(
+                    count = visibleMenuItems.size,
+                    key = { index -> visibleMenuItems[index].route }
+                ) { index ->
+                    val item = visibleMenuItems[index]
                     NavigationDrawerItem(
                         label = {
                             Row(
@@ -142,33 +151,44 @@ fun MenuLateral(
                 }
             }
 
-            NavigationDrawerItem(
-                label = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    ) {
-                        Icon(imageVector = Icons.Default.ExitToApp, contentDescription = "Cerrar Sesión", modifier = Modifier.size(24.dp))
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(text = "Cerrar Sesión")
-                    }
-                },
-                selected = false,
-                onClick = {
-                    coroutineScope.launch {
-                        isLoading.value = true
-                        drawerState.close()
-                        authRepository.clearUserSession()
-                        navController.navigate(Rout.LoginScreen.name) {
-                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                        }
-                        isLoading.value = false
-                    }
-                }
-            )
+            // Sección inferior fija (Cerrar Sesión)
+            Column(
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-            if (isLoading.value) {
-                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                NavigationDrawerItem(
+                    label = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.ExitToApp, contentDescription = "Cerrar Sesión", modifier = Modifier.size(24.dp))
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(text = "Cerrar Sesión")
+                        }
+                    },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch {
+                            isLoading.value = true
+                            drawerState.close()
+                            authRepository.clearUserSession()
+                            navController.navigate(Rout.LoginScreen.name) {
+                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                            }
+                            isLoading.value = false
+                        }
+                    }
+                )
+
+                if (isLoading.value) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
             }
         }
     }

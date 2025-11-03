@@ -6,10 +6,10 @@ import com.google.gson.annotations.SerializedName
  * Request para rechazar un usuario
  */
 data class RejectUserRequest(
-    @SerializedName("userId")
+    @SerializedName("UserId")
     val userId: Int,
 
-    @SerializedName("rejectionReason")
+    @SerializedName("RejectionReason")
     val rejectionReason: String
 )
 

@@ -25,12 +25,8 @@ import com.Tom.uceva_dengue.Data.Model.Permission
 import com.Tom.uceva_dengue.ui.viewModel.RoleManagementViewModel
 import com.Tom.uceva_dengue.utils.rememberAppDimensions
 
-// Colores
-private val PrimaryBlue = Color(0xFF5E81F4)
-private val DarkBlue = Color(0xFF4A5FCD)
-private val LightBlue = Color(0xFF85A5FF)
-private val DangerRed = Color(0xFFFF4757)
-private val SuccessGreen = Color(0xFF26DE81)
+// Colores deprecated - ahora se usan desde MaterialTheme.colorScheme
+// para soportar tema oscuro correctamente
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +68,7 @@ fun RoleManagementScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = PrimaryBlue)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
 
@@ -89,12 +85,12 @@ fun RoleManagementScreen(
                             Icons.Default.GroupWork,
                             contentDescription = null,
                             modifier = Modifier.size(dimensions.iconExtraLarge),
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             "No hay roles disponibles",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -142,8 +138,8 @@ fun RoleManagementScreen(
         // FAB para crear rol
         FloatingActionButton(
             onClick = { showCreateDialog = true },
-            containerColor = PrimaryBlue,
-            contentColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
             shape = CircleShape,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -159,7 +155,7 @@ fun RoleManagementScreen(
                     .fillMaxWidth()
                     .align(Alignment.TopCenter),
                 colors = CardDefaults.cardColors(
-                    containerColor = DangerRed.copy(alpha = 0.9f)
+                    containerColor = MaterialTheme.colorScheme.errorContainer
                 ),
                 shape = RoundedCornerShape(dimensions.paddingSmall)
             ) {
@@ -172,14 +168,14 @@ fun RoleManagementScreen(
                 ) {
                     Text(
                         it,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(onClick = { viewModel.clearMessages() }) {
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Cerrar",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onErrorContainer
                         )
                     }
                 }
@@ -193,7 +189,7 @@ fun RoleManagementScreen(
                     .fillMaxWidth()
                     .align(Alignment.TopCenter),
                 colors = CardDefaults.cardColors(
-                    containerColor = SuccessGreen.copy(alpha = 0.9f)
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
                 ),
                 shape = RoundedCornerShape(dimensions.paddingSmall)
             ) {
@@ -206,14 +202,14 @@ fun RoleManagementScreen(
                 ) {
                     Text(
                         it,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(onClick = { viewModel.clearMessages() }) {
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Cerrar",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
                 }
@@ -253,7 +249,7 @@ fun RoleManagementScreen(
                             showDeleteDialog = null
                         }
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = DangerRed)
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text("Eliminar")
                 }
@@ -289,7 +285,7 @@ fun RoleCardWithPermissions(
             .shadow(4.dp, RoundedCornerShape(dimensions.paddingMedium)),
         shape = RoundedCornerShape(dimensions.paddingMedium),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -311,13 +307,13 @@ fun RoleCardWithPermissions(
                     Box(
                         modifier = Modifier
                             .size(dimensions.iconLarge)
-                            .background(PrimaryBlue.copy(alpha = 0.1f), CircleShape),
+                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Group,
                             contentDescription = null,
-                            tint = PrimaryBlue,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.size(dimensions.iconMedium)
                         )
                     }
@@ -326,7 +322,8 @@ fun RoleCardWithPermissions(
                         Text(
                             role.NOMBRE_ROL,
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -336,14 +333,14 @@ fun RoleCardWithPermissions(
                                 modifier = Modifier
                                     .size(8.dp)
                                     .background(
-                                        if (role.ESTADO_ROL) SuccessGreen else Color.Gray,
+                                        if (role.ESTADO_ROL) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                                         CircleShape
                                     )
                             )
                             Text(
                                 if (role.ESTADO_ROL) "Activo" else "Inactivo",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -353,13 +350,13 @@ fun RoleCardWithPermissions(
                     IconButton(
                         onClick = onExpandClick,
                         modifier = Modifier
-                            .background(PrimaryBlue.copy(alpha = 0.1f), CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
                             .size(dimensions.iconLarge)
                     ) {
                         Icon(
                             if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                             contentDescription = if (isExpanded) "Contraer" else "Expandir",
-                            tint = PrimaryBlue,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.size(dimensions.iconSmall)
                         )
                     }
@@ -369,13 +366,13 @@ fun RoleCardWithPermissions(
                         IconButton(
                             onClick = onDeleteClick,
                             modifier = Modifier
-                                .background(DangerRed.copy(alpha = 0.1f), CircleShape)
+                                .background(MaterialTheme.colorScheme.errorContainer, CircleShape)
                                 .size(dimensions.iconLarge)
                         ) {
                             Icon(
                                 Icons.Default.Delete,
                                 contentDescription = "Eliminar",
-                                tint = DangerRed,
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
                                 modifier = Modifier.size(dimensions.iconSmall)
                             )
                         }
@@ -396,13 +393,14 @@ fun RoleCardWithPermissions(
                             .height(100.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = PrimaryBlue, modifier = Modifier.size(32.dp))
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
                     }
                 } else {
                     Text(
                         "Permisos del Rol",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(bottom = dimensions.paddingSmall)
                     )
 
@@ -414,7 +412,7 @@ fun RoleCardWithPermissions(
                             category,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = PrimaryBlue,
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(vertical = dimensions.paddingSmall)
                         )
 
@@ -441,18 +439,22 @@ fun RoleCardWithPermissions(
                                             selectedPermissionIds - permission.id
                                         }
                                     },
-                                    colors = CheckboxDefaults.colors(checkedColor = PrimaryBlue)
+                                    colors = CheckboxDefaults.colors(
+                                        checkedColor = MaterialTheme.colorScheme.primary,
+                                        uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 )
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         permission.name,
-                                        style = MaterialTheme.typography.bodyMedium
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     permission.description?.let { desc ->
                                         Text(
                                             desc,
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = Color.Gray
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                 }
@@ -465,7 +467,10 @@ fun RoleCardWithPermissions(
                     Button(
                         onClick = { onSavePermissions(selectedPermissionIds.toList()) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
                         shape = RoundedCornerShape(dimensions.paddingSmall)
                     ) {
                         Icon(Icons.Default.Save, contentDescription = null)

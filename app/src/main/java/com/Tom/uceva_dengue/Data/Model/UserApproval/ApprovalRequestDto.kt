@@ -7,45 +7,45 @@ import com.google.gson.annotations.SerializedName
  * Corresponde al modelo del backend ApprovalRequestDto
  */
 data class ApprovalRequestDto(
-    @SerializedName("id")
-    val id: Int,
+    @SerializedName("Id")
+    val id: Int = 0,
 
-    @SerializedName("userId")
-    val userId: Int,
+    @SerializedName("UserId")
+    val userId: Int = 0,
 
-    @SerializedName("userName")
-    val userName: String,
+    @SerializedName("UserName")
+    val userName: String? = null,
 
-    @SerializedName("userEmail")
-    val userEmail: String,
+    @SerializedName("UserEmail")
+    val userEmail: String? = null,
 
-    @SerializedName("status")
-    val status: String, // PENDIENTE, APROBADO, RECHAZADO
+    @SerializedName("Status")
+    val status: String? = null, // PENDIENTE, APROBADO, RECHAZADO
 
-    @SerializedName("requestedRoleId")
-    val requestedRoleId: Int,
+    @SerializedName("RequestedRoleId")
+    val requestedRoleId: Int = 0,
 
-    @SerializedName("requestedRoleName")
-    val requestedRoleName: String,
+    @SerializedName("RequestedRoleName")
+    val requestedRoleName: String? = null,
 
-    @SerializedName("rejectionReason")
+    @SerializedName("RejectionReason")
     val rejectionReason: String? = null,
 
-    @SerializedName("approvedByAdminId")
+    @SerializedName("ApprovedByAdminId")
     val approvedByAdminId: Int? = null,
 
-    @SerializedName("approvedByAdminName")
+    @SerializedName("ApprovedByAdminName")
     val approvedByAdminName: String? = null,
 
-    @SerializedName("requestDate")
-    val requestDate: String,
+    @SerializedName("RequestDate")
+    val requestDate: String? = null,
 
-    @SerializedName("resolutionDate")
+    @SerializedName("ResolutionDate")
     val resolutionDate: String? = null,
 
-    @SerializedName("rethusData")
+    @SerializedName("RethusData")
     val rethusData: String? = null,
 
-    @SerializedName("rethusError")
+    @SerializedName("RethusError")
     val rethusError: String? = null
 )

@@ -418,10 +418,7 @@ fun NavigationCon(context: Context) {
                     )
                 }
                 composable(Rout.UserApprovalScreen.name) {
-                    UserApprovalScreen(
-                        viewModel = viewModel(),
-                        onNavigateBack = { navController.popBackStack() }
-                    )
+                    UserApprovalScreen(viewModel = viewModel())
                 }
 
             }
@@ -457,6 +454,7 @@ fun getTopBarTitle(route: String): String {
         Rout.CertificateScreen.name -> "Mi Certificado"
         Rout.RoleManagementScreen.name -> "Gestión de Roles"
         Rout.ImportCasesScreen.name -> "Importar Casos"
+        Rout.UserApprovalScreen.name -> "Aprobar Usuarios"
         else -> "Mi Aplicación"
     }
 }

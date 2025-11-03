@@ -350,6 +350,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 _registerError.value = null
                 _registerMessage.value = null
                 var rolId = 1  // Por defecto, rol usuario normal
+                var rolSolicitado: Int? = null  // Rol que el usuario quiere tener
+                var tipoId: String? = null
+                var numeroId: String? = null
+                var primerNombreRethus: String? = null
+                var primerApellidoRethus: String? = null
 
                 if (esPersonalMedico) {
                     // Dividir nombres y apellidos
@@ -357,70 +362,48 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     val apellidosDivididos = (_lastName.value ?: "").split(" ")
 
                     // Usar solo el primer nombre y primer apellido
-                    val primerNombre = nombresDivididos.firstOrNull() ?: ""
-                    val primerApellido = apellidosDivididos.firstOrNull() ?: ""
+                    primerNombreRethus = nombresDivididos.firstOrNull() ?: ""
+                    primerApellidoRethus = apellidosDivididos.firstOrNull() ?: ""
+                    tipoId = tipoIdentificacion
+                    numeroId = numeroDocumento
+                    rolSolicitado = 3  // El usuario quiere el rol de personal médico
 
-                    if (primerNombre.isNotBlank() && primerApellido.isNotBlank()) {
-                        try {
-                            _isValidatingRethus.value = true // Activar loader de RETHUS
-
-                            val rethusBody = mapOf(
-                                "PrimerNombre" to primerNombre,
-                                "PrimerApellido" to primerApellido,
-                                "TipoIdentificacion" to tipoIdentificacion,
-                                "Cedula" to numeroDocumento
-                            )
-                            Log.d("Rethus", "Consultando RETHUS con: $rethusBody")
-
-                            val response = RetrofitClient.authService.consultarRethus(rethusBody)
-
-                            _isValidatingRethus.value = false // Desactivar loader de RETHUS
-
-                            Log.d("Rethus", "Respuesta RETHUS - Code: ${response.code()}, Success: ${response.isSuccessful}")
-                            Log.d("Rethus", "Respuesta RETHUS - Body: ${response.body()}")
-
-                            val isValidated = response.body()?.isSuccess() ?: false
-
-                            if (response.isSuccessful && isValidated) {
-                                rolId = 3  // RETHUS validado exitosamente, rol personal médico
-                                Log.d("Rethus", "✓ Validación RETHUS EXITOSA. Usuario SÍ está en RETHUS. Asignando rol 3 (Personal Médico)")
-                            } else {
-                                // RETHUS falló o no está registrado, se registra como usuario normal (rol 1)
-                                rolId = 1
-                                val message = response.body()?.message ?: "Sin respuesta"
-                                Log.w("Rethus", "✗ Validación RETHUS FALLIDA. Usuario NO está en RETHUS. Message: '$message'. Asignando rol 1 (Usuario Normal)")
-                            }
-                        } catch (rethusException: Exception) {
-                            _isValidatingRethus.value = false // Asegurar que se desactive el loader
-
-                            // Si RETHUS falla por timeout u otro error, registrar como usuario normal
-                            rolId = 1
-                            Log.e("Rethus", "⚠️ Error al consultar RETHUS: ${rethusException.message}. Registrando como usuario normal (rol 1)", rethusException)
-
-                            // Opcional: informar al usuario que RETHUS no está disponible
-                            // pero continuar con el registro como usuario normal
-                        }
+                    if (primerNombreRethus.isNotBlank() && primerApellidoRethus.isNotBlank()) {
+                        _isValidatingRethus.value = true // Activar loader de RETHUS
+                        Log.d("Registro", "Usuario solicita rol de Personal Médico (ID 3). Validación con backend...")
                     } else {
-                        // Nombres incompletos, se registra como usuario normal
-                        rolId = 1
-                        Log.w("Rethus", "Nombres o apellidos incompletos (primer nombre: '$primerNombre', primer apellido: '$primerApellido'). Registrando como usuario normal (rol 1)")
+                        Log.w("Rethus", "Nombres o apellidos incompletos para validación RETHUS")
                     }
                 }
 
+                // Crear usuario con rol básico (el backend se encargará de la validación RETHUS)
                 val usuario = RegisterUserModel(
                     NOMBRE_USUARIO = "${_firstName.value} ${_lastName.value}",
                     CORREO_USUARIO = _email.value ?: "",
                     CONTRASENIA_USUARIO = _password.value ?: "",
                     DIRECCION_USUARIO = _address.value ?: "",
                     FECHA_NACIMIENTO_USUARIO = _birthDate.value ?: "",
-                    FK_ID_ROL = rolId,
+                    FK_ID_ROL = 1,  // Siempre enviamos rol 1, el backend lo ajustará según RETHUS
                     FK_ID_TIPOSANGRE = _bloodTypeId.value ?: 0,
                     FK_ID_GENERO = _genderId.value ?: 0,
                     FK_ID_MUNICIPIO = _cityId.value ?: 0
                 )
 
                 Log.d("Registro", "Enviando registro: $usuario")
-                val response = RetrofitClient.authService.register(usuario)
+                Log.d("Registro", "Rol solicitado: $rolSolicitado")
+                Log.d("Registro", "Datos RETHUS: tipo=$tipoId, numero=$numeroId, nombre=$primerNombreRethus, apellido=$primerApellidoRethus")
+
+                // Llamar al endpoint register-with-rethus
+                val response = RetrofitClient.authService.registerWithRethus(
+                    body = usuario,
+                    tipoIdentificacion = tipoId,
+                    numeroIdentificacion = numeroId,
+                    primerNombre = primerNombreRethus,
+                    primerApellido = primerApellidoRethus,
+                    rolSolicitado = rolSolicitado
+                )
+
+                _isValidatingRethus.value = false // Desactivar loader de RETHUS
                 Log.d("Registro", "Respuesta recibida: ${response.code()}")
 
                 if (response.isSuccessful) {

@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Cases
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.GroupWork
 import androidx.compose.material.icons.filled.HealthAndSafety
@@ -81,6 +82,11 @@ sealed  class Items_Menu_lateral (
         Icons.Default.Upload,
         "Importar Casos",
         Rout.ImportCasesScreen.name
+    )
+    object Item_Menu_Lateral13: Items_Menu_lateral(
+        Icons.Default.CheckCircle,
+        "Aprobar Usuarios",
+        Rout.UserApprovalScreen.name
     )
 
 }

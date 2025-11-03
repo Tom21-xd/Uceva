@@ -6,10 +6,10 @@ import com.google.gson.annotations.SerializedName
  * Request para aprobar un usuario y cambiarle el rol
  */
 data class ApproveUserRequest(
-    @SerializedName("userId")
+    @SerializedName("UserId")
     val userId: Int,
 
-    @SerializedName("newRoleId")
+    @SerializedName("NewRoleId")
     val newRoleId: Int
 )
 

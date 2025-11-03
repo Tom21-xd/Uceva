@@ -49,6 +49,12 @@ object PermissionCode {
     const val PERMISSION_MANAGE = "PERMISSION_MANAGE"
     const val SYSTEM_CONFIG = "SYSTEM_CONFIG"
 
+    // Aprobación de Usuarios
+    const val USER_APPROVAL_VIEW = "USER_APPROVAL_VIEW"
+    const val USER_APPROVAL_APPROVE = "USER_APPROVAL_APPROVE"
+    const val USER_APPROVAL_REJECT = "USER_APPROVAL_REJECT"
+    const val USER_APPROVAL_HISTORY = "USER_APPROVAL_HISTORY"
+
     // Educación (IDs 28-30)
     const val QUIZ_VIEW = "QUIZ_VIEW"
     const val QUIZ_MANAGE = "QUIZ_MANAGE"
@@ -83,6 +89,7 @@ object PermissionChecker {
         val PERMISSIONS_MANAGEMENT = listOf(PermissionCode.PERMISSION_MANAGE)
         val ROLE_MANAGEMENT = listOf(PermissionCode.ROLE_MANAGE)
         val IMPORT_CASES = listOf(PermissionCode.CASE_IMPORT_CSV)
+        val USER_APPROVAL = listOf(PermissionCode.USER_APPROVAL_VIEW)
     }
 
     /**

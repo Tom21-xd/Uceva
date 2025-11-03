@@ -66,25 +66,45 @@ class UserApprovalViewModel(application: Application) : AndroidViewModel(applica
     fun loadPendingRequests() {
         viewModelScope.launch {
             _isLoading.value = true
+            _pendingRequests.value = emptyList() // Inicializar con lista vacía
             try {
+                Log.d("UserApprovalVM", "Iniciando carga de solicitudes...")
                 val response = RetrofitClient.userApprovalService.getPendingApprovals()
+                Log.d("UserApprovalVM", "Respuesta - Code: ${response.code()}")
 
                 if (response.isSuccessful) {
-                    _pendingRequests.value = response.body() ?: emptyList()
-                    Log.d("UserApprovalVM", "Solicitudes pendientes cargadas: ${response.body()?.size}")
+                    val requests = response.body() ?: emptyList()
+                    _pendingRequests.value = requests
+                    Log.d("UserApprovalVM", "✓ Solicitudes cargadas: ${requests.size}")
+                    requests.forEachIndexed { index, req ->
+                        Log.d("UserApprovalVM", "  [$index] id=${req.id}, userId=${req.userId}, userName=${req.userName}, requestedRoleId=${req.requestedRoleId}")
+                    }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val errorMessage = try {
                         JSONObject(errorBody ?: "{}").optString("message", "Error al cargar solicitudes")
                     } catch (e: Exception) {
-                        "Error al cargar solicitudes: ${response.code()}"
+                        when (response.code()) {
+                            401 -> "No autorizado. Cierra sesión e inicia nuevamente."
+                            403 -> "No tienes permiso para ver solicitudes"
+                            404 -> "Endpoint no encontrado"
+                            500 -> "Error del servidor"
+                            else -> "Error: ${response.code()}"
+                        }
                     }
                     _errorMessage.value = errorMessage
-                    Log.e("UserApprovalVM", "Error al cargar pendientes: $errorBody")
+                    Log.e("UserApprovalVM", "✗ Error HTTP ${response.code()}: $errorBody")
                 }
+            } catch (e: java.net.ConnectException) {
+                _errorMessage.value = "No se puede conectar al servidor"
+                Log.e("UserApprovalVM", "✗ Error de conexión", e)
+            } catch (e: java.net.SocketTimeoutException) {
+                _errorMessage.value = "Tiempo de espera agotado"
+                Log.e("UserApprovalVM", "✗ Timeout", e)
             } catch (e: Exception) {
-                _errorMessage.value = "Error de conexión: ${e.message}"
-                Log.e("UserApprovalVM", "Excepción al cargar pendientes", e)
+                _errorMessage.value = "Error: ${e.message}"
+                Log.e("UserApprovalVM", "✗ Excepción", e)
+                e.printStackTrace()
             } finally {
                 _isLoading.value = false
             }
@@ -152,7 +172,8 @@ class UserApprovalViewModel(application: Application) : AndroidViewModel(applica
             _isLoading.value = true
             try {
                 // Obtener ID del admin actual
-                val adminId = authRepository.getPermissionsManager().getUserId() ?: run {
+                val permissionsManager = authRepository.getPermissionsManager()
+                val adminId = permissionsManager.getUserId() ?: run {
                     _errorMessage.value = "Error: No se pudo obtener ID del administrador"
                     _isLoading.value = false
                     return@launch
@@ -163,7 +184,9 @@ class UserApprovalViewModel(application: Application) : AndroidViewModel(applica
                     newRoleId = newRoleId
                 )
 
+                Log.d("UserApprovalVM", "Aprobando usuario - adminId: $adminId, userId: $userId, newRoleId: $newRoleId")
                 val response = RetrofitClient.userApprovalService.approveUser(adminId, request)
+                Log.d("UserApprovalVM", "Respuesta aprobación - Code: ${response.code()}")
 
                 if (response.isSuccessful) {
                     val result = response.body()
@@ -203,7 +226,8 @@ class UserApprovalViewModel(application: Application) : AndroidViewModel(applica
             _isLoading.value = true
             try {
                 // Obtener ID del admin actual
-                val adminId = authRepository.getPermissionsManager().getUserId() ?: run {
+                val permissionsManager = authRepository.getPermissionsManager()
+                val adminId = permissionsManager.getUserId() ?: run {
                     _errorMessage.value = "Error: No se pudo obtener ID del administrador"
                     _isLoading.value = false
                     return@launch

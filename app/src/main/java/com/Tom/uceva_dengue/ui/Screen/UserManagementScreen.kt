@@ -146,7 +146,7 @@ fun UserManagementScreen(
                             Icon(
                                 Icons.Default.Search,
                                 contentDescription = null,
-                                tint = Color(0xFF5E81F4),
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(16.dp)
                             )
                         },
@@ -170,7 +170,7 @@ fun UserManagementScreen(
                             .height(if (isCompactScreen) 42.dp else 46.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF5E81F4),
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                             focusedContainerColor = MaterialTheme.colorScheme.surface,
                             unfocusedContainerColor = MaterialTheme.colorScheme.surface
@@ -201,8 +201,8 @@ fun UserManagementScreen(
                                     { Icon(Icons.Default.Check, null, Modifier.size(filterIconSize)) }
                                 } else null,
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF5E81F4),
-                                    selectedLabelColor = Color.White
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                 )
                             )
                         }
@@ -217,13 +217,13 @@ fun UserManagementScreen(
                                             Icons.Default.Person,
                                             null,
                                             Modifier.size(filterIconSize),
-                                            tint = Color.White
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                                         )
                                     }
                                 } else null,
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF2196F3),
-                                    selectedLabelColor = Color.White
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             )
                         }
@@ -238,13 +238,13 @@ fun UserManagementScreen(
                                             Icons.Default.AdminPanelSettings,
                                             null,
                                             Modifier.size(filterIconSize),
-                                            tint = Color.White
+                                            tint = MaterialTheme.colorScheme.onTertiaryContainer
                                         )
                                     }
                                 } else null,
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFFFF9800),
-                                    selectedLabelColor = Color.White
+                                    selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                             )
                         }
@@ -259,13 +259,13 @@ fun UserManagementScreen(
                                             Icons.Default.LocalHospital,
                                             null,
                                             Modifier.size(filterIconSize),
-                                            tint = Color.White
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer
                                         )
                                     }
                                 } else null,
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF4CAF50),
-                                    selectedLabelColor = Color.White
+                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             )
                         }
@@ -315,7 +315,7 @@ fun UserManagementScreen(
                         Button(
                             onClick = { viewModel.loadUsers() },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF5E81F4)
+                                containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
                             Icon(Icons.Default.Refresh, contentDescription = null)
@@ -343,7 +343,7 @@ fun UserManagementScreen(
                         Icon(
                             Icons.Default.PersonOff,
                             contentDescription = null,
-                            tint = Color(0xFF718096),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -351,13 +351,13 @@ fun UserManagementScreen(
                             text = "No se encontraron usuarios",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF2D3748)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Intenta con otros filtros o términos de búsqueda",
                             fontSize = 14.sp,
-                            color = Color(0xFF718096)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -366,7 +366,7 @@ fun UserManagementScreen(
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = headerPaddingHorizontal),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(state.filteredUsers, key = { it.ID_USUARIO }) { user ->
@@ -402,7 +402,7 @@ fun UserManagementScreen(
                 Icon(
                     Icons.Default.Warning,
                     contentDescription = null,
-                    tint = Color(0xFFFF9800),
+                    tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -452,7 +452,7 @@ fun UserManagementScreen(
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFE53935)
+                        containerColor = MaterialTheme.colorScheme.error
                     )
                 ) {
                     Text("Eliminar")
@@ -529,7 +529,7 @@ fun UserCard(
                     text = user.NOMBRE_USUARIO ?: "Sin nombre",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2D3748),
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
                 )
                 Text(
@@ -596,7 +596,7 @@ fun UserCard(
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = "Editar",
-                        tint = Color(0xFF5E81F4),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -607,7 +607,7 @@ fun UserCard(
                     Icon(
                         Icons.Default.Delete,
                         contentDescription = "Eliminar",
-                        tint = Color(0xFFE53935),
+                        tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(18.dp)
                     )
                 }
