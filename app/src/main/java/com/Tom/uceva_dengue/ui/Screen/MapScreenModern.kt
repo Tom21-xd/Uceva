@@ -140,6 +140,15 @@ fun MapScreenModern(viewModel: MapViewModel) {
     var showFiltersPanel by remember { mutableStateOf(false) }
     var showDashboardPanel by remember { mutableStateOf(false) }
 
+    // Estado local para el slider (con debounce)
+    var localRadiusValue by remember { mutableStateOf(filterRadiusKm) }
+
+    // Debounce para el cambio de radio (solo actualiza el ViewModel después de 300ms sin cambios)
+    LaunchedEffect(localRadiusValue) {
+        kotlinx.coroutines.delay(300)
+        viewModel.updateFilterRadius(localRadiusValue)
+    }
+
     // Usar casos filtrados para el heatmap - Optimizado con derivedStateOf
     val heatmapPoints by remember {
         derivedStateOf {
@@ -160,35 +169,37 @@ fun MapScreenModern(viewModel: MapViewModel) {
         }
     }
 
-    // Contar casos por hospital - Optimizado con derivedStateOf para evitar recalcular en cada recomposición
+    // Contar casos por hospital - Optimizado con derivedStateOf y cálculo más eficiente
     val casesPerHospital by remember {
         derivedStateOf {
             val casesMap = mutableMapOf<Int, Int>()
+
+            // Pre-procesar casos para evitar parsear múltiples veces
+            val casesWithLocations = filteredCases.mapNotNull { caso ->
+                val casoLat = caso.LATITUD
+                val casoLng = caso.LONGITUD
+
+                val location = if (casoLat != null && casoLng != null) {
+                    LatLng(casoLat, casoLng)
+                } else {
+                    caso.DIRECCION_CASOREPORTADO?.let { parseLatLngFromString(it) }
+                }
+                location?.let { caso to it }
+            }
+
+            // Ahora iterar hospitales con casos pre-procesados
             hospitals.forEach { hospital ->
                 val hospitalLat = hospital.LATITUD_HOSPITAL?.toDoubleOrNull()
                 val hospitalLng = hospital.LONGITUD_HOSPITAL?.toDoubleOrNull()
 
                 if (hospitalLat != null && hospitalLng != null) {
-                    val casosEnHospital = filteredCases.count { caso ->
-                        // Priorizar campos LATITUD y LONGITUD separados
-                        val casoLat = caso.LATITUD
-                        val casoLng = caso.LONGITUD
-
-                        val casoLatLng = if (casoLat != null && casoLng != null) {
-                            LatLng(casoLat, casoLng)
-                        } else {
-                            // Fallback: parsear DIRECCION_CASOREPORTADO
-                            caso.DIRECCION_CASOREPORTADO?.let { parseLatLngFromString(it) }
-                        }
-
-                        if (casoLatLng != null) {
-                            // Calcular distancia aproximada (0.01 grados ≈ 1 km)
-                            val distance = Math.sqrt(
-                                Math.pow(hospitalLat - casoLatLng.latitude, 2.0) +
-                                Math.pow(hospitalLng - casoLatLng.longitude, 2.0)
-                            )
-                            distance < 0.05 // Casos dentro de ~5km del hospital
-                        } else false
+                    // Conteo optimizado con casos pre-procesados
+                    val casosEnHospital = casesWithLocations.count { (_, casoLatLng) ->
+                        // Calcular distancia aproximada más rápido usando diferencias cuadradas
+                        val latDiff = hospitalLat - casoLatLng.latitude
+                        val lngDiff = hospitalLng - casoLatLng.longitude
+                        val distanceSquared = (latDiff * latDiff) + (lngDiff * lngDiff)
+                        distanceSquared < 0.0025 // ~5km al cuadrado (evita sqrt)
                     }
                     casesMap[hospital.ID_HOSPITAL] = casosEnHospital
                 }
@@ -358,25 +369,15 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 // Círculo de radio alrededor de la ubicación activa (búsqueda o usuario)
                 val activeLocation = viewModelSearchLocation ?: userLocation
                 activeLocation?.let { center ->
-                    // Círculo con animación sutil de opacidad
-                    val animatedAlpha by rememberInfiniteTransition(label = "radiusAlpha").animateFloat(
-                        initialValue = 0.08f,
-                        targetValue = 0.12f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(3000, easing = LinearEasing),
-                            repeatMode = RepeatMode.Reverse
-                        ),
-                        label = "radiusAlpha"
-                    )
-
+                    // Círculo con opacidad fija para mejor rendimiento
                     Circle(
                         center = center,
                         radius = (filterRadiusKm * 1000).toDouble(), // Convertir km a metros
                         strokeColor = if (viewModelSearchLocation != null) Color(0xFFFF6B35) else WarningOrange,
                         fillColor = if (viewModelSearchLocation != null)
-                            Color(0xFFFF6B35).copy(alpha = animatedAlpha)
+                            Color(0xFFFF6B35).copy(alpha = 0.10f)
                         else
-                            WarningOrange.copy(alpha = animatedAlpha),
+                            WarningOrange.copy(alpha = 0.10f),
                         strokeWidth = 2.5f
                     )
 
@@ -617,7 +618,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     .padding(horizontal = dimensions.paddingSmall, vertical = dimensions.paddingSmall),
                 horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
             ) {
-                item {
+                item(key = "cases_count") {
                     // Contador animado de casos
                     val animatedCount by animateIntAsState(
                         targetValue = filteredCases.size,
@@ -655,7 +656,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     }
                 }
 
-                item {
+                item(key = "hospitals_count") {
                     Card(
                         shape = RoundedCornerShape(dimensions.paddingSmall),
                         colors = CardDefaults.cardColors(
@@ -686,7 +687,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 // Indicador de ubicación activa con radio
                 if (viewModelSearchLocation != null) {
                     // Cuando hay una búsqueda activa, mostrar chip destacado para volver
-                    item {
+                    item(key = "search_location_chip") {
                         Card(
                             shape = RoundedCornerShape(dimensions.paddingSmall),
                             colors = CardDefaults.cardColors(
@@ -735,7 +736,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     }
                 } else if (userLocation != null) {
                     // Cuando solo hay ubicación del usuario, mostrar chip simple
-                    item {
+                    item(key = "user_location_chip") {
                         Card(
                             shape = RoundedCornerShape(dimensions.paddingSmall),
                             colors = CardDefaults.cardColors(
@@ -765,7 +766,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                 }
 
                 // Botón de acceso rápido para año actual
-                item {
+                item(key = "year_2025_chip") {
                     Card(
                         shape = RoundedCornerShape(dimensions.paddingSmall),
                         colors = CardDefaults.cardColors(
@@ -887,7 +888,7 @@ fun MapScreenModern(viewModel: MapViewModel) {
                                 )
                             ) {
                                 Text(
-                                    "${filterRadiusKm.toInt()} km",
+                                    "${localRadiusValue.toInt()} km",
                                     modifier = Modifier.padding(horizontal = dimensions.paddingSmall, vertical = 4.dp),
                                     fontSize = dimensions.textSizeMedium,
                                     fontWeight = FontWeight.Bold,
@@ -896,8 +897,8 @@ fun MapScreenModern(viewModel: MapViewModel) {
                             }
                         }
                         Slider(
-                            value = filterRadiusKm,
-                            onValueChange = { viewModel.updateFilterRadius(it) },
+                            value = localRadiusValue,
+                            onValueChange = { localRadiusValue = it },
                             valueRange = 1f..50f,
                             steps = 48,
                             colors = SliderDefaults.colors(
