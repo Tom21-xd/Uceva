@@ -50,9 +50,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import com.Tom.uceva_dengue.Data.Service.AuthRepository
@@ -70,6 +73,7 @@ import com.Tom.uceva_dengue.ui.Screen.UpdateHospitalScreen
 import com.Tom.uceva_dengue.ui.Screen.InfoScreen
 import com.Tom.uceva_dengue.ui.Screen.PreventionGuideScreen
 import com.Tom.uceva_dengue.ui.Screen.LoginScreenModern
+import com.Tom.uceva_dengue.ui.Screen.RegisterScreenModern
 import com.Tom.uceva_dengue.ui.Screen.ForgotPasswordScreenModern
 import com.Tom.uceva_dengue.ui.Screen.MapScreenModern
 import com.Tom.uceva_dengue.ui.Screen.NotificationScreen
@@ -123,6 +127,7 @@ fun NavigationCon(context: Context) {
                 currentRoute.value?.destination?.route?.let { route ->
                     val excludedRoutes = listOf(
                         Rout.LoginScreen.name,
+                        Rout.RegisterScreen.name,
                         Rout.OlvContraseniaScreen.name,
                         Rout.QuizStartScreen.name,
                         Rout.QuizQuestionsScreen.name,
@@ -201,6 +206,7 @@ fun NavigationCon(context: Context) {
                 currentRoute.value?.destination?.route?.let { route ->
                     val excludedRoutes = listOf(
                         Rout.LoginScreen.name,
+                        Rout.RegisterScreen.name,
                         Rout.OlvContraseniaScreen.name,
                         Rout.QuizStartScreen.name,
                         Rout.QuizQuestionsScreen.name,
@@ -242,8 +248,127 @@ fun NavigationCon(context: Context) {
                     ) + fadeOut(animationSpec = tween(200))
                 }
             ) {
-                composable(Rout.LoginScreen.name) {
+                composable(
+                    route = Rout.LoginScreen.name,
+                    enterTransition = {
+                        fadeIn(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + scaleIn(
+                            initialScale = 0.92f,
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    },
+                    exitTransition = {
+                        fadeOut(
+                            animationSpec = tween(
+                                durationMillis = 200,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + scaleOut(
+                            targetScale = 0.92f,
+                            animationSpec = tween(
+                                durationMillis = 200,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    },
+                    popEnterTransition = {
+                        fadeIn(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + scaleIn(
+                            initialScale = 0.92f,
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    },
+                    popExitTransition = {
+                        fadeOut(
+                            animationSpec = tween(
+                                durationMillis = 200,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + scaleOut(
+                            targetScale = 0.92f,
+                            animationSpec = tween(
+                                durationMillis = 200,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    }
+                ) {
                     LoginScreenModern(viewModel = viewModel<AuthViewModel>(), navController = navController)
+                }
+                composable(
+                    route = Rout.RegisterScreen.name,
+                    enterTransition = {
+                        fadeIn(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + scaleIn(
+                            initialScale = 0.92f,
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    },
+                    exitTransition = {
+                        fadeOut(
+                            animationSpec = tween(
+                                durationMillis = 200,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + scaleOut(
+                            targetScale = 0.92f,
+                            animationSpec = tween(
+                                durationMillis = 200,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    },
+                    popEnterTransition = {
+                        fadeIn(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + scaleIn(
+                            initialScale = 0.92f,
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    },
+                    popExitTransition = {
+                        fadeOut(
+                            animationSpec = tween(
+                                durationMillis = 200,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + scaleOut(
+                            targetScale = 0.92f,
+                            animationSpec = tween(
+                                durationMillis = 200,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    }
+                ) {
+                    RegisterScreenModern(viewModel = viewModel<AuthViewModel>(), navController = navController)
                 }
                 composable(Rout.HomeScreen.name) {
                     HomeScreen(
