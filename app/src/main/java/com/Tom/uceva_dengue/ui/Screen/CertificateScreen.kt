@@ -48,6 +48,7 @@ fun CertificateScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var isDownloading by remember { mutableStateOf(false) }
+    var isResending by remember { mutableStateOf(false) }
 
     LaunchedEffect(userId) {
         viewModel.loadUserCertificates(userId)
@@ -274,6 +275,54 @@ fun CertificateScreen(
                             Icon(Icons.Default.Download, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Descargar Certificado PDF", style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Resend Email Button
+                    OutlinedButton(
+                        onClick = {
+                            isResending = true
+                            viewModel.resendCertificateEmail(
+                                certificateId = certificate!!.id,
+                                onSuccess = { message ->
+                                    isResending = false
+                                    Toast.makeText(
+                                        context,
+                                        "Certificado reenviado a ${certificate!!.userEmail}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                },
+                                onError = { error ->
+                                    isResending = false
+                                    Toast.makeText(
+                                        context,
+                                        "Error: $error",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF1E8449)
+                        ),
+                        enabled = !isResending && certificate!!.status == "Active"
+                    ) {
+                        if (isResending) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color(0xFF1E8449)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Enviando...")
+                        } else {
+                            Icon(Icons.Default.Email, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Reenviar por Correo", style = MaterialTheme.typography.titleMedium)
                         }
                     }
 

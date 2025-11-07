@@ -70,9 +70,9 @@ fun QuizStartScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1E8449),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 windowInsets = WindowInsets(0, 0, 0, 0)
             )
@@ -96,7 +96,7 @@ fun QuizStartScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFE8F5E9)
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
                 ) {
                     Column(
@@ -107,14 +107,14 @@ fun QuizStartScreen(
                             Icons.Default.Quiz,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
-                            tint = Color(0xFF1E8449)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             "Pon a Prueba tus Conocimientos",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E8449),
+                            color = MaterialTheme.colorScheme.primary,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -122,7 +122,7 @@ fun QuizStartScreen(
                             "Responde 10 preguntas sobre prevención del dengue y obtén tu certificado al aprobar con 80% o más",
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
-                            color = Color(0xFF424242)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -162,7 +162,7 @@ fun QuizStartScreen(
                         "Categorías Incluidas",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E8449)
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -181,14 +181,14 @@ fun QuizStartScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF1E8449)
+                        containerColor = MaterialTheme.colorScheme.primary
                     ),
                     enabled = !isLoading
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
                         Icon(Icons.Default.PlayArrow, contentDescription = null)
@@ -229,7 +229,7 @@ private fun InfoCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFF5F5F5)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp)
@@ -246,13 +246,13 @@ private fun InfoCard(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1E8449)),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -263,7 +263,7 @@ private fun InfoCard(
                 text = title,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF212121),
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
 
@@ -272,7 +272,7 @@ private fun InfoCard(
             Text(
                 text = subtitle,
                 fontSize = 12.sp,
-                color = Color(0xFF616161),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
                 maxLines = 1
@@ -307,7 +307,7 @@ private fun CategoryCard(category: QuizCategoryModel) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp)
@@ -336,7 +336,7 @@ private fun CategoryCard(category: QuizCategoryModel) {
                     category.name,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF212121)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
@@ -360,7 +360,7 @@ private fun CategoryCard(category: QuizCategoryModel) {
             Icon(
                 Icons.Default.ArrowForward,
                 contentDescription = null,
-                tint = Color(0xFFBDBDBD),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -403,7 +403,7 @@ fun QuizQuestionsScreen(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth(),
-                color = Color(0xFF1E8449),
+                color = MaterialTheme.colorScheme.primary,
                 shadowElevation = 4.dp
             ) {
                 Row(
@@ -420,7 +420,7 @@ fun QuizQuestionsScreen(
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Salir",
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -436,7 +436,7 @@ fun QuizQuestionsScreen(
                             "Pregunta ${currentQuestionIndex + 1} de $totalQuestions",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
 
                         Row(
@@ -445,14 +445,14 @@ fun QuizQuestionsScreen(
                             Icon(
                                 Icons.Default.Timer,
                                 contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.9f),
+                                tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 formatTime(elapsedSeconds),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White.copy(alpha = 0.9f),
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -482,22 +482,22 @@ fun QuizQuestionsScreen(
                             .fillMaxWidth()
                             .height(8.dp)
                             .clip(RoundedCornerShape(4.dp)),
-                        color = Color(0xFF1E8449),
-                        trackColor = Color(0xFFE8F5E9)
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.primaryContainer
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Category Badge
                     Surface(
-                        color = Color(0xFFE8F5E9),
+                        color = MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
                             currentQuestion.categoryName ?: "Categoría",
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             style = MaterialTheme.typography.labelMedium,
-                            color = Color(0xFF1E8449),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -508,7 +508,7 @@ fun QuizQuestionsScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color.White
+                            containerColor = MaterialTheme.colorScheme.surface
                         ),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
@@ -520,12 +520,12 @@ fun QuizQuestionsScreen(
                                     modifier = Modifier
                                         .size(32.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFF1E8449)),
+                                        .background(MaterialTheme.colorScheme.primary),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         "?",
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.titleMedium
                                     )
@@ -535,21 +535,22 @@ fun QuizQuestionsScreen(
                                     Text(
                                         currentQuestion.questionText,
                                         style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Row {
                                         DifficultyChip(currentQuestion.difficulty)
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Surface(
-                                            color = Color(0xFFFFF3E0),
+                                            color = MaterialTheme.colorScheme.tertiaryContainer,
                                             shape = RoundedCornerShape(8.dp)
                                         ) {
                                             Text(
                                                 "${currentQuestion.points} pts",
                                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                                 style = MaterialTheme.typography.labelSmall,
-                                                color = Color(0xFFFF6F00),
+                                                color = MaterialTheme.colorScheme.onTertiaryContainer,
                                                 fontWeight = FontWeight.Medium
                                             )
                                         }
@@ -566,7 +567,7 @@ fun QuizQuestionsScreen(
                         "Selecciona tu respuesta:",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF424242)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -596,7 +597,7 @@ fun QuizQuestionsScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (result.isCorrect) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+                                    containerColor = if (result.isCorrect) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
                                 )
                             ) {
                                 Row(
@@ -606,7 +607,7 @@ fun QuizQuestionsScreen(
                                     Icon(
                                         if (result.isCorrect) Icons.Default.CheckCircle else Icons.Default.Cancel,
                                         contentDescription = null,
-                                        tint = if (result.isCorrect) Color(0xFF1E8449) else Color(0xFFD32F2F),
+                                        tint = if (result.isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                                         modifier = Modifier.size(32.dp)
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -615,14 +616,14 @@ fun QuizQuestionsScreen(
                                             if (result.isCorrect) "¡Correcto!" else "Incorrecto",
                                             style = MaterialTheme.typography.titleSmall,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (result.isCorrect) Color(0xFF1E8449) else Color(0xFFD32F2F)
+                                            color = if (result.isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                                         )
                                         result.explanation?.let { explanation ->
                                             Spacer(modifier = Modifier.height(4.dp))
                                             Text(
                                                 explanation,
                                                 style = MaterialTheme.typography.bodySmall,
-                                                color = Color(0xFF424242)
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     }
@@ -643,13 +644,13 @@ fun QuizQuestionsScreen(
                                 .height(56.dp),
                             enabled = selectedAnswer != null && !isLoading,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF1E8449)
+                                containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
                             if (isLoading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(24.dp),
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onPrimary
                                 )
                             } else {
                                 Text("Confirmar Respuesta", style = MaterialTheme.typography.titleMedium)
@@ -670,7 +671,7 @@ fun QuizQuestionsScreen(
                                 .fillMaxWidth()
                                 .height(56.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF1E8449)
+                                containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
                             Text(
@@ -726,7 +727,7 @@ fun QuizQuestionsScreen(
                             onNavigateBack()
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFD32F2F)
+                            containerColor = MaterialTheme.colorScheme.error
                         )
                     ) {
                         Text("Salir")
@@ -737,13 +738,13 @@ fun QuizQuestionsScreen(
                         Text("Continuar")
                     }
                 },
-                containerColor = Color.White,
-                iconContentColor = Color(0xFFD32F2F),
+                containerColor = MaterialTheme.colorScheme.surface,
+                iconContentColor = MaterialTheme.colorScheme.error,
                 icon = {
                     Icon(
                         Icons.Default.Warning,
                         contentDescription = null,
-                        tint = Color(0xFFD32F2F),
+                        tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -761,17 +762,17 @@ private fun AnswerCard(
     onSelect: () -> Unit
 ) {
     val backgroundColor = when {
-        isAnswered && isCorrect -> Color(0xFFE8F5E9)
-        isAnswered && isSelected && !isCorrect -> Color(0xFFFFEBEE)
-        isSelected -> Color(0xFFE3F2FD)
-        else -> Color.White
+        isAnswered && isCorrect -> MaterialTheme.colorScheme.primaryContainer
+        isAnswered && isSelected && !isCorrect -> MaterialTheme.colorScheme.errorContainer
+        isSelected -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.surface
     }
 
     val borderColor = when {
-        isAnswered && isCorrect -> Color(0xFF1E8449)
-        isAnswered && isSelected && !isCorrect -> Color(0xFFD32F2F)
-        isSelected -> Color(0xFF1976D2)
-        else -> Color(0xFFE0E0E0)
+        isAnswered && isCorrect -> MaterialTheme.colorScheme.primary
+        isAnswered && isSelected && !isCorrect -> MaterialTheme.colorScheme.error
+        isSelected -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.outlineVariant
     }
 
     Card(
@@ -800,26 +801,27 @@ private fun AnswerCard(
                 onClick = onSelect,
                 enabled = !isAnswered,
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = if (isAnswered && isCorrect) Color(0xFF1E8449) else Color(0xFF1976D2)
+                    selectedColor = if (isAnswered && isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                 )
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 answer.answerText,
                 modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
             if (isAnswered && isCorrect) {
                 Icon(
                     Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = Color(0xFF1E8449)
+                    tint = MaterialTheme.colorScheme.primary
                 )
             } else if (isAnswered && isSelected && !isCorrect) {
                 Icon(
                     Icons.Default.Cancel,
                     contentDescription = null,
-                    tint = Color(0xFFD32F2F)
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }
@@ -829,14 +831,14 @@ private fun AnswerCard(
 @Composable
 private fun DifficultyChip(difficulty: Int) {
     val (color, text) = when (difficulty) {
-        1 -> Color(0xFF4CAF50) to "Fácil"
-        2 -> Color(0xFFFF9800) to "Media"
-        3 -> Color(0xFFF44336) to "Difícil"
-        else -> Color(0xFF9E9E9E) to "Normal"
+        1 -> MaterialTheme.colorScheme.primary to "Fácil"
+        2 -> MaterialTheme.colorScheme.tertiary to "Media"
+        3 -> MaterialTheme.colorScheme.error to "Difícil"
+        else -> MaterialTheme.colorScheme.outline to "Normal"
     }
 
     Surface(
-        color = color.copy(alpha = 0.1f),
+        color = color.copy(alpha = 0.15f),
         shape = RoundedCornerShape(8.dp)
     ) {
         Text(

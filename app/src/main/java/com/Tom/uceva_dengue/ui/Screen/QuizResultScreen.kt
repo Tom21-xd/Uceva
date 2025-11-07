@@ -53,9 +53,9 @@ fun QuizResultScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (result?.passed == true) Color(0xFF1E8449) else Color(0xFF757575),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = if (result?.passed == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                    titleContentColor = if (result?.passed == true) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    navigationIconContentColor = if (result?.passed == true) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 windowInsets = WindowInsets(0, 0, 0, 0)
             )
@@ -79,7 +79,7 @@ fun QuizResultScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (result.passed) Color(0xFFE8F5E9) else Color(0xFFFFF3E0)
+                            containerColor = if (result.passed) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.tertiaryContainer
                         )
                     ) {
                         Column(
@@ -94,11 +94,11 @@ fun QuizResultScreen(
                                     .background(
                                         if (result.passed)
                                             Brush.radialGradient(
-                                                colors = listOf(Color(0xFF1E8449), Color(0xFF145A32))
+                                                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
                                             )
                                         else
                                             Brush.radialGradient(
-                                                colors = listOf(Color(0xFFFF8F00), Color(0xFFE65100))
+                                                colors = listOf(MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.tertiaryContainer)
                                             )
                                     ),
                                 contentAlignment = Alignment.Center
@@ -108,12 +108,12 @@ fun QuizResultScreen(
                                         "${result.score.toInt()}%",
                                         style = MaterialTheme.typography.displayMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = if (result.passed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary
                                     )
                                     Text(
                                         "Puntaje",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Color.White.copy(alpha = 0.9f)
+                                        color = if (result.passed) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f) else MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.9f)
                                     )
                                 }
                             }
@@ -124,7 +124,7 @@ fun QuizResultScreen(
                                 if (result.passed) Icons.Default.EmojiEvents else Icons.Default.TrendingUp,
                                 contentDescription = null,
                                 modifier = Modifier.size(48.dp),
-                                tint = if (result.passed) Color(0xFF1E8449) else Color(0xFFFF8F00)
+                                tint = if (result.passed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -133,7 +133,7 @@ fun QuizResultScreen(
                                 if (result.passed) "¡Felicitaciones!" else "Sigue Aprendiendo",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = if (result.passed) Color(0xFF1E8449) else Color(0xFFFF8F00),
+                                color = if (result.passed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
                                 textAlign = TextAlign.Center
                             )
 
@@ -146,7 +146,7 @@ fun QuizResultScreen(
                                     "No has alcanzado el puntaje mínimo del 80%. Puedes intentar de nuevo.",
                                 style = MaterialTheme.typography.bodyMedium,
                                 textAlign = TextAlign.Center,
-                                color = Color(0xFF424242)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -163,21 +163,21 @@ fun QuizResultScreen(
                             icon = Icons.Default.CheckCircle,
                             value = result.correctAnswers.toString(),
                             label = "Correctas",
-                            color = Color(0xFF1E8449)
+                            color = MaterialTheme.colorScheme.primary
                         )
                         StatCard(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.Cancel,
                             value = result.incorrectAnswers.toString(),
                             label = "Incorrectas",
-                            color = Color(0xFFD32F2F)
+                            color = MaterialTheme.colorScheme.error
                         )
                         StatCard(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.Timer,
                             value = formatTime(result.totalTimeSeconds),
                             label = "Tiempo",
-                            color = Color(0xFF1976D2)
+                            color = MaterialTheme.colorScheme.tertiary
                         )
                     }
 
@@ -188,7 +188,7 @@ fun QuizResultScreen(
                         "Revisión de Respuestas",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E8449)
+                        color = MaterialTheme.colorScheme.primary
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -204,21 +204,21 @@ fun QuizResultScreen(
                     if (result.passed && result.canGenerateCertificate) {
                         Button(
                             onClick = {
-                                viewModel.generateCertificate(result.attemptId)
+                                viewModel.generateCertificate()
                                 onNavigateToCertificate()
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF1E8449)
+                                containerColor = MaterialTheme.colorScheme.primary
                             ),
                             enabled = !isLoading
                         ) {
                             if (isLoading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(24.dp),
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onPrimary
                                 )
                             } else {
                                 Icon(Icons.Default.EmojiEvents, contentDescription = null)
@@ -239,7 +239,7 @@ fun QuizResultScreen(
                             .fillMaxWidth()
                             .height(56.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color(0xFF1E8449)
+                            contentColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = null)
@@ -255,7 +255,7 @@ fun QuizResultScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = Color(0xFF1E8449))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
 
@@ -289,7 +289,7 @@ private fun StatCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -313,7 +313,7 @@ private fun StatCard(
             Text(
                 label,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF757575)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -324,7 +324,7 @@ private fun AnswerDetailCard(questionNumber: Int, detail: QuizAnswerDetailModel)
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (detail.isCorrect) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+            containerColor = if (detail.isCorrect) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
@@ -334,12 +334,12 @@ private fun AnswerDetailCard(questionNumber: Int, detail: QuizAnswerDetailModel)
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
-                        .background(if (detail.isCorrect) Color(0xFF1E8449) else Color(0xFFD32F2F)),
+                        .background(if (detail.isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         "$questionNumber",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -348,7 +348,7 @@ private fun AnswerDetailCard(questionNumber: Int, detail: QuizAnswerDetailModel)
                 Icon(
                     if (detail.isCorrect) Icons.Default.CheckCircle else Icons.Default.Cancel,
                     contentDescription = null,
-                    tint = if (detail.isCorrect) Color(0xFF1E8449) else Color(0xFFD32F2F),
+                    tint = if (detail.isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -356,7 +356,7 @@ private fun AnswerDetailCard(questionNumber: Int, detail: QuizAnswerDetailModel)
                     if (detail.isCorrect) "Correcto" else "Incorrecto",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = if (detail.isCorrect) Color(0xFF1E8449) else Color(0xFFD32F2F)
+                    color = if (detail.isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
             }
 
@@ -366,26 +366,26 @@ private fun AnswerDetailCard(questionNumber: Int, detail: QuizAnswerDetailModel)
                 detail.questionText,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF212121)
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             if (!detail.isCorrect) {
                 Surface(
-                    color = Color(0xFFFFCDD2),
+                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
                             "Tu respuesta:",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color(0xFF757575)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             detail.userAnswer,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF424242)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -393,19 +393,19 @@ private fun AnswerDetailCard(questionNumber: Int, detail: QuizAnswerDetailModel)
             }
 
             Surface(
-                color = Color(0xFFC8E6C9),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
                         if (detail.isCorrect) "Tu respuesta:" else "Respuesta correcta:",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF757575)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         detail.correctAnswer,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF424242)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -413,7 +413,7 @@ private fun AnswerDetailCard(questionNumber: Int, detail: QuizAnswerDetailModel)
             detail.explanation?.let { explanation ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(
-                    color = Color(0xFFF5F5F5),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
@@ -423,7 +423,7 @@ private fun AnswerDetailCard(questionNumber: Int, detail: QuizAnswerDetailModel)
                         Icon(
                             Icons.Default.Lightbulb,
                             contentDescription = null,
-                            tint = Color(0xFFFF8F00),
+                            tint = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -431,13 +431,13 @@ private fun AnswerDetailCard(questionNumber: Int, detail: QuizAnswerDetailModel)
                             Text(
                                 "Explicación:",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF757575),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 explanation,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF424242)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }

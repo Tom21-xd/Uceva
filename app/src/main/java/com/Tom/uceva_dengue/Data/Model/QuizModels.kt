@@ -137,3 +137,10 @@ data class CertificateEligibilityModel(
     @SerializedName("ExistingCertificateId") val existingCertificateId: Int?,
     @SerializedName("Message") val message: String
 )
+
+// Resend Certificate Response
+data class ResendCertificateResponse(
+    @SerializedName("message") val message: String,
+    @SerializedName("email") val email: String,
+    @SerializedName("certificateId") val certificateId: Int
+)

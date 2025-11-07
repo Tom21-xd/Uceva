@@ -68,7 +68,12 @@ class AuthRepository(context: Context) {
      * Obtiene el access token guardado
      */
     fun getAccessToken(): String? {
-        return tokenManager.getAccessToken()
+        val token = tokenManager.getAccessToken()
+        android.util.Log.d("AuthRepository", "Getting access token: ${token != null}")
+        if (token != null) {
+            android.util.Log.d("AuthRepository", "Token length: ${token.length}, Preview: ${token.take(30)}...")
+        }
+        return token
     }
 
     /**

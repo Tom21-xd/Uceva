@@ -53,7 +53,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -86,6 +88,11 @@ fun UserManagementScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var userToDelete by remember { mutableStateOf<UserModel?>(null) }
     var deleteError by remember { mutableStateOf<String?>(null) }
+
+    // Reload data when returning to this screen
+    LaunchedEffect(Unit) {
+        viewModel.loadUsers()
+    }
 
     // Configuración dinámica basada en el tamaño de pantalla
     val configuration = LocalConfiguration.current
@@ -274,20 +281,24 @@ fun UserManagementScreen(
 
             Spacer(modifier = Modifier.height(afterHeaderSpacing))
 
-            // Loading indicator
-            if (state.isLoading) {
-                LoadingIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    message = "Cargando usuarios..."
-                )
-            } else if (state.errorMessage != null) {
-                // Error message
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+            // Pull-to-refresh box wrapping the content
+            PullToRefreshBox(
+                isRefreshing = state.isLoading,
+                onRefresh = { viewModel.loadUsers() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                // Loading indicator
+                if (state.isLoading && state.users.isEmpty()) {
+                    LoadingIndicator(
+                        modifier = Modifier.fillMaxSize(),
+                        message = "Cargando usuarios..."
+                    )
+                } else if (state.errorMessage != null) {
+                    // Error message
+                    Card(
+                        modifier = Modifier.fillMaxSize(),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.errorContainer
                     ),
@@ -324,12 +335,10 @@ fun UserManagementScreen(
                         }
                     }
                 }
-            } else if (state.filteredUsers.isEmpty()) {
-                // Empty state
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                } else if (state.filteredUsers.isEmpty()) {
+                    // Empty state
+                    Card(
+                        modifier = Modifier.fillMaxSize(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -361,29 +370,30 @@ fun UserManagementScreen(
                         )
                     }
                 }
-            } else {
-                // Lista de usuarios
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = headerPaddingHorizontal),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(state.filteredUsers, key = { it.ID_USUARIO }) { user ->
-                        UserCard(
-                            user = user,
-                            onEdit = {
-                                navController.navigate("${Rout.EditUserScreen.name}?userId=${user.ID_USUARIO}")
-                            },
-                            onDelete = {
-                                userToDelete = user
-                                showDeleteDialog = true
-                            }
-                        )
-                    }
-                    // Espacio al final para el FAB
-                    item {
-                        Spacer(modifier = Modifier.height(80.dp))
+                } else {
+                    // Lista de usuarios
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = headerPaddingHorizontal),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(state.filteredUsers, key = { it.ID_USUARIO }) { user ->
+                            UserCard(
+                                user = user,
+                                onEdit = {
+                                    navController.navigate("${Rout.EditUserScreen.name}?userId=${user.ID_USUARIO}")
+                                },
+                                onDelete = {
+                                    userToDelete = user
+                                    showDeleteDialog = true
+                                }
+                            )
+                        }
+                        // Espacio al final para el FAB
+                        item {
+                            Spacer(modifier = Modifier.height(80.dp))
+                        }
                     }
                 }
             }

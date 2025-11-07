@@ -222,25 +222,43 @@ class QuizViewModel : ViewModel() {
         }
     }
 
-    // Generate certificate
-    fun generateCertificate(attemptId: Int) {
+    // Generate certificate (TEMPORALMENTE usando userId directo para debug)
+    fun generateCertificate(userId: Int = 1) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
             try {
-                val request = GenerateCertificateRequest(attemptId)
-                val response = quizService.generateCertificate(request)
+                Log.d("QuizViewModel", "=== GENERATING CERTIFICATE ===")
+                Log.d("QuizViewModel", "UserId: $userId")
+
+                val response = quizService.generateCertificate(userId)
+                Log.d("QuizViewModel", "Response code: ${response.code()}")
+                Log.d("QuizViewModel", "Response message: ${response.message()}")
+                Log.d("QuizViewModel", "Response successful: ${response.isSuccessful}")
 
                 if (response.isSuccessful) {
-                    _certificate.value = response.body()
+                    val body = response.body()
+                    Log.d("QuizViewModel", "Response body: $body")
+                    Log.d("QuizViewModel", "Certificate ID: ${body?.id}")
+                    Log.d("QuizViewModel", "Certificate Status: ${body?.status}")
+                    Log.d("QuizViewModel", "Certificate Score: ${body?.score}")
+                    _certificate.value = body
                 } else {
-                    _errorMessage.value = "Error al generar certificado: ${response.code()}"
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("QuizViewModel", "Error code: ${response.code()}")
+                    Log.e("QuizViewModel", "Error message: ${response.message()}")
+                    Log.e("QuizViewModel", "Error body: $errorBody")
+                    _errorMessage.value = "Error al generar certificado: ${response.code()} - $errorBody"
                 }
             } catch (e: Exception) {
-                Log.e("QuizViewModel", "Error generating certificate", e)
+                Log.e("QuizViewModel", "Exception in generateCertificate", e)
+                Log.e("QuizViewModel", "Exception type: ${e.javaClass.name}")
+                Log.e("QuizViewModel", "Exception message: ${e.message}")
+                Log.e("QuizViewModel", "Stack trace: ${e.stackTraceToString()}")
                 _errorMessage.value = "Error de conexión: ${e.message}"
             } finally {
                 _isLoading.value = false
+                Log.d("QuizViewModel", "=== CERTIFICATE GENERATION COMPLETE ===")
             }
         }
     }
@@ -249,12 +267,28 @@ class QuizViewModel : ViewModel() {
     private fun checkCertificateEligibility(attemptId: Int) {
         viewModelScope.launch {
             try {
+                Log.d("QuizViewModel", "=== CHECKING CERTIFICATE ELIGIBILITY ===")
+                Log.d("QuizViewModel", "Attempt ID: $attemptId")
+
                 val response = quizService.checkEligibility(attemptId)
+                Log.d("QuizViewModel", "Eligibility response code: ${response.code()}")
+                Log.d("QuizViewModel", "Eligibility response successful: ${response.isSuccessful}")
+
                 if (response.isSuccessful) {
-                    _eligibility.value = response.body()
+                    val eligibility = response.body()
+                    Log.d("QuizViewModel", "Eligibility: ${eligibility?.isEligible}")
+                    Log.d("QuizViewModel", "Score: ${eligibility?.score}")
+                    Log.d("QuizViewModel", "Required Score: ${eligibility?.requiredScore}")
+                    _eligibility.value = eligibility
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("QuizViewModel", "Eligibility error code: ${response.code()}")
+                    Log.e("QuizViewModel", "Eligibility error body: $errorBody")
                 }
             } catch (e: Exception) {
-                Log.e("QuizViewModel", "Error checking eligibility", e)
+                Log.e("QuizViewModel", "Exception in checkCertificateEligibility", e)
+                Log.e("QuizViewModel", "Exception message: ${e.message}")
+                Log.e("QuizViewModel", "Stack trace: ${e.stackTraceToString()}")
             }
         }
     }
@@ -265,19 +299,68 @@ class QuizViewModel : ViewModel() {
             _isLoading.value = true
             _errorMessage.value = null
             try {
+                Log.d("QuizViewModel", "=== LOADING USER CERTIFICATES ===")
+                Log.d("QuizViewModel", "User ID: $userId")
+
                 val response = quizService.getUserCertificates(userId)
+                Log.d("QuizViewModel", "Response code: ${response.code()}")
+                Log.d("QuizViewModel", "Response message: ${response.message()}")
+                Log.d("QuizViewModel", "Response successful: ${response.isSuccessful}")
+
                 if (response.isSuccessful) {
                     val certificates = response.body() ?: emptyList()
+                    Log.d("QuizViewModel", "Certificates received: ${certificates.size}")
+                    certificates.forEachIndexed { index, cert ->
+                        Log.d("QuizViewModel", "Certificate $index - ID: ${cert.id}, Status: ${cert.status}, Score: ${cert.score}")
+                    }
+
                     // Filter to get only the active certificate (one per user policy)
-                    _certificate.value = certificates.firstOrNull { it.status == "Active" }
+                    val activeCert = certificates.firstOrNull { it.status == "Active" }
+                    Log.d("QuizViewModel", "Active certificate: ${activeCert?.id}")
+                    _certificate.value = activeCert
                 } else {
-                    _errorMessage.value = "Error al cargar certificado: ${response.code()}"
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("QuizViewModel", "Error code: ${response.code()}")
+                    Log.e("QuizViewModel", "Error message: ${response.message()}")
+                    Log.e("QuizViewModel", "Error body: $errorBody")
+                    _errorMessage.value = "Error al cargar certificado: ${response.code()} - $errorBody"
                 }
             } catch (e: Exception) {
-                Log.e("QuizViewModel", "Error loading certificates", e)
+                Log.e("QuizViewModel", "Exception in loadUserCertificates", e)
+                Log.e("QuizViewModel", "Exception type: ${e.javaClass.name}")
+                Log.e("QuizViewModel", "Exception message: ${e.message}")
+                Log.e("QuizViewModel", "Stack trace: ${e.stackTraceToString()}")
                 _errorMessage.value = "Error de conexión: ${e.message}"
             } finally {
                 _isLoading.value = false
+                Log.d("QuizViewModel", "=== CERTIFICATE LOADING COMPLETE ===")
+            }
+        }
+    }
+
+    // Resend certificate by email
+    fun resendCertificateEmail(certificateId: Int, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                Log.d("QuizViewModel", "Reenviando certificado $certificateId por email")
+                val response = quizService.resendCertificateEmail(certificateId)
+
+                if (response.isSuccessful) {
+                    val result = response.body()
+                    if (result != null) {
+                        Log.d("QuizViewModel", "Certificado reenviado a: ${result.email}")
+                        onSuccess(result.message)
+                    } else {
+                        onError("Error: respuesta vacía del servidor")
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("QuizViewModel", "Error ${response.code()}: $errorBody")
+                    onError("Error al reenviar certificado: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("QuizViewModel", "Error resending certificate email", e)
+                onError("Error de conexión: ${e.message}")
             }
         }
     }

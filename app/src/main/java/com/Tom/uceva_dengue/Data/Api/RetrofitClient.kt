@@ -41,37 +41,120 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
     private const val BASE_URL = "https://api.prometeondev.com/"
-    private var appContext: Context? = null
+
+    lateinit var context: Context
+        private set
 
     /**
      * Initialize RetrofitClient with application context
      * Call this from your Application class or MainActivity
      */
-    fun initialize(context: Context) {
-        appContext = context.applicationContext
+    fun initialize(appContext: Context) {
+        context = appContext.applicationContext
+        android.util.Log.d("RetrofitClient", "Initialized with context")
     }
 
     /**
      * Auth interceptor that adds Bearer token to all requests
+     * and handles token refresh on 401 errors
      */
     private val authInterceptor = Interceptor { chain ->
         val original = chain.request()
 
-        // Get token from AuthRepository
-        val token = appContext?.let { ctx ->
-            AuthRepository(ctx).getAccessToken()
+        // Skip auth for login/register/refresh endpoints
+        val skipAuth = original.url.encodedPath.contains("/Auth/login") ||
+                      original.url.encodedPath.contains("/Auth/register") ||
+                      original.url.encodedPath.contains("/Auth/refresh")
+
+        if (skipAuth) {
+            android.util.Log.d("RetrofitClient", "Skipping auth for: ${original.url}")
+            return@Interceptor chain.proceed(original)
         }
 
-        // Add Authorization header if token exists
-        val request = if (!token.isNullOrEmpty()) {
+        android.util.Log.d("RetrofitClient", "Interceptor for: ${original.url}")
+
+        // Get token
+        val token = try {
+            if (::context.isInitialized) {
+                val repo = AuthRepository(context)
+                val accessToken = repo.getAccessToken()
+                android.util.Log.d("RetrofitClient", "Token exists: ${!accessToken.isNullOrEmpty()}")
+                if (!accessToken.isNullOrEmpty()) {
+                    android.util.Log.d("RetrofitClient", "Token preview: ${accessToken.take(30)}...")
+                }
+                accessToken
+            } else {
+                android.util.Log.e("RetrofitClient", "Context not initialized!")
+                null
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("RetrofitClient", "Error getting token: ${e.message}")
+            null
+        }
+
+        // Build request with or without token
+        val newRequest = if (!token.isNullOrEmpty()) {
             original.newBuilder()
                 .header("Authorization", "Bearer $token")
                 .build()
         } else {
+            android.util.Log.w("RetrofitClient", "No token available, proceeding without auth")
             original
         }
 
-        chain.proceed(request)
+        // Execute request
+        val response = chain.proceed(newRequest)
+
+        // Handle 401 Unauthorized - try to refresh token
+        if (response.code == 401 && ::context.isInitialized) {
+            android.util.Log.w("RetrofitClient", "Received 401, attempting token refresh")
+            response.close()
+
+            try {
+                val repo = AuthRepository(context)
+                val refreshToken = repo.getRefreshToken()
+
+                if (!refreshToken.isNullOrEmpty()) {
+                    android.util.Log.d("RetrofitClient", "Refresh token available, refreshing...")
+
+                    // Attempt to refresh token synchronously
+                    val refreshResponse = kotlinx.coroutines.runBlocking {
+                        authService.refreshToken(
+                            com.Tom.uceva_dengue.Data.Model.RefreshTokenRequest(refreshToken)
+                        )
+                    }
+
+                    if (refreshResponse.isSuccessful && refreshResponse.body() != null) {
+                        val newAccessToken = refreshResponse.body()!!.accessToken
+                        android.util.Log.d("RetrofitClient", "Token refreshed successfully")
+
+                        // Save new access token
+                        kotlinx.coroutines.runBlocking {
+                            repo.saveAccessToken(newAccessToken)
+                        }
+
+                        // Retry original request with new token
+                        val retryRequest = original.newBuilder()
+                            .header("Authorization", "Bearer $newAccessToken")
+                            .build()
+
+                        return@Interceptor chain.proceed(retryRequest)
+                    } else {
+                        android.util.Log.e("RetrofitClient", "Token refresh failed: ${refreshResponse.code()}")
+                        // Clear tokens and let the app handle re-login
+                        kotlinx.coroutines.runBlocking {
+                            repo.clearSession()
+                        }
+                    }
+                } else {
+                    android.util.Log.w("RetrofitClient", "No refresh token available")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("RetrofitClient", "Error during token refresh: ${e.message}")
+            }
+        }
+
+        response
     }
 
     private val okHttpClient: OkHttpClient by lazy {

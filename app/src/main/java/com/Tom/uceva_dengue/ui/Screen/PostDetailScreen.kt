@@ -31,6 +31,7 @@ import com.Tom.uceva_dengue.ui.Components.EnhancedReactionBar
 import com.Tom.uceva_dengue.ui.Components.FloatingHeartAnimation
 import com.Tom.uceva_dengue.ui.theme.*
 import com.Tom.uceva_dengue.ui.Components.BookmarkSaveAnimation
+import com.Tom.uceva_dengue.ui.Components.ClickableTextWithLinks
 import com.Tom.uceva_dengue.ui.viewModel.PublicacionViewModel
 import com.Tom.uceva_dengue.utils.rememberAppDimensions
 import com.Tom.uceva_dengue.utils.rememberWindowSize
@@ -263,11 +264,11 @@ fun PostDetailScreen(
 
                         Spacer(modifier = Modifier.height(dimensions.paddingMedium))
 
-                        Text(
+                        ClickableTextWithLinks(
                             text = publicacion!!.DESCRIPCION_PUBLICACION,
                             fontSize = fontSizeMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            lineHeight = lineHeightMedium
+                            textColor = MaterialTheme.colorScheme.onSurface,
+                            linkColor = MaterialTheme.colorScheme.primary
                         )
                     }
                 }

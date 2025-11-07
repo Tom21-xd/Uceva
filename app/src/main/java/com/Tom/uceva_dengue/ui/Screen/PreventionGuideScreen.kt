@@ -373,7 +373,7 @@ fun PreventionGuideScreen(
                         GenerateCertificateCard(
                             attempt = attempt,
                             onGenerateCertificate = {
-                                viewModel.generateCertificate(attempt.attemptId)
+                                viewModel.generateCertificate()
                             },
                             onNavigateToCertificate = onNavigateToCertificate,
                             isLoading = isLoading

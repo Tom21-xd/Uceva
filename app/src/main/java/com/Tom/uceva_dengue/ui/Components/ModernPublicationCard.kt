@@ -278,15 +278,15 @@ fun ModernPublicationCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // Descripción con preview inteligente
+                // Descripción con preview inteligente y enlaces clicables
                 if (!publicacion.DESCRIPCION_PUBLICACION.isNullOrBlank()) {
-                    Text(
+                    ClickableTextWithLinks(
                         text = publicacion.DESCRIPCION_PUBLICACION,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
-                        lineHeight = 20.sp
+                        fontSize = 14.sp,
+                        textColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        linkColor = MaterialTheme.colorScheme.primary
                     )
                 }
 

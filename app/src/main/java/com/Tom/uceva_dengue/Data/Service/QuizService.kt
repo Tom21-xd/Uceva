@@ -30,9 +30,9 @@ interface QuizService {
     @GET("QuizControllerEF/history/{userId}")
     suspend fun getQuizHistory(@Path("userId") userId: Int): Response<List<QuizHistoryModel>>
 
-    // Generate certificate
-    @POST("Certificate/generate")
-    suspend fun generateCertificate(@Body request: GenerateCertificateRequest): Response<CertificateModel>
+    // Generate certificate (TEMPORALMENTE sin auth para debug)
+    @POST("Certificate/generate/{userId}")
+    suspend fun generateCertificate(@Path("userId") userId: Int): Response<CertificateModel>
 
     // Get certificate by ID
     @GET("Certificate/{id}")
@@ -50,4 +50,8 @@ interface QuizService {
     @GET("Certificate/{id}/download")
     @Streaming
     suspend fun downloadCertificate(@Path("id") certificateId: Int): Response<okhttp3.ResponseBody>
+
+    // Resend certificate by email
+    @POST("Certificate/{id}/resend-email")
+    suspend fun resendCertificateEmail(@Path("id") certificateId: Int): Response<ResendCertificateResponse>
 }
