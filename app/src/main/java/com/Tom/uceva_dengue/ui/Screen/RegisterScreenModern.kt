@@ -48,6 +48,8 @@ fun RegisterScreenModern(viewModel: AuthViewModel, navController: NavController)
 
     // Efecto de carga inicial
     LaunchedEffect(Unit) {
+        // Cargar datos de registro de forma lazy
+        viewModel.initializeRegistrationData()
         delay(300) // Pequeño delay para dar tiempo a la transición de navegación
         isLoading = false
         delay(50)

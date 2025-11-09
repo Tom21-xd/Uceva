@@ -2,6 +2,7 @@ package com.Tom.uceva_dengue.Data.Service
 
 import com.Tom.uceva_dengue.Data.Model.CreateHospitalResponse
 import com.Tom.uceva_dengue.Data.Model.HospitalModel
+import com.Tom.uceva_dengue.Data.Model.UpdateHospitalDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -38,7 +39,7 @@ interface HospitalService {
     @PUT("Hospital/updateHospital/{id}")
     suspend fun updateHospital(
         @Path("id") id: Int,
-        @Body hospitalData: Map<String, Any?>
+        @Body hospitalData: UpdateHospitalDto
     ): Response<Map<String, String>>
 
     // HU-009: Eliminar hospital (soft delete)

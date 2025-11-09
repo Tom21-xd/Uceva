@@ -126,31 +126,30 @@ class HospitalViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
-                val hospitalData = mutableMapOf<String, Any?>()
-                hospitalData["nombre"] = nombre
+                // Usar DTO tipado en lugar de Map genérico
+                val hospitalData = com.Tom.uceva_dengue.Data.Model.UpdateHospitalDto(
+                    nombre = nombre,
+                    direccion = if (direccion.isNullOrBlank()) null else direccion,
+                    latitud = if (latitud.isNullOrBlank()) null else latitud,
+                    longitud = if (longitud.isNullOrBlank()) null else longitud,
+                    idMunicipio = if (idMunicipio != null && idMunicipio > 0) idMunicipio else null
+                )
 
-                if (direccion != null) {
-                    hospitalData["direccion"] = direccion
-                }
-                if (latitud != null) {
-                    hospitalData["latitud"] = latitud
-                }
-                if (longitud != null) {
-                    hospitalData["longitud"] = longitud
-                }
-                if (idMunicipio != null) {
-                    hospitalData["id_municipio"] = idMunicipio
-                }
+                android.util.Log.d("HospitalViewModel", "Updating hospital $id with data: $hospitalData")
 
                 val response = RetrofitClient.hospitalService.updateHospital(id, hospitalData)
                 if (response.isSuccessful) {
+                    android.util.Log.d("HospitalViewModel", "Hospital updated successfully")
                     fetchHospitals() // Recargar lista
                     onSuccess()
                 } else {
-                    onError("Error al actualizar: ${response.message()}")
+                    val errorBody = response.errorBody()?.string() ?: response.message()
+                    android.util.Log.e("HospitalViewModel", "Update failed: ${response.code()} - $errorBody")
+                    onError("Error al actualizar: $errorBody")
                 }
             } catch (e: Exception) {
-                onError("Error de red: ${e.localizedMessage}")
+                android.util.Log.e("HospitalViewModel", "Update exception: ${e.message}", e)
+                onError("Error de red: ${e.localizedMessage ?: e.message}")
             }
         }
     }

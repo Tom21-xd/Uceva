@@ -493,13 +493,13 @@ fun ModernButton(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(dimensions.iconMedium),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     strokeWidth = 2.dp
                 )
                 Spacer(modifier = Modifier.width(dimensions.spacingSmall))
                 Text(
                     text = "Cargando...",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = dimensions.textSizeLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -507,7 +507,7 @@ fun ModernButton(
         } else {
             Text(
                 text = text,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = dimensions.textSizeLarge,
                 fontWeight = FontWeight.Bold
             )

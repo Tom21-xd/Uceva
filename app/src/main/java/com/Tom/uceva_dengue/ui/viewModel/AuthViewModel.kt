@@ -252,13 +252,24 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _birthDate = MutableLiveData("")
     val birthDate: LiveData<String> get() = _birthDate
 
-    init {
-        fetchDepartamentos()
-        fetchGeneros()
-        fetchTiposSangre()
+    // Flags para lazy loading - solo cargar datos cuando se necesiten
+    private var departamentosLoaded = false
+    private var generosLoaded = false
+    private var tiposSangreLoaded = false
+
+    /**
+     * Inicializa y carga datos de formulario de registro si aún no se han cargado
+     * Llamar este método cuando el usuario navega a RegisterScreen
+     */
+    fun initializeRegistrationData() {
+        if (!departamentosLoaded) fetchDepartamentos()
+        if (!generosLoaded) fetchGeneros()
+        if (!tiposSangreLoaded) fetchTiposSangre()
     }
 
     fun fetchDepartamentos() {
+        if (departamentosLoaded) return
+        departamentosLoaded = true
         viewModelScope.launch {
             try {
                 val result = RetrofitClient.departmentService.getDepartments()
@@ -272,6 +283,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun fetchGeneros() {
+        if (generosLoaded) return
+        generosLoaded = true
         viewModelScope.launch {
             try {
                 val response = RetrofitClient.genreService.getGenres()
@@ -290,6 +303,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun fetchTiposSangre() {
+        if (tiposSangreLoaded) return
+        tiposSangreLoaded = true
         viewModelScope.launch {
             try {
                 val result = RetrofitClient.bloodTypeService.getBloodTypes()

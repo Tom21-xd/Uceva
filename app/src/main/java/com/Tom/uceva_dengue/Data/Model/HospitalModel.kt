@@ -88,3 +88,24 @@ data class HospitalCreatedData(
     @SerializedName("isActive")
     val isActive: Boolean
 )
+
+// DTO for updating hospital
+data class UpdateHospitalDto(
+    @SerializedName("nombre")
+    val nombre: String? = null,
+
+    @SerializedName("direccion")
+    val direccion: String? = null,
+
+    @SerializedName("latitud")
+    val latitud: String? = null,
+
+    @SerializedName("longitud")
+    val longitud: String? = null,
+
+    @SerializedName("id_municipio")
+    val idMunicipio: Int? = null,
+
+    @SerializedName("imagen_id")
+    val imagenId: String? = null
+)

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 class CaseViewModel : ViewModel() {
     private val _cases = MutableStateFlow<List<CaseModel>>(emptyList())
@@ -45,44 +46,57 @@ class CaseViewModel : ViewModel() {
     }
 
     /**
+     * Carga datos desde la API en paralelo
+     * @param isRefreshing indica si es una recarga (para pull-to-refresh) o carga inicial
+     */
+    private suspend fun loadData(isRefreshing: Boolean) = coroutineScope {
+        try {
+            // Lanzar todas las peticiones en paralelo
+            val casesDeferred = async { RetrofitClient.caseService.getCases() }
+            val statesDeferred = async { RetrofitClient.caseService.getCaseStates() }
+            val dengueTypesDeferred = async { RetrofitClient.dengueService.getTypesOfDengue() }
+
+            // Esperar a que todas completen
+            val casesResponse = casesDeferred.await()
+            if (casesResponse.isSuccessful && casesResponse.body() != null) {
+                val cases = casesResponse.body()!!
+                _cases.value = cases
+                _filteredCases.value = cases
+                isCasesFetched = true
+            }
+
+            val statesResponse = statesDeferred.await()
+            if (statesResponse.isSuccessful && statesResponse.body() != null) {
+                _caseStates.value = statesResponse.body()!!
+                isCaseStatesFetched = true
+            }
+
+            val dengueResponse = dengueTypesDeferred.await()
+            if (dengueResponse.isSuccessful && dengueResponse.body() != null) {
+                _typeDengue.value = dengueResponse.body()!!
+                isTypeDengueFetched = true
+            }
+
+            if (isRefreshing) {
+                Log.d("CaseViewModel", "Datos actualizados correctamente")
+            }
+        } catch (e: Exception) {
+            Log.e("CaseViewModel", "Error al ${if (isRefreshing) "actualizar" else "cargar"} datos", e)
+            _loadingError.value = "Error al ${if (isRefreshing) "actualizar" else "cargar"} datos: ${e.localizedMessage}"
+            throw e
+        }
+    }
+
+    /**
      * Carga todos los datos en paralelo para evitar flasheo de UI
      */
     fun loadAllData() {
         viewModelScope.launch {
             _isLoading.value = true
             _loadingError.value = null
-
             try {
-                // Lanzar todas las peticiones en paralelo
-                val casesDeferred = async { RetrofitClient.caseService.getCases() }
-                val statesDeferred = async { RetrofitClient.caseService.getCaseStates() }
-                val dengueTypesDeferred = async { RetrofitClient.dengueService.getTypesOfDengue() }
-
-                // Esperar a que todas completen
-                val casesResponse = casesDeferred.await()
-                if (casesResponse.isSuccessful && casesResponse.body() != null) {
-                    val cases = casesResponse.body()!!
-                    _cases.value = cases
-                    _filteredCases.value = cases
-                    isCasesFetched = true
-                }
-
-                val statesResponse = statesDeferred.await()
-                if (statesResponse.isSuccessful && statesResponse.body() != null) {
-                    _caseStates.value = statesResponse.body()!!
-                    isCaseStatesFetched = true
-                }
-
-                val dengueResponse = dengueTypesDeferred.await()
-                if (dengueResponse.isSuccessful && dengueResponse.body() != null) {
-                    _typeDengue.value = dengueResponse.body()!!
-                    isTypeDengueFetched = true
-                }
-
-                _isLoading.value = false
-            } catch (e: Exception) {
-                Log.e("CaseViewModel", "Error al cargar datos", e)
-                _loadingError.value = "Error al cargar datos: ${e.localizedMessage}"
+                loadData(isRefreshing = false)
+            } finally {
                 _isLoading.value = false
             }
         }
@@ -95,39 +109,9 @@ class CaseViewModel : ViewModel() {
         viewModelScope.launch {
             _isRefreshing.value = true
             _loadingError.value = null
-
             try {
-                // Lanzar todas las peticiones en paralelo
-                val casesDeferred = async { RetrofitClient.caseService.getCases() }
-                val statesDeferred = async { RetrofitClient.caseService.getCaseStates() }
-                val dengueTypesDeferred = async { RetrofitClient.dengueService.getTypesOfDengue() }
-
-                // Esperar a que todas completen
-                val casesResponse = casesDeferred.await()
-                if (casesResponse.isSuccessful && casesResponse.body() != null) {
-                    val cases = casesResponse.body()!!
-                    _cases.value = cases
-                    _filteredCases.value = cases
-                    isCasesFetched = true
-                }
-
-                val statesResponse = statesDeferred.await()
-                if (statesResponse.isSuccessful && statesResponse.body() != null) {
-                    _caseStates.value = statesResponse.body()!!
-                    isCaseStatesFetched = true
-                }
-
-                val dengueResponse = dengueTypesDeferred.await()
-                if (dengueResponse.isSuccessful && dengueResponse.body() != null) {
-                    _typeDengue.value = dengueResponse.body()!!
-                    isTypeDengueFetched = true
-                }
-
-                _isRefreshing.value = false
-                Log.d("CaseViewModel", "Datos actualizados correctamente")
-            } catch (e: Exception) {
-                Log.e("CaseViewModel", "Error al actualizar datos", e)
-                _loadingError.value = "Error al actualizar: ${e.localizedMessage}"
+                loadData(isRefreshing = true)
+            } finally {
                 _isRefreshing.value = false
             }
         }

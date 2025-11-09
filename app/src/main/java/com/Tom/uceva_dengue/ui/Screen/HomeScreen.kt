@@ -245,7 +245,7 @@ fun HomeScreen(
                     contentPadding = PaddingValues(bottom = dimensions.paddingExtraLarge * 2), // Espacio para el FAB
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(displayPublications) { publicacion ->
+                    items(displayPublications, key = { it.ID_PUBLICACION }) { publicacion ->
                         ModernPublicationCard(
                             publicacion = publicacion,
                             currentUserId = userId,

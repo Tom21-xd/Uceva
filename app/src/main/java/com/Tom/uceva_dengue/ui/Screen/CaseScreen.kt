@@ -158,13 +158,13 @@
                         modifier = Modifier.fillMaxWidth(),
                         edgePadding = 0.dp,
                         containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = Color(0xFF00796B),
+                        contentColor = MaterialTheme.colorScheme.primary,
                         indicator = { tabPositions ->
                             if (tabPositions.isNotEmpty() && selectedTipoDengueIndex < tabPositions.size) {
                                 TabRowDefaults.Indicator(
                                     Modifier
                                         .tabIndicatorOffset(tabPositions[selectedTipoDengueIndex])
-                                        .background(Color(0xFF00796B))
+                                        .background(MaterialTheme.colorScheme.primary)
                                         .height(3.dp)
                                 )
                             }
@@ -196,7 +196,7 @@
                             verticalArrangement = Arrangement.spacedBy(dimensions.spacingMedium),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            items(cases) { case ->
+                            items(cases, key = { it.ID_CASOREPORTADO }) { case ->
                                 CasoDengueCard(case, role, navController, dimensions)
                             }
                         }
@@ -296,14 +296,17 @@
                             .clip(CircleShape)
                             .background(
                                 brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                                    colors = listOf(Color(0xFF00796B), Color(0xFF004D40))
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.primaryContainer
+                                    )
                                 )
                             ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = case.NOMBRE_PACIENTE.take(2).uppercase(),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -393,14 +396,14 @@
                         modifier = Modifier
                             .size(dimensions.iconExtraLarge)
                             .background(
-                                color = Color(0xFF00796B).copy(alpha = 0.1f),
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
                                 shape = CircleShape
                             )
                     ) {
                         Icon(
                             Icons.Default.Edit,
                             contentDescription = "Ver/Editar caso",
-                            tint = Color(0xFF00796B),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(dimensions.iconLarge)
                         )
                     }

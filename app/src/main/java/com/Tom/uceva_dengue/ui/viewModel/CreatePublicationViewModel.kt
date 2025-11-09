@@ -133,10 +133,10 @@ class CreatePublicationViewModel : ViewModel() {
     }
 
     /**
-     * Obtiene la ubicación actual del dispositivo
+     * Obtiene la ubicación actual del dispositivo usando coroutines
      * Retorna (latitud, longitud) o null si no está disponible
      */
-    private fun getCurrentLocation(context: Context): Pair<Double, Double>? {
+    private suspend fun getCurrentLocation(context: Context): Pair<Double, Double>? = withContext(Dispatchers.IO) {
         try {
             // Verificar permisos
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -144,7 +144,7 @@ class CreatePublicationViewModel : ViewModel() {
                 ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
                 Log.w("CreatePublicationViewModel", "Permisos de ubicación no concedidos")
-                return null
+                return@withContext null
             }
 
             val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -160,12 +160,12 @@ class CreatePublicationViewModel : ViewModel() {
                 }
             }
 
-            return bestLocation?.let {
+            return@withContext bestLocation?.let {
                 Pair(it.latitude, it.longitude)
             }
         } catch (e: Exception) {
             Log.e("CreatePublicationViewModel", "Error al obtener ubicación", e)
-            return null
+            return@withContext null
         }
     }
 }
