@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,7 +19,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.SubcomposeAsyncImage
+import com.Tom.uceva_dengue.Data.Api.RetrofitClient
+import com.Tom.uceva_dengue.Data.Model.CityModel
 import com.Tom.uceva_dengue.ui.viewModel.HospitalViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,12 +32,34 @@ fun UpdateHospitalScreen(
     viewModel: HospitalViewModel = viewModel()
 ) {
     val context = LocalContext.current
+
+    // Estados del formulario
     var nombre by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
+    var latitud by remember { mutableStateOf("") }
+    var longitud by remember { mutableStateOf("") }
+    var selectedCityId by remember { mutableStateOf<Int?>(null) }
+    var selectedCityName by remember { mutableStateOf("") }
     var imageUrl by remember { mutableStateOf("") }
+
+    // Estados de UI
     var isLoading by remember { mutableStateOf(false) }
     var isLoadingData by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Para el dropdown de municipios
+    var cities by remember { mutableStateOf<List<CityModel>>(emptyList()) }
+    var expandedCityDropdown by remember { mutableStateOf(false) }
+
+    // Cargar municipios
+    LaunchedEffect(Unit) {
+        try {
+            val response = RetrofitClient.cityService.getCities("")
+            cities = response
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error al cargar municipios: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     // Cargar datos del hospital
     LaunchedEffect(hospitalId) {
@@ -43,7 +68,13 @@ fun UpdateHospitalScreen(
             onSuccess = { hospital ->
                 nombre = hospital.NOMBRE_HOSPITAL
                 direccion = hospital.DIRECCION_HOSPITAL ?: ""
-                imageUrl = "https://api.prometeondev.com/Image/getImage/${hospital.IMAGEN_HOSPITAL ?: ""}"
+                latitud = hospital.LATITUD_HOSPITAL ?: ""
+                longitud = hospital.LONGITUD_HOSPITAL ?: ""
+                selectedCityId = hospital.FK_ID_MUNICIPIO
+                selectedCityName = hospital.NOMBRE_MUNICIPIO
+                imageUrl = if (!hospital.IMAGEN_HOSPITAL.isNullOrBlank()) {
+                    "https://api.prometeondev.com/Image/getImage/${hospital.IMAGEN_HOSPITAL}"
+                } else ""
                 isLoadingData = false
             },
             onError = { error ->
@@ -88,12 +119,19 @@ fun UpdateHospitalScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                Text(
+                    text = "Editar Hospital",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
                 // Mostrar imagen actual
                 if (imageUrl.isNotEmpty()) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 180.dp) // Reducido de 200dp y responsivo
+                            .heightIn(max = 180.dp)
                             .aspectRatio(16f / 9f, matchHeightConstraintsFirst = false),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
@@ -121,7 +159,7 @@ fun UpdateHospitalScreen(
                     }
 
                     Text(
-                        text = "Nota: La imagen no se puede modificar",
+                        text = "Nota: La imagen no se puede modificar desde aquí",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.fillMaxWidth()
@@ -132,31 +170,104 @@ fun UpdateHospitalScreen(
                 OutlinedTextField(
                     value = nombre,
                     onValueChange = { nombre = it },
-                    label = { Text("Nombre del Hospital") },
+                    label = { Text("Nombre del Hospital *") },
                     modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         focusedLabelColor = MaterialTheme.colorScheme.primary
                     )
                 )
 
-                // Campo Dirección (solo lectura)
+                // Campo Dirección
                 OutlinedTextField(
                     value = direccion,
-                    onValueChange = { },
+                    onValueChange = { direccion = it },
                     label = { Text("Dirección") },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = false,
+                    maxLines = 2,
                     colors = OutlinedTextFieldDefaults.colors(
-                        disabledBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary
                     )
                 )
 
+                // Dropdown de Municipios
+                ExposedDropdownMenuBox(
+                    expanded = expandedCityDropdown,
+                    onExpandedChange = { expandedCityDropdown = it }
+                ) {
+                    OutlinedTextField(
+                        value = selectedCityName,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Municipio") },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "Seleccionar municipio"
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expandedCityDropdown,
+                        onDismissRequest = { expandedCityDropdown = false }
+                    ) {
+                        cities.forEach { city ->
+                            DropdownMenuItem(
+                                text = { Text(city.NOMBRE_MUNICIPIO) },
+                                onClick = {
+                                    selectedCityId = city.ID_MUNICIPIO
+                                    selectedCityName = city.NOMBRE_MUNICIPIO
+                                    expandedCityDropdown = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Campos de coordenadas GPS
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = latitud,
+                        onValueChange = { latitud = it },
+                        label = { Text("Latitud") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = longitud,
+                        onValueChange = { longitud = it },
+                        label = { Text("Longitud") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+
                 Text(
-                    text = "Nota: Solo se puede editar el nombre del hospital",
+                    text = "* Campos obligatorios",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -165,32 +276,33 @@ fun UpdateHospitalScreen(
                 // Botón Actualizar
                 Button(
                     onClick = {
-                        if (nombre.isNotEmpty()) {
-                            isLoading = true
-                            viewModel.updateHospital(
-                                id = hospitalId,
-                                nombre = nombre,
-                                onSuccess = {
-                                    isLoading = false
-                                    Toast.makeText(
-                                        context,
-                                        "Hospital actualizado con éxito",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    navController.navigateUp()
-                                },
-                                onError = { error ->
-                                    isLoading = false
-                                    Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                                }
-                            )
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "El nombre no puede estar vacío",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                        if (nombre.isEmpty()) {
+                            Toast.makeText(context, "El nombre es obligatorio", Toast.LENGTH_SHORT).show()
+                            return@Button
                         }
+
+                        isLoading = true
+                        viewModel.updateHospital(
+                            id = hospitalId,
+                            nombre = nombre,
+                            direccion = direccion.ifBlank { null },
+                            latitud = latitud.ifBlank { null },
+                            longitud = longitud.ifBlank { null },
+                            idMunicipio = selectedCityId,
+                            onSuccess = {
+                                isLoading = false
+                                Toast.makeText(
+                                    context,
+                                    "Hospital actualizado con éxito",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                navController.navigateUp()
+                            },
+                            onError = { error ->
+                                isLoading = false
+                                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                            }
+                        )
                     },
                     enabled = !isLoading,
                     modifier = Modifier

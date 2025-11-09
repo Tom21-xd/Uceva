@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 class HospitalViewModel : ViewModel() {
     private val _hospitals = MutableStateFlow<List<HospitalModel>>(emptyList())
     val hospitals: StateFlow<List<HospitalModel>> = _hospitals.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -19,26 +20,54 @@ class HospitalViewModel : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    // Estado de error
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
     init { fetchHospitals() }
 
     fun fetchHospitals() = viewModelScope.launch {
         _isLoading.value = true
+        _errorMessage.value = null
         try {
-            RetrofitClient.hospitalService.getHospitals().let { r ->
-                if (r.isSuccessful) _hospitals.value = r.body() ?: emptyList()
+            val response = RetrofitClient.hospitalService.getHospitals()
+            if (response.isSuccessful) {
+                _hospitals.value = response.body() ?: emptyList()
+                android.util.Log.d("HospitalViewModel", "Hospitales cargados: ${_hospitals.value.size}")
+            } else {
+                _errorMessage.value = "Error al cargar hospitales: ${response.code()}"
+                android.util.Log.e("HospitalViewModel", "Error response: ${response.code()}")
             }
-        } catch(_ : Exception) { }
-        finally { _isLoading.value = false }
+        } catch(e: Exception) {
+            _errorMessage.value = "Error de red: ${e.localizedMessage}"
+            android.util.Log.e("HospitalViewModel", "Exception: ${e.message}", e)
+        } finally {
+            _isLoading.value = false
+        }
     }
 
     fun filterHospitals(name: String) = viewModelScope.launch {
+        if (name.isBlank()) {
+            fetchHospitals()
+            return@launch
+        }
+
         _isLoading.value = true
+        _errorMessage.value = null
         try {
-            RetrofitClient.hospitalService.filterHospitals(name).let { r ->
-                if (r.isSuccessful) _hospitals.value = r.body() ?: emptyList()
+            val response = RetrofitClient.hospitalService.filterHospitals(name)
+            if (response.isSuccessful) {
+                _hospitals.value = response.body() ?: emptyList()
+                android.util.Log.d("HospitalViewModel", "Filtrados: ${_hospitals.value.size} resultados para '$name'")
+            } else {
+                _errorMessage.value = "Error al buscar: ${response.code()}"
             }
-        } catch(_ : Exception) { }
-        finally { _isLoading.value = false }
+        } catch(e: Exception) {
+            _errorMessage.value = "Error de búsqueda: ${e.localizedMessage}"
+            android.util.Log.e("HospitalViewModel", "Filter exception: ${e.message}", e)
+        } finally {
+            _isLoading.value = false
+        }
     }
 
     /**
@@ -46,12 +75,25 @@ class HospitalViewModel : ViewModel() {
      */
     fun refreshData() = viewModelScope.launch {
         _isRefreshing.value = true
+        _errorMessage.value = null
         try {
-            RetrofitClient.hospitalService.getHospitals().let { r ->
-                if (r.isSuccessful) _hospitals.value = r.body() ?: emptyList()
+            val response = RetrofitClient.hospitalService.getHospitals()
+            if (response.isSuccessful) {
+                _hospitals.value = response.body() ?: emptyList()
+                android.util.Log.d("HospitalViewModel", "Datos refrescados: ${_hospitals.value.size} hospitales")
+            } else {
+                _errorMessage.value = "Error al refrescar: ${response.code()}"
             }
-        } catch(_ : Exception) { }
-        finally { _isRefreshing.value = false }
+        } catch(e: Exception) {
+            _errorMessage.value = "Error de conexión"
+            android.util.Log.e("HospitalViewModel", "Refresh exception: ${e.message}", e)
+        } finally {
+            _isRefreshing.value = false
+        }
+    }
+
+    fun clearError() {
+        _errorMessage.value = null
     }
 
     // DELETE: Eliminar hospital
@@ -75,15 +117,30 @@ class HospitalViewModel : ViewModel() {
     fun updateHospital(
         id: Int,
         nombre: String,
+        direccion: String? = null,
+        latitud: String? = null,
+        longitud: String? = null,
+        idMunicipio: Int? = null,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
             try {
-                val hospitalData = mapOf(
-                    "Nombre" to nombre,
-                    "ImagenId" to null
-                )
+                val hospitalData = mutableMapOf<String, Any?>()
+                hospitalData["nombre"] = nombre
+
+                if (direccion != null) {
+                    hospitalData["direccion"] = direccion
+                }
+                if (latitud != null) {
+                    hospitalData["latitud"] = latitud
+                }
+                if (longitud != null) {
+                    hospitalData["longitud"] = longitud
+                }
+                if (idMunicipio != null) {
+                    hospitalData["id_municipio"] = idMunicipio
+                }
 
                 val response = RetrofitClient.hospitalService.updateHospital(id, hospitalData)
                 if (response.isSuccessful) {

@@ -99,6 +99,22 @@ class AuthRepository(context: Context) {
         tokenManager.saveTokenExpiration(expirationTime)
     }
 
+    /**
+     * Guarda solo el access token (usado en token refresh)
+     */
+    suspend fun saveAccessToken(accessToken: String) {
+        tokenManager.saveAccessToken(accessToken)
+        android.util.Log.d("AuthRepository", "Access token updated after refresh")
+    }
+
+    /**
+     * Limpia la sesión completa (usuario + tokens + permisos)
+     */
+    suspend fun clearSession() {
+        android.util.Log.d("AuthRepository", "Clearing complete session")
+        clearUserSession()
+    }
+
     suspend fun clearAllData() {
         clearUserSession()
         tokenManager.clearAll()
