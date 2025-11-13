@@ -3,6 +3,8 @@ package com.Tom.uceva_dengue.ui.viewModel
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.LocationManager
 import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import android.net.Uri
@@ -19,6 +21,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.math.min
 
 class CreatePublicationViewModel : ViewModel() {
 
@@ -74,7 +77,7 @@ class CreatePublicationViewModel : ViewModel() {
 
                 val imagePart = imageUri?.let { uri ->
                     try {
-                        val file = copyUriToTempFile(context, uri)
+                        val file = compressAndCopyImage(context, uri)
                         MultipartBody.Part.createFormData(
                             "imagen",
                             file.name,
@@ -116,18 +119,60 @@ class CreatePublicationViewModel : ViewModel() {
         }
     }
 
-    private suspend fun copyUriToTempFile(context: Context, uri: Uri): File = withContext(Dispatchers.IO) {
+    /**
+     * Comprime y copia la imagen desde URI a archivo temporal
+     * Optimiza la imagen para reducir tamaño de subida sin perder calidad visual
+     * - Dimensiones máximas: 1920x1920px
+     * - Compresión JPEG: 80%
+     * - Tamaño esperado: 500KB-1MB (vs 5-10MB original)
+     */
+    private suspend fun compressAndCopyImage(context: Context, uri: Uri): File = withContext(Dispatchers.IO) {
         try {
             val inputStream = context.contentResolver.openInputStream(uri)
-            val tempFile = File.createTempFile("upload_", ".jpg", context.cacheDir).apply {
+                ?: throw IllegalArgumentException("No se pudo abrir el stream de la imagen")
+
+            // Decodificar imagen a Bitmap
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+                ?: throw IllegalArgumentException("No se pudo decodificar la imagen")
+            inputStream.close()
+
+            // Calcular dimensiones target (máximo 1920px en cualquier lado)
+            val maxDimension = 1920
+            val scale = min(
+                maxDimension.toFloat() / originalBitmap.width,
+                maxDimension.toFloat() / originalBitmap.height
+            )
+
+            val targetWidth = (originalBitmap.width * scale).toInt()
+            val targetHeight = (originalBitmap.height * scale).toInt()
+
+            // Escalar bitmap si es necesario
+            val scaledBitmap = if (scale < 1.0f) {
+                Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true).also {
+                    originalBitmap.recycle() // Liberar memoria del bitmap original
+                }
+            } else {
+                originalBitmap
+            }
+
+            // Crear archivo temporal y comprimir
+            val tempFile = File.createTempFile("upload_compressed_", ".jpg", context.cacheDir).apply {
                 deleteOnExit()
             }
+
             FileOutputStream(tempFile).use { outputStream ->
-                inputStream?.copyTo(outputStream)
+                // Comprimir a JPEG con 80% de calidad
+                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
             }
+
+            // Liberar memoria del bitmap escalado
+            scaledBitmap.recycle()
+
+            Log.d("CreatePublicationViewModel", "Imagen comprimida: ${tempFile.length() / 1024}KB")
+
             tempFile
         } catch (e: Exception) {
-            Log.e("CreatePublicationViewModel", "Error al copiar el archivo URI", e)
+            Log.e("CreatePublicationViewModel", "Error al comprimir la imagen", e)
             throw e
         }
     }

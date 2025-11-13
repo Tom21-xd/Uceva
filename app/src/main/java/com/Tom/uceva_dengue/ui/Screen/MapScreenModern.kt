@@ -241,12 +241,30 @@ fun MapScreenModern(viewModel: MapViewModel) {
         }
     }
 
-    // Optimizar heatmap provider con derivedStateOf
+    // Optimizar heatmap provider con derivedStateOf y configuración ajustada
     val heatmapProvider by remember {
         derivedStateOf {
             if (heatmapPoints.isNotEmpty()) {
+                // Configuración optimizada del heatmap
+                // Gradiente de colores: verde (bajo) -> amarillo (moderado) -> naranja (alto) -> rojo (crítico)
+                val colors = intArrayOf(
+                    android.graphics.Color.rgb(102, 225, 0),    // Verde brillante (bajo)
+                    android.graphics.Color.rgb(255, 255, 0),    // Amarillo (moderado)
+                    android.graphics.Color.rgb(255, 165, 0),    // Naranja (alto)
+                    android.graphics.Color.rgb(255, 0, 0)       // Rojo (crítico)
+                )
+
+                // Puntos de inicio para cada color (0.0 a 1.0)
+                val startPoints = floatArrayOf(0.1f, 0.3f, 0.6f, 1.0f)
+
+                val gradient = com.google.maps.android.heatmaps.Gradient(colors, startPoints)
+
                 HeatmapTileProvider.Builder()
                     .data(heatmapPoints)
+                    .gradient(gradient)
+                    .radius(50) // Radio de influencia en píxeles (default: 20, aumentado para mejor visualización)
+                    .opacity(0.7) // Opacidad del heatmap (0.0 a 1.0)
+                    .maxIntensity(100.0) // Intensidad máxima - ajustado para que no marque crítico con pocos casos
                     .build()
             } else {
                 null

@@ -20,6 +20,10 @@ class CaseViewModel : ViewModel() {
     private val _filteredCases = MutableStateFlow<List<CaseModel>>(emptyList())
     val filteredCases: StateFlow<List<CaseModel>> = _filteredCases
 
+    // Paginación: casos visibles actualmente
+    private val _displayedCases = MutableStateFlow<List<CaseModel>>(emptyList())
+    val displayedCases: StateFlow<List<CaseModel>> = _displayedCases
+
     private val _caseStates = MutableStateFlow<List<CaseStateModel>>(emptyList())
     val caseStates: StateFlow<List<CaseStateModel>> = _caseStates
 
@@ -36,6 +40,16 @@ class CaseViewModel : ViewModel() {
     // Estado de refresh para pull-to-refresh
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
+    // Estados de paginación
+    private val _isLoadingMore = MutableStateFlow(false)
+    val isLoadingMore: StateFlow<Boolean> = _isLoadingMore
+
+    private val _hasMorePages = MutableStateFlow(true)
+    val hasMorePages: StateFlow<Boolean> = _hasMorePages
+
+    private val pageSize = 20 // Cargar 20 casos por página
+    private var currentPage = 0
 
     private var isCasesFetched = false
     private var isCaseStatesFetched = false
@@ -63,6 +77,11 @@ class CaseViewModel : ViewModel() {
                 _cases.value = cases
                 _filteredCases.value = cases
                 isCasesFetched = true
+
+                // Inicializar paginación
+                currentPage = 0
+                _hasMorePages.value = cases.size > pageSize
+                _displayedCases.value = cases.take(pageSize)
             }
 
             val statesResponse = statesDeferred.await()
@@ -173,6 +192,11 @@ class CaseViewModel : ViewModel() {
         } else {
             _cases.value.filter { case -> case.NOMBRE_ESTADOCASO == estado }
         }
+
+        // Resetear paginación al filtrar
+        currentPage = 0
+        _hasMorePages.value = _filteredCases.value.size > pageSize
+        _displayedCases.value = _filteredCases.value.take(pageSize)
     }
 
     fun filterCasesByTypeOfDengue(TypeOfDengue: String) {
@@ -180,6 +204,41 @@ class CaseViewModel : ViewModel() {
             _cases.value
         } else {
             _cases.value.filter { case -> case.NOMBRE_TIPODENGUE == TypeOfDengue }
+        }
+
+        // Resetear paginación al filtrar
+        currentPage = 0
+        _hasMorePages.value = _filteredCases.value.size > pageSize
+        _displayedCases.value = _filteredCases.value.take(pageSize)
+    }
+
+    /**
+     * Cargar más casos (paginación infinita)
+     */
+    fun loadMoreCases() {
+        if (_isLoadingMore.value || !_hasMorePages.value) return
+
+        viewModelScope.launch {
+            try {
+                _isLoadingMore.value = true
+
+                // Simular carga corta (paginación cliente-side)
+                kotlinx.coroutines.delay(300)
+
+                currentPage++
+                val startIndex = currentPage * pageSize
+                val endIndex = ((currentPage + 1) * pageSize).coerceAtMost(_filteredCases.value.size)
+
+                if (startIndex < _filteredCases.value.size) {
+                    val newCases = _filteredCases.value.subList(startIndex, endIndex)
+                    _displayedCases.value = _displayedCases.value + newCases
+                    _hasMorePages.value = endIndex < _filteredCases.value.size
+                } else {
+                    _hasMorePages.value = false
+                }
+            } finally {
+                _isLoadingMore.value = false
+            }
         }
     }
 

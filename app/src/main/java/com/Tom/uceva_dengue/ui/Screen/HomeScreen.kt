@@ -56,6 +56,8 @@ fun HomeScreen(
     var searchText by remember { mutableStateOf("") }
     val publicaciones by viewModel.publicaciones.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+    val hasMorePages by viewModel.hasMorePages.collectAsState()
     var publicationToDelete by remember { mutableStateOf<PublicationModel?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf(PublicationFilter.ALL) }
@@ -306,6 +308,47 @@ fun HomeScreen(
                                 showDeleteDialog = true
                             }
                         )
+                    }
+
+                    // Indicador de carga al final de la lista
+                    if (hasMorePages && displayPublications.isNotEmpty()) {
+                        item {
+                            LaunchedEffect(Unit) {
+                                viewModel.loadMorePublications()
+                            }
+
+                            if (isLoadingMore) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(dimensions.paddingMedium),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(32.dp),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Mensaje cuando no hay más publicaciones
+                    if (!hasMorePages && displayPublications.isNotEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(dimensions.paddingMedium),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No hay más publicaciones",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
             }

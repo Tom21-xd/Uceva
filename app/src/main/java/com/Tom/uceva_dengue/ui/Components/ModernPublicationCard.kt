@@ -226,6 +226,9 @@ fun ModernPublicationCard(
                     model = ImageRequest.Builder(context)
                         .data(imageUrl)
                         .crossfade(true)
+                        .memoryCacheKey(imageUrl) // Cache en memoria
+                        .diskCacheKey(imageUrl) // Cache en disco
+                        .size(800) // Limitar tamaño para ahorrar memoria
                         .build(),
                     contentDescription = "Imagen de publicación",
                     modifier = Modifier

@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class NotificationViewModel : ViewModel() {
+    private val _allNotifications = MutableStateFlow<List<NotificationModel>>(emptyList())
+
+    // Paginación: notificaciones visibles actualmente
     private val _notifications = MutableStateFlow<List<NotificationModel>>(emptyList())
     val notifications: StateFlow<List<NotificationModel>> = _notifications.asStateFlow()
 
@@ -26,6 +29,16 @@ class NotificationViewModel : ViewModel() {
     private val _successMessage = MutableStateFlow<String?>(null)
     val successMessage: StateFlow<String?> = _successMessage.asStateFlow()
 
+    // Estados de paginación
+    private val _isLoadingMore = MutableStateFlow(false)
+    val isLoadingMore: StateFlow<Boolean> = _isLoadingMore.asStateFlow()
+
+    private val _hasMorePages = MutableStateFlow(true)
+    val hasMorePages: StateFlow<Boolean> = _hasMorePages.asStateFlow()
+
+    private val pageSize = 30 // Cargar 30 notificaciones por página
+    private var currentPage = 0
+
     init {
         fetchNotifications()
     }
@@ -40,11 +53,14 @@ class NotificationViewModel : ViewModel() {
 
             if (response.isSuccessful && response.body() != null) {
                 val notificationsList = response.body()!!
-                _notifications.value = notificationsList
-                Log.d("NotificationVM", "Notificaciones cargadas: ${notificationsList.size} items")
-                notificationsList.forEachIndexed { index, notif ->
-                    Log.d("NotificationVM", "[$index] ID: ${notif.ID_NOTIFICACION}, Contenido: ${notif.CONTENIDO_NOTIFICACION}")
-                }
+                _allNotifications.value = notificationsList
+
+                // Inicializar paginación
+                currentPage = 0
+                _hasMorePages.value = notificationsList.size > pageSize
+                _notifications.value = notificationsList.take(pageSize)
+
+                Log.d("NotificationVM", "Notificaciones cargadas: ${notificationsList.size} items (mostrando ${_notifications.value.size})")
             } else {
                 val errorBody = response.errorBody()?.string()
                 Log.e("NotificationVM", "Error al cargar notificaciones - Mensaje: ${response.message()}, Body: $errorBody")
@@ -67,8 +83,14 @@ class NotificationViewModel : ViewModel() {
 
             if (response.isSuccessful && response.body() != null) {
                 val notificationsList = response.body()!!
-                _notifications.value = notificationsList
-                Log.d("NotificationVM", "Notificaciones refrescadas: ${notificationsList.size} items")
+                _allNotifications.value = notificationsList
+
+                // Resetear paginación
+                currentPage = 0
+                _hasMorePages.value = notificationsList.size > pageSize
+                _notifications.value = notificationsList.take(pageSize)
+
+                Log.d("NotificationVM", "Notificaciones refrescadas: ${notificationsList.size} items (mostrando ${_notifications.value.size})")
             } else {
                 Log.e("NotificationVM", "Error al refrescar notificaciones: ${response.message()}")
                 _error.value = "Error al actualizar: ${response.message()}"
@@ -135,5 +157,37 @@ class NotificationViewModel : ViewModel() {
     fun clearMessages() {
         _error.value = null
         _successMessage.value = null
+    }
+
+    /**
+     * Cargar más notificaciones (paginación infinita)
+     */
+    fun loadMoreNotifications() {
+        if (_isLoadingMore.value || !_hasMorePages.value) return
+
+        viewModelScope.launch {
+            try {
+                _isLoadingMore.value = true
+
+                // Paginación cliente-side
+                kotlinx.coroutines.delay(200)
+
+                currentPage++
+                val startIndex = currentPage * pageSize
+                val endIndex = ((currentPage + 1) * pageSize).coerceAtMost(_allNotifications.value.size)
+
+                if (startIndex < _allNotifications.value.size) {
+                    val newNotifications = _allNotifications.value.subList(startIndex, endIndex)
+                    _notifications.value = _notifications.value + newNotifications
+                    _hasMorePages.value = endIndex < _allNotifications.value.size
+
+                    Log.d("NotificationVM", "Cargadas ${newNotifications.size} notificaciones más. Total: ${_notifications.value.size}")
+                } else {
+                    _hasMorePages.value = false
+                }
+            } finally {
+                _isLoadingMore.value = false
+            }
+        }
     }
 }

@@ -22,7 +22,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.Tom.uceva_dengue.Data.Model.HospitalModel
 
 @Composable
@@ -32,6 +34,7 @@ fun HospitalCard(
     onEdit: ((HospitalModel) -> Unit)? = null,
     onDelete: ((HospitalModel) -> Unit)? = null
 ) {
+    val context = LocalContext.current
     val imageUrl = if (!hospital.IMAGEN_HOSPITAL.isNullOrBlank()) {
         "https://api.prometeondev.com/Image/getImage/${hospital.IMAGEN_HOSPITAL}"
     } else null
@@ -51,7 +54,13 @@ fun HospitalCard(
             Box(modifier = Modifier.fillMaxWidth()) {
                 if (imageUrl != null) {
                     SubcomposeAsyncImage(
-                        model = imageUrl,
+                        model = ImageRequest.Builder(context)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .memoryCacheKey(imageUrl)
+                            .diskCacheKey(imageUrl)
+                            .size(600) // Limitar tamaño
+                            .build(),
                         contentDescription = "Imagen de ${hospital.NOMBRE_HOSPITAL}",
                         modifier = Modifier
                             .fillMaxWidth()

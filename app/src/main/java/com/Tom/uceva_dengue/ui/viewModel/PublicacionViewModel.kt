@@ -20,6 +20,21 @@ class PublicacionViewModel : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
 
+    // Estados de paginación
+    private val _isLoadingMore = MutableStateFlow(false)
+    val isLoadingMore = _isLoadingMore.asStateFlow()
+
+    private val _hasMorePages = MutableStateFlow(true)
+    val hasMorePages = _hasMorePages.asStateFlow()
+
+    private var currentOffset = 0
+    private val pageSize = 20 // Cargar 20 publicaciones por página
+
+    // Cache de filtros actuales para paginación
+    private var currentUserId: Int? = null
+    private var currentCiudadId: Int? = null
+    private var currentCategoriaId: Int? = null
+
     init {
         obtenerPublicaciones()
     }
@@ -42,10 +57,17 @@ class PublicacionViewModel : ViewModel() {
         userId: Int? = null,
         ciudadId: Int? = null,
         categoriaId: Int? = null,
-        limit: Int = 50
+        limit: Int = pageSize
     ) {
         viewModelScope.launch {
             try {
+                // Resetear paginación
+                currentOffset = 0
+                currentUserId = userId
+                currentCiudadId = ciudadId
+                currentCategoriaId = categoriaId
+                _hasMorePages.value = true
+
                 val response = RetrofitClient.publicationService.getFeed(
                     ciudadId = ciudadId,
                     categoriaId = categoriaId,
@@ -54,7 +76,10 @@ class PublicacionViewModel : ViewModel() {
                     offset = 0
                 )
                 if (response.isSuccessful && response.body() != null) {
-                    _publicaciones.value = response.body()!!
+                    val newPublications = response.body()!!
+                    _publicaciones.value = newPublications
+                    _hasMorePages.value = newPublications.size >= limit
+                    currentOffset = newPublications.size
                 } else {
                     Log.e("PublicacionViewModel", "Error al obtener feed: ${response.message()}")
                     // Fallback al método básico
@@ -64,6 +89,45 @@ class PublicacionViewModel : ViewModel() {
                 Log.e("PublicacionViewModel", "Error al obtener feed inteligente", e)
                 // Fallback al método básico
                 obtenerPublicaciones(userId)
+            }
+        }
+    }
+
+    /**
+     * Cargar más publicaciones (paginación infinita)
+     */
+    fun loadMorePublications() {
+        if (_isLoadingMore.value || !_hasMorePages.value) return
+
+        viewModelScope.launch {
+            try {
+                _isLoadingMore.value = true
+
+                val response = RetrofitClient.publicationService.getFeed(
+                    ciudadId = currentCiudadId,
+                    categoriaId = currentCategoriaId,
+                    userId = currentUserId,
+                    limit = pageSize,
+                    offset = currentOffset
+                )
+
+                if (response.isSuccessful && response.body() != null) {
+                    val newPublications = response.body()!!
+                    if (newPublications.isNotEmpty()) {
+                        // Agregar nuevas publicaciones a las existentes
+                        _publicaciones.value = _publicaciones.value + newPublications
+                        currentOffset += newPublications.size
+                        _hasMorePages.value = newPublications.size >= pageSize
+                    } else {
+                        _hasMorePages.value = false
+                    }
+                } else {
+                    Log.e("PublicacionViewModel", "Error al cargar más: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PublicacionViewModel", "Error al cargar más publicaciones", e)
+            } finally {
+                _isLoadingMore.value = false
             }
         }
     }

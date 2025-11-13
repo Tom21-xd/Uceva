@@ -36,6 +36,8 @@ fun NotificationScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val error by viewModel.error.collectAsState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+    val hasMorePages by viewModel.hasMorePages.collectAsState()
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -104,6 +106,47 @@ fun NotificationScreen(
                     ) {
                         items(notifications) { notif ->
                             NotificationCard(notif, dimensions)
+                        }
+
+                        // Indicador de carga al final de la lista
+                        if (hasMorePages && notifications.isNotEmpty()) {
+                            item {
+                                LaunchedEffect(Unit) {
+                                    viewModel.loadMoreNotifications()
+                                }
+
+                                if (isLoadingMore) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(dimensions.paddingMedium),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(32.dp),
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Mensaje cuando no hay más notificaciones
+                        if (!hasMorePages && notifications.isNotEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(dimensions.paddingMedium),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No hay más notificaciones",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                         }
                     }
                 }

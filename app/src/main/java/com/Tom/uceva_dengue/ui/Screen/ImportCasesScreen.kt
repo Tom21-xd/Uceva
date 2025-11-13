@@ -403,15 +403,33 @@ fun ColumnMappingSection(
     onClearMapping: (String) -> Unit,
     dimensions: com.Tom.uceva_dengue.utils.AppDimensions
 ) {
-    // Campos del sistema que necesitan mapeo
-    val systemFields = listOf(
-        "año" to "Año del Caso",
-        "edad" to "Edad del Paciente",
-        "clasificacion" to "Clasificación/Tipo de Dengue",
-        "barrio" to "Barrio o Vereda",
-        "latitud" to "Latitud",
-        "longitud" to "Longitud"
-    )
+    // Estado para el switch
+    var hasCoordinates by remember { mutableStateOf(true) }
+
+    // Campos del sistema que necesitan mapeo (dinámico según el switch)
+    val systemFields = if (hasCoordinates) {
+        // Modo: Ya tengo coordenadas
+        listOf(
+            "año" to "Año del Caso",
+            "edad" to "Edad del Paciente",
+            "clasificacion" to "Clasificación/Tipo de Dengue",
+            "barrio" to "Barrio o Vereda",
+            "latitud" to "Latitud",
+            "longitud" to "Longitud",
+            "nombre" to "Nombre del Paciente (Opcional)"
+        )
+    } else {
+        // Modo: Necesito geocodificación
+        listOf(
+            "año" to "Año del Caso",
+            "edad" to "Edad del Paciente",
+            "clasificacion" to "Clasificación/Tipo de Dengue",
+            "barrio" to "Barrio o Vereda",
+            "ciudad" to "Ciudad o Municipio",
+            "direccion" to "Dirección (Opcional)",
+            "nombre" to "Nombre del Paciente (Opcional)"
+        )
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -440,6 +458,61 @@ fun ColumnMappingSection(
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.DarkGray
             )
+            Spacer(modifier = Modifier.height(dimensions.paddingMedium))
+
+            // Switch para seleccionar modo
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (hasCoordinates) Color(0xFFE8F5E9) else Color(0xFFFFF3E0)
+                ),
+                shape = RoundedCornerShape(dimensions.paddingSmall)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(dimensions.paddingMedium),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                if (hasCoordinates) Icons.Default.GpsFixed else Icons.Default.Map,
+                                contentDescription = null,
+                                tint = if (hasCoordinates) SuccessGreen else WarningOrange,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(dimensions.paddingSmall))
+                            Text(
+                                if (hasCoordinates) "Tengo Coordenadas" else "Necesito Geocodificación",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = if (hasCoordinates) SuccessGreen else WarningOrange
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            if (hasCoordinates)
+                                "El archivo ya contiene latitud y longitud"
+                            else
+                                "Usaré ciudad y barrio para obtener coordenadas",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.DarkGray
+                        )
+                    }
+                    Switch(
+                        checked = hasCoordinates,
+                        onCheckedChange = { hasCoordinates = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = SuccessGreen,
+                            checkedTrackColor = SuccessGreen.copy(alpha = 0.5f),
+                            uncheckedThumbColor = WarningOrange,
+                            uncheckedTrackColor = WarningOrange.copy(alpha = 0.5f)
+                        )
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(dimensions.paddingMedium))
 
             // Lista de mapeos

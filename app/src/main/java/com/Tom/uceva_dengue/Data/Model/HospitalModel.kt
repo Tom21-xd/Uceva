@@ -109,3 +109,18 @@ data class UpdateHospitalDto(
     @SerializedName("imagen_id")
     val imagenId: String? = null
 )
+
+// Response model for updateHospital endpoint
+data class UpdateHospitalResponse(
+    @SerializedName("message")
+    val message: String,
+
+    @SerializedName("hospital")
+    val hospital: HospitalModel?
+)
+
+// Response model for deleteHospital endpoint
+data class DeleteHospitalResponse(
+    @SerializedName("message")
+    val message: String
+)

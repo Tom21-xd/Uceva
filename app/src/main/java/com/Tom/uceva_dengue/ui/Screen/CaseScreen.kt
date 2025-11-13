@@ -46,12 +46,14 @@
         val coroutineScope = rememberCoroutineScope()
         val permissionsManager = remember { UserPermissionsManager.getInstance(context) }
 
-        val cases by caseViewModel.filteredCases.collectAsState()
+        val cases by caseViewModel.displayedCases.collectAsState()
         val caseStates by caseViewModel.caseStates.collectAsState()
         val TypeOfDengue by caseViewModel.typeDengue.collectAsState()
         val isLoading by caseViewModel.isLoading.collectAsState()
         val loadingError by caseViewModel.loadingError.collectAsState()
         val isRefreshing by caseViewModel.isRefreshing.collectAsState()
+        val isLoadingMore by caseViewModel.isLoadingMore.collectAsState()
+        val hasMorePages by caseViewModel.hasMorePages.collectAsState()
 
         // Check if user has permission to view all cases
         var hasViewPermission by remember { mutableStateOf(false) }
@@ -198,6 +200,47 @@
                         ) {
                             items(cases, key = { it.ID_CASOREPORTADO }) { case ->
                                 CasoDengueCard(case, role, navController, dimensions)
+                            }
+
+                            // Indicador de carga al final de la lista
+                            if (hasMorePages && cases.isNotEmpty()) {
+                                item {
+                                    LaunchedEffect(Unit) {
+                                        caseViewModel.loadMoreCases()
+                                    }
+
+                                    if (isLoadingMore) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(dimensions.paddingMedium),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(32.dp),
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Mensaje cuando no hay más casos
+                            if (!hasMorePages && cases.isNotEmpty()) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(dimensions.paddingMedium),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "No hay más casos",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
                             }
                         }
                     } else {
