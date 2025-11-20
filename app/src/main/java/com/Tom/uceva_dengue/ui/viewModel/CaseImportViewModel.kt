@@ -57,7 +57,12 @@ class CaseImportViewModel : ViewModel() {
             _importResult.value = null
 
             try {
-                Log.d("CaseImport", "Importando CSV: ${file.name}, size: ${file.length()} bytes")
+                Log.d("CaseImport", "════════════════════════════════════════════════════")
+                Log.d("CaseImport", "🚀 INICIANDO IMPORTACIÓN CSV")
+                Log.d("CaseImport", "════════════════════════════════════════════════════")
+                Log.d("CaseImport", "📁 Archivo: ${file.name}")
+                Log.d("CaseImport", "📊 Tamaño: ${file.length()} bytes")
+                Log.d("CaseImport", "📂 Path: ${file.absolutePath}")
 
                 val requestFile = file.asRequestBody("text/csv".toMediaTypeOrNull())
                 val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
@@ -65,26 +70,106 @@ class CaseImportViewModel : ViewModel() {
                 // Convertir mapeo a JSON si existe
                 val mappingJson = if (_columnMapping.value.isNotEmpty()) {
                     val json = Gson().toJson(_columnMapping.value)
-                    Log.d("CaseImport", "Enviando mapeo: $json")
+                    Log.d("CaseImport", "────────────────────────────────────────────────────")
+                    Log.d("CaseImport", "🗺️  MAPEO DE COLUMNAS")
+                    Log.d("CaseImport", "────────────────────────────────────────────────────")
+                    Log.d("CaseImport", "📋 Total de campos mapeados: ${_columnMapping.value.size}")
+                    _columnMapping.value.forEach { (key, value) ->
+                        Log.d("CaseImport", "   ✓ $key -> $value")
+                    }
+                    Log.d("CaseImport", "📦 JSON enviado: $json")
                     json.toRequestBody("text/plain".toMediaTypeOrNull())
                 } else {
+                    Log.d("CaseImport", "⚠️  SIN MAPEO DE COLUMNAS")
                     null
                 }
 
+                Log.d("CaseImport", "────────────────────────────────────────────────────")
+                Log.d("CaseImport", "🌐 ENVIANDO REQUEST AL SERVIDOR")
+                Log.d("CaseImport", "────────────────────────────────────────────────────")
+
                 val response = caseImportService.importCsv(body, mappingJson)
+
+                Log.d("CaseImport", "────────────────────────────────────────────────────")
+                Log.d("CaseImport", "📥 RESPUESTA DEL SERVIDOR")
+                Log.d("CaseImport", "────────────────────────────────────────────────────")
+                Log.d("CaseImport", "🔢 Código HTTP: ${response.code()}")
+                Log.d("CaseImport", "✅ Es exitoso: ${response.isSuccessful}")
+                Log.d("CaseImport", "📨 Mensaje: ${response.message()}")
 
                 if (response.isSuccessful && response.body() != null) {
                     val importResponse = response.body()!!
+                    Log.d("CaseImport", "────────────────────────────────────────────────────")
+                    Log.d("CaseImport", "📦 BODY DE LA RESPUESTA")
+                    Log.d("CaseImport", "────────────────────────────────────────────────────")
+                    Log.d("CaseImport", "💬 Message: ${importResponse.message}")
+                    Log.d("CaseImport", "📊 Data object: ${importResponse.data}")
+                    Log.d("CaseImport", "   - totalRows: ${importResponse.data.totalRows}")
+                    Log.d("CaseImport", "   - successfulImports: ${importResponse.data.successfulImports}")
+                    Log.d("CaseImport", "   - failedImports: ${importResponse.data.failedImports}")
+                    Log.d("CaseImport", "   - importedAt: ${importResponse.data.importedAt}")
+                    Log.d("CaseImport", "   - processingTime: ${importResponse.data.processingTime}")
+                    Log.d("CaseImport", "   - errors count: ${importResponse.data.errors?.size ?: 0}")
+                    Log.d("CaseImport", "   - importedCases count: ${importResponse.data.importedCases?.size ?: 0}")
+
+                    // Log de casos importados con detalle
+                    if (!importResponse.data.importedCases.isNullOrEmpty()) {
+                        Log.d("CaseImport", "────────────────────────────────────────────────────")
+                        Log.d("CaseImport", "📍 CASOS IMPORTADOS CON COORDENADAS")
+                        Log.d("CaseImport", "────────────────────────────────────────────────────")
+                        importResponse.data.importedCases.forEachIndexed { index, case ->
+                            Log.d("CaseImport", "Caso ${index + 1}:")
+                            Log.d("CaseImport", "   ID: ${case.caseId}")
+                            Log.d("CaseImport", "   Lat: ${case.latitude}")
+                            Log.d("CaseImport", "   Lng: ${case.longitude}")
+                            Log.d("CaseImport", "   Barrio: ${case.neighborhood}")
+                            Log.d("CaseImport", "   Nombre: ${case.temporaryName}")
+                            Log.d("CaseImport", "   Año: ${case.year}, Edad: ${case.age}")
+                            Log.d("CaseImport", "   Tipo: ${case.dengueType}")
+                        }
+                    } else {
+                        Log.w("CaseImport", "⚠️  importedCases está VACÍO o NULL")
+                    }
+
+                    // Log de errores si los hay
+                    if (!importResponse.data.errors.isNullOrEmpty()) {
+                        Log.d("CaseImport", "────────────────────────────────────────────────────")
+                        Log.d("CaseImport", "❌ ERRORES DE IMPORTACIÓN")
+                        Log.d("CaseImport", "────────────────────────────────────────────────────")
+                        importResponse.data.errors.forEach { error ->
+                            Log.e("CaseImport", "Fila ${error.row}: ${error.error}")
+                        }
+                    }
+
                     _importResult.value = importResponse.data
-                    Log.d("CaseImport", "Importación exitosa: ${importResponse.data.successfulImports} casos")
+                    Log.d("CaseImport", "════════════════════════════════════════════════════")
+                    Log.d("CaseImport", "✅ IMPORTACIÓN COMPLETADA EXITOSAMENTE")
+                    Log.d("CaseImport", "════════════════════════════════════════════════════")
                 } else {
                     val errorBody = response.errorBody()?.string()
                     _errorMessage.value = "Error al importar: ${response.message()}"
-                    Log.e("CaseImport", "Error: $errorBody")
+                    Log.e("CaseImport", "════════════════════════════════════════════════════")
+                    Log.e("CaseImport", "❌ ERROR EN LA RESPUESTA")
+                    Log.e("CaseImport", "════════════════════════════════════════════════════")
+                    Log.e("CaseImport", "Error Body: $errorBody")
+                    Log.e("CaseImport", "Response headers: ${response.headers()}")
                 }
+            } catch (e: java.net.SocketTimeoutException) {
+                _errorMessage.value = "Tiempo de espera agotado. La importación puede tardar varios minutos con muchos casos."
+                Log.e("CaseImport", "⏱️  TIMEOUT al importar CSV", e)
+            } catch (e: java.net.ConnectException) {
+                _errorMessage.value = "No se pudo conectar al servidor. Verifica tu conexión a internet."
+                Log.e("CaseImport", "🔌 CONNECTION ERROR", e)
+            } catch (e: java.io.EOFException) {
+                _errorMessage.value = "Conexión cerrada. El servidor puede estar procesando, verifica los casos importados."
+                Log.e("CaseImport", "📡 EOF EXCEPTION - conexión closed", e)
             } catch (e: Exception) {
-                _errorMessage.value = "Error de conexión: ${e.localizedMessage}"
-                Log.e("CaseImport", "Exception al importar CSV", e)
+                _errorMessage.value = "Error de conexión: ${e.message ?: e.javaClass.simpleName}"
+                Log.e("CaseImport", "════════════════════════════════════════════════════")
+                Log.e("CaseImport", "💥 EXCEPTION al importar CSV")
+                Log.e("CaseImport", "════════════════════════════════════════════════════")
+                Log.e("CaseImport", "Tipo: ${e.javaClass.name}", e)
+                Log.e("CaseImport", "Mensaje: ${e.message}")
                 e.printStackTrace()
             } finally {
                 _isLoading.value = false
@@ -102,7 +187,12 @@ class CaseImportViewModel : ViewModel() {
             _importResult.value = null
 
             try {
-                Log.d("CaseImport", "Importando Excel: ${file.name}, size: ${file.length()} bytes")
+                Log.d("CaseImport", "════════════════════════════════════════════════════")
+                Log.d("CaseImport", "🚀 INICIANDO IMPORTACIÓN EXCEL")
+                Log.d("CaseImport", "════════════════════════════════════════════════════")
+                Log.d("CaseImport", "📁 Archivo: ${file.name}")
+                Log.d("CaseImport", "📊 Tamaño: ${file.length()} bytes")
+                Log.d("CaseImport", "📂 Path: ${file.absolutePath}")
 
                 val requestFile = file.asRequestBody("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".toMediaTypeOrNull())
                 val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
@@ -110,26 +200,106 @@ class CaseImportViewModel : ViewModel() {
                 // Convertir mapeo a JSON si existe
                 val mappingJson = if (_columnMapping.value.isNotEmpty()) {
                     val json = Gson().toJson(_columnMapping.value)
-                    Log.d("CaseImport", "Enviando mapeo: $json")
+                    Log.d("CaseImport", "────────────────────────────────────────────────────")
+                    Log.d("CaseImport", "🗺️  MAPEO DE COLUMNAS")
+                    Log.d("CaseImport", "────────────────────────────────────────────────────")
+                    Log.d("CaseImport", "📋 Total de campos mapeados: ${_columnMapping.value.size}")
+                    _columnMapping.value.forEach { (key, value) ->
+                        Log.d("CaseImport", "   ✓ $key -> $value")
+                    }
+                    Log.d("CaseImport", "📦 JSON enviado: $json")
                     json.toRequestBody("text/plain".toMediaTypeOrNull())
                 } else {
+                    Log.d("CaseImport", "⚠️  SIN MAPEO DE COLUMNAS")
                     null
                 }
 
+                Log.d("CaseImport", "────────────────────────────────────────────────────")
+                Log.d("CaseImport", "🌐 ENVIANDO REQUEST AL SERVIDOR")
+                Log.d("CaseImport", "────────────────────────────────────────────────────")
+
                 val response = caseImportService.importExcel(body, mappingJson)
+
+                Log.d("CaseImport", "────────────────────────────────────────────────────")
+                Log.d("CaseImport", "📥 RESPUESTA DEL SERVIDOR")
+                Log.d("CaseImport", "────────────────────────────────────────────────────")
+                Log.d("CaseImport", "🔢 Código HTTP: ${response.code()}")
+                Log.d("CaseImport", "✅ Es exitoso: ${response.isSuccessful}")
+                Log.d("CaseImport", "📨 Mensaje: ${response.message()}")
 
                 if (response.isSuccessful && response.body() != null) {
                     val importResponse = response.body()!!
+                    Log.d("CaseImport", "────────────────────────────────────────────────────")
+                    Log.d("CaseImport", "📦 BODY DE LA RESPUESTA")
+                    Log.d("CaseImport", "────────────────────────────────────────────────────")
+                    Log.d("CaseImport", "💬 Message: ${importResponse.message}")
+                    Log.d("CaseImport", "📊 Data object: ${importResponse.data}")
+                    Log.d("CaseImport", "   - totalRows: ${importResponse.data.totalRows}")
+                    Log.d("CaseImport", "   - successfulImports: ${importResponse.data.successfulImports}")
+                    Log.d("CaseImport", "   - failedImports: ${importResponse.data.failedImports}")
+                    Log.d("CaseImport", "   - importedAt: ${importResponse.data.importedAt}")
+                    Log.d("CaseImport", "   - processingTime: ${importResponse.data.processingTime}")
+                    Log.d("CaseImport", "   - errors count: ${importResponse.data.errors?.size ?: 0}")
+                    Log.d("CaseImport", "   - importedCases count: ${importResponse.data.importedCases?.size ?: 0}")
+
+                    // Log de casos importados con detalle
+                    if (!importResponse.data.importedCases.isNullOrEmpty()) {
+                        Log.d("CaseImport", "────────────────────────────────────────────────────")
+                        Log.d("CaseImport", "📍 CASOS IMPORTADOS CON COORDENADAS")
+                        Log.d("CaseImport", "────────────────────────────────────────────────────")
+                        importResponse.data.importedCases.forEachIndexed { index, case ->
+                            Log.d("CaseImport", "Caso ${index + 1}:")
+                            Log.d("CaseImport", "   ID: ${case.caseId}")
+                            Log.d("CaseImport", "   Lat: ${case.latitude}")
+                            Log.d("CaseImport", "   Lng: ${case.longitude}")
+                            Log.d("CaseImport", "   Barrio: ${case.neighborhood}")
+                            Log.d("CaseImport", "   Nombre: ${case.temporaryName}")
+                            Log.d("CaseImport", "   Año: ${case.year}, Edad: ${case.age}")
+                            Log.d("CaseImport", "   Tipo: ${case.dengueType}")
+                        }
+                    } else {
+                        Log.w("CaseImport", "⚠️  importedCases está VACÍO o NULL")
+                    }
+
+                    // Log de errores si los hay
+                    if (!importResponse.data.errors.isNullOrEmpty()) {
+                        Log.d("CaseImport", "────────────────────────────────────────────────────")
+                        Log.d("CaseImport", "❌ ERRORES DE IMPORTACIÓN")
+                        Log.d("CaseImport", "────────────────────────────────────────────────────")
+                        importResponse.data.errors.forEach { error ->
+                            Log.e("CaseImport", "Fila ${error.row}: ${error.error}")
+                        }
+                    }
+
                     _importResult.value = importResponse.data
-                    Log.d("CaseImport", "Importación exitosa: ${importResponse.data.successfulImports} casos")
+                    Log.d("CaseImport", "════════════════════════════════════════════════════")
+                    Log.d("CaseImport", "✅ IMPORTACIÓN COMPLETADA EXITOSAMENTE")
+                    Log.d("CaseImport", "════════════════════════════════════════════════════")
                 } else {
                     val errorBody = response.errorBody()?.string()
                     _errorMessage.value = "Error al importar: ${response.message()}"
-                    Log.e("CaseImport", "Error: $errorBody")
+                    Log.e("CaseImport", "════════════════════════════════════════════════════")
+                    Log.e("CaseImport", "❌ ERROR EN LA RESPUESTA")
+                    Log.e("CaseImport", "════════════════════════════════════════════════════")
+                    Log.e("CaseImport", "Error Body: $errorBody")
+                    Log.e("CaseImport", "Response headers: ${response.headers()}")
                 }
+            } catch (e: java.net.SocketTimeoutException) {
+                _errorMessage.value = "Tiempo de espera agotado. La importación puede tardar varios minutos con muchos casos."
+                Log.e("CaseImport", "⏱️  TIMEOUT al importar Excel", e)
+            } catch (e: java.net.ConnectException) {
+                _errorMessage.value = "No se pudo conectar al servidor. Verifica tu conexión a internet."
+                Log.e("CaseImport", "🔌 CONNECTION ERROR", e)
+            } catch (e: java.io.EOFException) {
+                _errorMessage.value = "Conexión cerrada. El servidor puede estar procesando, verifica los casos importados."
+                Log.e("CaseImport", "📡 EOF EXCEPTION - conexión closed", e)
             } catch (e: Exception) {
-                _errorMessage.value = "Error de conexión: ${e.localizedMessage}"
-                Log.e("CaseImport", "Exception al importar Excel", e)
+                _errorMessage.value = "Error de conexión: ${e.message ?: e.javaClass.simpleName}"
+                Log.e("CaseImport", "════════════════════════════════════════════════════")
+                Log.e("CaseImport", "💥 EXCEPTION al importar Excel")
+                Log.e("CaseImport", "════════════════════════════════════════════════════")
+                Log.e("CaseImport", "Tipo: ${e.javaClass.name}", e)
+                Log.e("CaseImport", "Mensaje: ${e.message}")
                 e.printStackTrace()
             } finally {
                 _isLoading.value = false

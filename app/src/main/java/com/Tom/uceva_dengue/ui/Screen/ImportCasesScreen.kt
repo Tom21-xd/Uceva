@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.Tom.uceva_dengue.ui.viewModel.CaseImportViewModel
@@ -275,7 +276,14 @@ fun ImportCasesScreen(
                         color = Color.White
                     )
                     Spacer(modifier = Modifier.width(dimensions.paddingSmall))
-                    Text("Importando...")
+                    Column {
+                        Text("Importando...", fontWeight = FontWeight.Bold)
+                        Text(
+                            "Puede tardar varios minutos si requiere geocodificación",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 10.sp
+                        )
+                    }
                 } else {
                     Icon(Icons.Default.Upload, contentDescription = null)
                     Spacer(modifier = Modifier.width(dimensions.paddingSmall))
@@ -314,6 +322,28 @@ fun ImportCasesScreen(
                         ResultRow("Casos importados:", result.successfulImports.toString(), SuccessGreen)
                         if (result.failedImports > 0) {
                             ResultRow("Casos fallidos:", result.failedImports.toString(), DangerRed)
+                        }
+
+                        // Botón para revisar en el mapa
+                        if (result.successfulImports > 0 && !result.importedCases.isNullOrEmpty()) {
+                            Spacer(modifier = Modifier.height(dimensions.paddingMedium))
+                            Button(
+                                onClick = {
+                                    // Navegar al mapa con los casos importados
+                                    navController.currentBackStackEntry?.savedStateHandle?.set(
+                                        "importedCases",
+                                        result.importedCases
+                                    )
+                                    navController.navigate("caseImportReviewMap")
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                                shape = RoundedCornerShape(dimensions.paddingSmall)
+                            ) {
+                                Icon(Icons.Default.Map, contentDescription = null)
+                                Spacer(modifier = Modifier.width(dimensions.paddingSmall))
+                                Text("Revisar en el Mapa")
+                            }
                         }
 
                         if (!result.errors.isNullOrEmpty()) {
@@ -527,54 +557,246 @@ fun ColumnMappingSection(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     var expanded by remember { mutableStateOf(false) }
+                    var searchQuery by remember { mutableStateOf("") }
                     val selectedColumn = columnMapping[fieldKey]
+
+                    // Filtrar columnas según búsqueda
+                    val filteredColumns = remember(searchQuery, detectedColumns) {
+                        if (searchQuery.isBlank()) {
+                            detectedColumns
+                        } else {
+                            detectedColumns.filter {
+                                it.contains(searchQuery, ignoreCase = true)
+                            }
+                        }
+                    }
 
                     Box(modifier = Modifier.fillMaxWidth()) {
                         OutlinedButton(
-                            onClick = { expanded = true },
-                            modifier = Modifier.fillMaxWidth()
+                            onClick = {
+                                expanded = true
+                                searchQuery = "" // Limpiar búsqueda al abrir
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = if (selectedColumn != null)
+                                    SuccessGreen.copy(alpha = 0.05f)
+                                else
+                                    Color.Transparent
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (selectedColumn != null) SuccessGreen else Color.Gray
+                            )
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = selectedColumn ?: "Seleccionar columna...",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    maxLines = 1,
-                                    modifier = Modifier.weight(1f)
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (selectedColumn != null) {
+                                        Icon(
+                                            Icons.Default.CheckCircle,
+                                            contentDescription = null,
+                                            tint = SuccessGreen,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                    }
+                                    Text(
+                                        text = selectedColumn ?: "Seleccionar columna...",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontSize = 13.sp,
+                                        maxLines = 1,
+                                        fontWeight = if (selectedColumn != null) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (selectedColumn != null) SuccessGreen else Color.Gray
+                                    )
+                                }
+                                Icon(
+                                    Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    tint = if (selectedColumn != null) SuccessGreen else Color.Gray
                                 )
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                             }
                         }
 
                         DropdownMenu(
                             expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                            onDismissRequest = {
+                                expanded = false
+                                searchQuery = ""
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth(0.92f)
+                                .heightIn(max = 400.dp)
                         ) {
-                            detectedColumns.forEach { column ->
-                                DropdownMenuItem(
-                                    text = { Text(column) },
-                                    onClick = {
-                                        onMappingUpdate(fieldKey, column)
-                                        expanded = false
+                            // Campo de búsqueda - SIEMPRE mostrar si hay más de 3 columnas
+                            if (detectedColumns.size > 3) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(Color(0xFFF5F5F5))
+                                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                                ) {
+                                    OutlinedTextField(
+                                        value = searchQuery,
+                                        onValueChange = { searchQuery = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(48.dp),
+                                        placeholder = {
+                                            Text(
+                                                "Buscar en ${detectedColumns.size} columnas...",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontSize = 13.sp
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.Default.Search,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp),
+                                                tint = PrimaryBlue
+                                            )
+                                        },
+                                        trailingIcon = {
+                                            if (searchQuery.isNotEmpty()) {
+                                                IconButton(
+                                                    onClick = { searchQuery = "" },
+                                                    modifier = Modifier.size(24.dp)
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.Clear,
+                                                        contentDescription = "Limpiar",
+                                                        modifier = Modifier.size(18.dp),
+                                                        tint = DangerRed
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        singleLine = true,
+                                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = PrimaryBlue,
+                                            unfocusedBorderColor = Color.Gray,
+                                            focusedContainerColor = Color.White,
+                                            unfocusedContainerColor = Color.White
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+
+                                    // Contador de resultados
+                                    if (searchQuery.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            "${filteredColumns.size} resultado(s)",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontSize = 11.sp,
+                                            color = if (filteredColumns.isEmpty()) DangerRed else SuccessGreen,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
-                                )
+                                }
+                                HorizontalDivider()
                             }
+
+                            // Lista de columnas filtradas
+                            if (filteredColumns.isEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(32.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(40.dp),
+                                        tint = Color.Gray
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        "No se encontraron columnas",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Text(
+                                        "Intenta con otro término",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.Gray.copy(alpha = 0.7f),
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            } else {
+                                filteredColumns.forEach { column ->
+                                    val isSelected = column == selectedColumn
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    column,
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    fontSize = 13.sp,
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                    color = if (isSelected) PrimaryBlue else Color.Black,
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                                if (isSelected) {
+                                                    Icon(
+                                                        Icons.Default.Check,
+                                                        contentDescription = "Seleccionado",
+                                                        tint = SuccessGreen,
+                                                        modifier = Modifier.size(18.dp)
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onClick = {
+                                            onMappingUpdate(fieldKey, column)
+                                            expanded = false
+                                            searchQuery = ""
+                                        },
+                                        modifier = Modifier.background(
+                                            if (isSelected) SuccessGreen.copy(alpha = 0.1f) else Color.Transparent
+                                        )
+                                    )
+                                }
+                            }
+
+                            // Opción para limpiar
                             if (selectedColumn != null) {
                                 HorizontalDivider()
                                 DropdownMenuItem(
                                     text = {
-                                        Text(
-                                            "Limpiar",
-                                            color = DangerRed,
-                                            fontWeight = FontWeight.Bold
-                                        )
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                Icons.Default.Clear,
+                                                contentDescription = null,
+                                                tint = DangerRed,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                "Limpiar selección",
+                                                color = DangerRed,
+                                                fontWeight = FontWeight.Bold,
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
                                     },
                                     onClick = {
                                         onClearMapping(fieldKey)
                                         expanded = false
+                                        searchQuery = ""
                                     }
                                 )
                             }

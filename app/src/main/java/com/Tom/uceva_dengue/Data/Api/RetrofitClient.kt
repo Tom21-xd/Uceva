@@ -157,11 +157,13 @@ object RetrofitClient {
         }
 
         OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)  // Timeout de conexión: 60 segundos
-            .readTimeout(60, TimeUnit.SECONDS)     // Timeout de lectura: 60 segundos
-            .writeTimeout(60, TimeUnit.SECONDS)    // Timeout de escritura: 60 segundos
-            .addInterceptor(authInterceptor)       // Auth interceptor PRIMERO
-            .addInterceptor(loggingInterceptor)    // Logging para debug
+            .connectTimeout(180, TimeUnit.SECONDS)  // Timeout de conexión: 3 minutos
+            .readTimeout(600, TimeUnit.SECONDS)     // Timeout de lectura: 10 minutos (para importaciones con geocodificación)
+            .writeTimeout(180, TimeUnit.SECONDS)    // Timeout de escritura: 3 minutos
+            .callTimeout(720, TimeUnit.SECONDS)     // Timeout total de llamada: 12 minutos
+            .retryOnConnectionFailure(true)         // Reintentar en fallas de conexión
+            .addInterceptor(authInterceptor)        // Auth interceptor PRIMERO
+            .addInterceptor(loggingInterceptor)     // Logging para debug
             .build()
     }
 

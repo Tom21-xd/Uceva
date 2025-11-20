@@ -1,6 +1,8 @@
 package com.Tom.uceva_dengue.Data.Model
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
 /**
  * Respuesta del endpoint de importación (envuelve el resultado)
@@ -36,8 +38,41 @@ data class CaseImportResultDto(
     val importedByUserId: Int = 0,
 
     @SerializedName("processingTime")
-    val processingTime: String? = null
+    val processingTime: String? = null,
+
+    @SerializedName("importedCases")
+    val importedCases: List<ImportedCaseDto>? = null
 )
+
+/**
+ * DTO para representar un caso importado con sus coordenadas
+ */
+@Parcelize
+data class ImportedCaseDto(
+    @SerializedName("caseId")
+    val caseId: Int,
+
+    @SerializedName("latitude")
+    val latitude: Double?,
+
+    @SerializedName("longitude")
+    val longitude: Double?,
+
+    @SerializedName("neighborhood")
+    val neighborhood: String?,
+
+    @SerializedName("temporaryName")
+    val temporaryName: String?,
+
+    @SerializedName("year")
+    val year: Int?,
+
+    @SerializedName("age")
+    val age: Int?,
+
+    @SerializedName("dengueType")
+    val dengueType: String?
+) : Parcelable
 
 /**
  * Error individual de importación

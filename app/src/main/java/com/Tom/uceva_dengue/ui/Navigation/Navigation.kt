@@ -89,7 +89,9 @@ import com.Tom.uceva_dengue.ui.Screen.QuizResultScreen
 import com.Tom.uceva_dengue.ui.Screen.CertificateScreen
 import com.Tom.uceva_dengue.ui.Screen.RoleManagementScreen
 import com.Tom.uceva_dengue.ui.Screen.ImportCasesScreen
+import com.Tom.uceva_dengue.ui.Screen.CaseImportReviewMapScreen
 import com.Tom.uceva_dengue.ui.Screen.UserApprovalScreen
+import com.Tom.uceva_dengue.Data.Model.ImportedCaseDto
 import com.Tom.uceva_dengue.ui.theme.fondo
 import com.Tom.uceva_dengue.ui.viewModel.AuthViewModel
 import com.Tom.uceva_dengue.ui.viewModel.CaseDetailsViewModel
@@ -540,6 +542,32 @@ fun NavigationCon(context: Context) {
                     ImportCasesScreen(
                         navController = navController,
                         viewModel = viewModel()
+                    )
+                }
+                composable("caseImportReviewMap") {
+                    val importedCases = navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.get<List<ImportedCaseDto>>("importedCases") ?: emptyList()
+
+                    val caseViewModel: com.Tom.uceva_dengue.ui.viewModel.CaseViewModel = viewModel()
+
+                    CaseImportReviewMapScreen(
+                        navController = navController,
+                        importedCases = importedCases,
+                        onDeleteCase = { caseId ->
+                            caseViewModel.deleteCase(
+                                caseId = caseId,
+                                onSuccess = {
+                                    Log.d("Navigation", "Caso $caseId eliminado exitosamente")
+                                },
+                                onError = { error ->
+                                    Log.e("Navigation", "Error al eliminar caso $caseId: $error")
+                                }
+                            )
+                        },
+                        onFinish = {
+                            navController.popBackStack()
+                        }
                     )
                 }
                 composable(Rout.UserApprovalScreen.name) {
