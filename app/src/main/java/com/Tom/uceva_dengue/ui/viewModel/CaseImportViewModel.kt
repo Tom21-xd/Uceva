@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.Tom.uceva_dengue.Data.Api.RetrofitClient
 import com.Tom.uceva_dengue.Data.Model.CaseImportResultDto
+import com.Tom.uceva_dengue.Data.Model.ImportedCaseDto
+import com.Tom.uceva_dengue.Data.Service.UpdateCoordinatesRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -505,5 +507,70 @@ class CaseImportViewModel : ViewModel() {
     fun clearMessages() {
         _errorMessage.value = null
         _importResult.value = null
+    }
+
+    /**
+     * Actualiza las coordenadas de un caso específico
+     */
+    fun updateCaseCoordinates(
+        caseId: Int,
+        latitude: Double,
+        longitude: Double,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                Log.d("CaseImport", "📍 Actualizando coordenadas del caso $caseId: ($latitude, $longitude)")
+
+                val response = caseImportService.updateCaseCoordinates(
+                    caseId,
+                    UpdateCoordinatesRequest(latitude, longitude)
+                )
+
+                if (response.isSuccessful) {
+                    Log.d("CaseImport", "✅ Coordenadas actualizadas exitosamente")
+                    onSuccess()
+                } else {
+                    val errorMsg = "Error al actualizar: ${response.message()}"
+                    Log.e("CaseImport", "❌ $errorMsg")
+                    onError(errorMsg)
+                }
+            } catch (e: Exception) {
+                val errorMsg = "Error de conexión: ${e.message}"
+                Log.e("CaseImport", "❌ $errorMsg", e)
+                onError(errorMsg)
+            }
+        }
+    }
+
+    /**
+     * Elimina un caso del servidor
+     */
+    fun deleteCase(
+        caseId: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                Log.d("CaseImport", "🗑️ Eliminando caso $caseId")
+
+                val response = caseImportService.deleteCase(caseId)
+
+                if (response.isSuccessful) {
+                    Log.d("CaseImport", "✅ Caso eliminado exitosamente")
+                    onSuccess()
+                } else {
+                    val errorMsg = "Error al eliminar: ${response.message()}"
+                    Log.e("CaseImport", "❌ $errorMsg")
+                    onError(errorMsg)
+                }
+            } catch (e: Exception) {
+                val errorMsg = "Error de conexión: ${e.message}"
+                Log.e("CaseImport", "❌ $errorMsg", e)
+                onError(errorMsg)
+            }
+        }
     }
 }

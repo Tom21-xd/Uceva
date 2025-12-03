@@ -3,16 +3,20 @@ package com.Tom.uceva_dengue.ui.Screen
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,24 +84,29 @@ fun PreventionGuideScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        PullToRefreshBox(
+            isRefreshing = preventionLoading,
+            onRefresh = { preventionViewModel.refresh() },
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Header
-            item(key = "header") {
-                ModernHeaderCard()
-            }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Header
+                item(key = "header") {
+                    ModernHeaderCard()
+                }
 
-            // Loading indicator for API content
-            if (preventionLoading && categories.isEmpty()) {
-                item(key = "loading") {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
+                // Loading indicator for API content
+                if (preventionLoading && categories.isEmpty()) {
+                    item(key = "loading") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = DengueRed)
                     }
@@ -157,6 +166,7 @@ fun PreventionGuideScreen(
             item(key = "footer") {
                 ModernFooterCard()
             }
+        }
         }
     }
 }
@@ -253,31 +263,147 @@ private fun ExpandableSectionFromApi(
 
 @Composable
 private fun ImageCarousel(images: List<PreventionImage>) {
+    if (images.size == 1) {
+        // Una sola imagen - mostrar completa
+        SingleImageView(image = images.first())
+    } else {
+        // Múltiples imágenes - carrusel con indicadores
+        MultiImageCarousel(images = images)
+    }
+}
+
+@Composable
+private fun SingleImageView(image: PreventionImage) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
-        )
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(images, key = { it.ID_IMAGEN_CATEGORIA }) { image ->
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(4.dp)
+        Box {
+            AsyncImage(
+                model = "$BASE_IMAGE_URL${image.ID_IMAGEN_MONGO}",
+                contentDescription = image.TITULO_IMAGEN ?: "Imagen de prevención",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentScale = ContentScale.Crop
+            )
+
+            // Título de la imagen si existe
+            image.TITULO_IMAGEN?.let { titulo ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))
+                            )
+                        )
+                        .padding(12.dp)
                 ) {
-                    AsyncImage(
-                        model = "$BASE_IMAGE_URL${image.ID_IMAGEN_MONGO}",
-                        contentDescription = image.TITULO_IMAGEN ?: "Imagen de prevención",
+                    Text(
+                        text = titulo,
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MultiImageCarousel(images: List<PreventionImage>) {
+    val pagerState = rememberPagerState(pageCount = { images.size })
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column {
+            // Pager de imágenes
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    val image = images[page]
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AsyncImage(
+                            model = "$BASE_IMAGE_URL${image.ID_IMAGEN_MONGO}",
+                            contentDescription = image.TITULO_IMAGEN ?: "Imagen ${page + 1}",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        // Título de la imagen si existe
+                        image.TITULO_IMAGEN?.let { titulo ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.BottomCenter)
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))
+                                        )
+                                    )
+                                    .padding(12.dp)
+                            ) {
+                                Text(
+                                    text = titulo,
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Contador de página (ej: 1/3)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(12.dp)
+                        .background(
+                            Color.Black.copy(alpha = 0.6f),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "${pagerState.currentPage + 1}/${images.size}",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            // Indicadores de página (puntos)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(images.size) { index ->
+                    val isSelected = pagerState.currentPage == index
+                    Box(
                         modifier = Modifier
-                            .width(200.dp)
-                            .height(140.dp),
-                        contentScale = ContentScale.Crop
+                            .padding(horizontal = 4.dp)
+                            .size(if (isSelected) 10.dp else 8.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) DengueRed else Color.Gray.copy(alpha = 0.4f)
+                            )
                     )
                 }
             }

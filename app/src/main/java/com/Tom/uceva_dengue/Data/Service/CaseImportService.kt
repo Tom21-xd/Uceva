@@ -47,4 +47,46 @@ interface CaseImportService {
     @GET("api/CaseImport/download-template-excel")
     @Streaming
     suspend fun downloadExcelTemplate(): Response<okhttp3.ResponseBody>
+
+    /**
+     * Actualiza las coordenadas de un caso específico
+     * PATCH /Case/updateCoordinates/{id}
+     */
+    @PATCH("Case/updateCoordinates/{id}")
+    suspend fun updateCaseCoordinates(
+        @Path("id") caseId: Int,
+        @Body coordinates: UpdateCoordinatesRequest
+    ): Response<UpdateCoordinatesResponse>
+
+    /**
+     * Elimina un caso (eliminación lógica)
+     * DELETE /Case/deleteCase/{id}
+     */
+    @DELETE("Case/deleteCase/{id}")
+    suspend fun deleteCase(@Path("id") caseId: Int): Response<DeleteCaseResponse>
 }
+
+/**
+ * Request body para actualizar coordenadas
+ */
+data class UpdateCoordinatesRequest(
+    val latitude: Double,
+    val longitude: Double
+)
+
+/**
+ * Response de actualización de coordenadas
+ */
+data class UpdateCoordinatesResponse(
+    val message: String,
+    val caseId: Int,
+    val latitude: Double,
+    val longitude: Double
+)
+
+/**
+ * Response de eliminación de caso
+ */
+data class DeleteCaseResponse(
+    val message: String
+)
