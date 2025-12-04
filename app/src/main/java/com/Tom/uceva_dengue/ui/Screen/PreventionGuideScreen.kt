@@ -29,12 +29,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.Tom.uceva_dengue.Data.Model.PreventionCategory
 import com.Tom.uceva_dengue.Data.Model.PreventionImage
 import com.Tom.uceva_dengue.Data.Model.PreventionItem
 import com.Tom.uceva_dengue.Data.Model.PreventionItemImage
+import com.Tom.uceva_dengue.ui.Components.ClickableTextWithLinks
 import com.Tom.uceva_dengue.ui.viewModel.PreventionViewModel
 import com.Tom.uceva_dengue.ui.viewModel.QuizViewModel
 
@@ -275,8 +278,12 @@ private fun ImageCarousel(images: List<PreventionImage>) {
 
 @Composable
 private fun SingleImageView(image: PreventionImage) {
+    var showFullScreen by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { showFullScreen = true },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
@@ -286,8 +293,8 @@ private fun SingleImageView(image: PreventionImage) {
                 contentDescription = image.TITULO_IMAGEN ?: "Imagen de prevención",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
+                    .heightIn(min = 150.dp, max = 300.dp),
+                contentScale = ContentScale.Fit
             )
 
             // Título de la imagen si existe
@@ -313,11 +320,22 @@ private fun SingleImageView(image: PreventionImage) {
             }
         }
     }
+
+    // Visualizador a pantalla completa
+    if (showFullScreen) {
+        FullScreenImageViewer(
+            imageUrl = "$BASE_IMAGE_URL${image.ID_IMAGEN_MONGO}",
+            title = image.TITULO_IMAGEN,
+            onDismiss = { showFullScreen = false }
+        )
+    }
 }
 
 @Composable
 private fun MultiImageCarousel(images: List<PreventionImage>) {
     val pagerState = rememberPagerState(pageCount = { images.size })
+    var showFullScreen by remember { mutableStateOf(false) }
+    var selectedImageIndex by remember { mutableIntStateOf(0) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -329,19 +347,26 @@ private fun MultiImageCarousel(images: List<PreventionImage>) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .heightIn(min = 150.dp, max = 300.dp)
             ) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
                     val image = images[page]
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {
+                                selectedImageIndex = page
+                                showFullScreen = true
+                            }
+                    ) {
                         AsyncImage(
                             model = "$BASE_IMAGE_URL${image.ID_IMAGEN_MONGO}",
                             contentDescription = image.TITULO_IMAGEN ?: "Imagen ${page + 1}",
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            contentScale = ContentScale.Fit
                         )
 
                         // Título de la imagen si existe
@@ -410,6 +435,15 @@ private fun MultiImageCarousel(images: List<PreventionImage>) {
             }
         }
     }
+
+    // Visualizador a pantalla completa
+    if (showFullScreen && selectedImageIndex < images.size) {
+        FullScreenImageViewer(
+            imageUrl = "$BASE_IMAGE_URL${images[selectedImageIndex].ID_IMAGEN_MONGO}",
+            title = images[selectedImageIndex].TITULO_IMAGEN,
+            onDismiss = { showFullScreen = false }
+        )
+    }
 }
 
 @Composable
@@ -458,11 +492,12 @@ private fun ModernInfoItemCard(item: PreventionItem, accentColor: Color) {
                         color = if (item.ES_ADVERTENCIA) DengueRed else accentColor
                     )
                     Spacer(modifier = Modifier.height(6.dp))
-                    Text(
+                    // Texto con links clicables
+                    ClickableTextWithLinks(
                         text = item.DESCRIPCION_ITEM,
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f),
-                        lineHeight = 20.sp
+                        textColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f),
+                        linkColor = DengueBlue
                     )
                 }
             }
@@ -497,8 +532,12 @@ private fun SingleItemImageView(
     image: PreventionItemImage,
     modifier: Modifier = Modifier
 ) {
+    var showFullScreen by remember { mutableStateOf(false) }
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { showFullScreen = true },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
@@ -508,8 +547,8 @@ private fun SingleItemImageView(
                 contentDescription = image.TITULO_IMAGEN ?: "Imagen del item",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp),
-                contentScale = ContentScale.Crop
+                    .heightIn(min = 120.dp, max = 250.dp),
+                contentScale = ContentScale.Fit
             )
 
             // Image title if exists
@@ -535,6 +574,15 @@ private fun SingleItemImageView(
             }
         }
     }
+
+    // Visualizador a pantalla completa
+    if (showFullScreen) {
+        FullScreenImageViewer(
+            imageUrl = "$BASE_IMAGE_URL${image.ID_IMAGEN_MONGO}",
+            title = image.TITULO_IMAGEN,
+            onDismiss = { showFullScreen = false }
+        )
+    }
 }
 
 @Composable
@@ -543,6 +591,8 @@ private fun MultiItemImageCarousel(
     modifier: Modifier = Modifier
 ) {
     val pagerState = rememberPagerState(pageCount = { images.size })
+    var showFullScreen by remember { mutableStateOf(false) }
+    var selectedImageIndex by remember { mutableIntStateOf(0) }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -554,19 +604,26 @@ private fun MultiItemImageCarousel(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp)
+                    .heightIn(min = 120.dp, max = 250.dp)
             ) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
                     val image = images[page]
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {
+                                selectedImageIndex = page
+                                showFullScreen = true
+                            }
+                    ) {
                         AsyncImage(
                             model = "$BASE_IMAGE_URL${image.ID_IMAGEN_MONGO}",
                             contentDescription = image.TITULO_IMAGEN ?: "Imagen ${page + 1}",
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            contentScale = ContentScale.Fit
                         )
 
                         // Image title if exists
@@ -634,6 +691,15 @@ private fun MultiItemImageCarousel(
                 }
             }
         }
+    }
+
+    // Visualizador a pantalla completa
+    if (showFullScreen && selectedImageIndex < images.size) {
+        FullScreenImageViewer(
+            imageUrl = "$BASE_IMAGE_URL${images[selectedImageIndex].ID_IMAGEN_MONGO}",
+            title = images[selectedImageIndex].TITULO_IMAGEN,
+            onDismiss = { showFullScreen = false }
+        )
     }
 }
 
@@ -1109,6 +1175,81 @@ private fun ModernFooterCard() {
                 lineHeight = 16.sp,
                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
             )
+        }
+    }
+}
+
+// ==================== Full Screen Image Viewer ====================
+
+@Composable
+private fun FullScreenImageViewer(
+    imageUrl: String,
+    title: String?,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.95f))
+                .clickable { onDismiss() }
+        ) {
+            // Imagen centrada
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = title ?: "Imagen en pantalla completa",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentScale = ContentScale.Fit
+            )
+
+            // Botón de cerrar
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Cerrar",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            // Título en la parte inferior
+            title?.let {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f))
+                            )
+                        )
+                        .padding(20.dp)
+                ) {
+                    Text(
+                        text = it,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         }
     }
 }

@@ -254,17 +254,17 @@ fun MapScreenModern(viewModel: MapViewModel) {
                     android.graphics.Color.rgb(255, 0, 0)       // Rojo (crítico)
                 )
 
-                // Puntos de inicio para cada color (0.0 a 1.0)
-                val startPoints = floatArrayOf(0.1f, 0.3f, 0.6f, 1.0f)
+                // Puntos de inicio para cada color (0.0 a 1.0) - ajustados para mejor visibilidad
+                val startPoints = floatArrayOf(0.05f, 0.15f, 0.4f, 0.8f)
 
                 val gradient = com.google.maps.android.heatmaps.Gradient(colors, startPoints)
 
                 HeatmapTileProvider.Builder()
                     .data(heatmapPoints)
                     .gradient(gradient)
-                    .radius(50) // Radio de influencia en píxeles (default: 20, aumentado para mejor visualización)
-                    .opacity(0.7) // Opacidad del heatmap (0.0 a 1.0)
-                    .maxIntensity(100.0) // Intensidad máxima - ajustado para que no marque crítico con pocos casos
+                    .radius(50)
+                    .opacity(0.85) // Opacidad aumentada para mejor visibilidad
+                    .maxIntensity(50.0) // Reducido para que los colores se muestren con menos casos
                     .build()
             } else {
                 null
