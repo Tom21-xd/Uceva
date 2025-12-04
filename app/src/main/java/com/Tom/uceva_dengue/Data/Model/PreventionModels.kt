@@ -28,5 +28,13 @@ data class PreventionItem(
     val EMOJI_ITEM: String?,
     val ES_ADVERTENCIA: Boolean,
     val ORDEN_VISUALIZACION: Int,
-    val ESTADO_ITEM: Boolean
+    val ESTADO_ITEM: Boolean,
+    val IMAGENES: List<PreventionItemImage> = emptyList()
+)
+
+data class PreventionItemImage(
+    val ID_IMAGEN_ITEM: Int,
+    val ID_IMAGEN_MONGO: String,
+    val TITULO_IMAGEN: String?,
+    val ORDEN_VISUALIZACION: Int
 )

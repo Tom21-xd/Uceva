@@ -17,73 +17,76 @@ data class CaseImportResponse(
 
 /**
  * Resultado de la importación de casos
+ * Backend usa PascalCase (PropertyNamingPolicy = null)
  */
 data class CaseImportResultDto(
-    @SerializedName("totalRows")
+    @SerializedName("TotalRows")
     val totalRows: Int = 0,
 
-    @SerializedName("successfulImports")
+    @SerializedName("SuccessfulImports")
     val successfulImports: Int = 0,
 
-    @SerializedName("failedImports")
+    @SerializedName("FailedImports")
     val failedImports: Int = 0,
 
-    @SerializedName("errors")
+    @SerializedName("Errors")
     val errors: List<ImportErrorDto>? = null,
 
-    @SerializedName("importedAt")
+    @SerializedName("ImportedAt")
     val importedAt: String? = null,
 
-    @SerializedName("importedByUserId")
+    @SerializedName("ImportedByUserId")
     val importedByUserId: Int = 0,
 
-    @SerializedName("processingTime")
+    @SerializedName("ProcessingTime")
     val processingTime: String? = null,
 
-    @SerializedName("importedCases")
+    @SerializedName("ImportedCases")
     val importedCases: List<ImportedCaseDto>? = null
 )
 
 /**
  * DTO para representar un caso importado con sus coordenadas
+ * Backend usa PascalCase (PropertyNamingPolicy = null)
  */
 @Parcelize
 data class ImportedCaseDto(
-    @SerializedName("caseId")
+    @SerializedName("CaseId")
     val caseId: Int,
 
-    @SerializedName("latitude")
+    @SerializedName("Latitude")
     val latitude: Double?,
 
-    @SerializedName("longitude")
+    @SerializedName("Longitude")
     val longitude: Double?,
 
-    @SerializedName("neighborhood")
+    @SerializedName("Neighborhood")
     val neighborhood: String?,
 
-    @SerializedName("temporaryName")
+    @SerializedName("TemporaryName")
     val temporaryName: String?,
 
-    @SerializedName("year")
+    @SerializedName("Year")
     val year: Int?,
 
-    @SerializedName("age")
+    @SerializedName("Age")
     val age: Int?,
 
-    @SerializedName("dengueType")
+    @SerializedName("DengueType")
     val dengueType: String?
 ) : Parcelable
 
 /**
  * Error individual de importación
+ * Backend usa PascalCase (PropertyNamingPolicy = null)
  */
 data class ImportErrorDto(
-    @SerializedName("rowNumber")
+    @SerializedName("RowNumber")
     val row: Int,
 
-    @SerializedName("errorMessage")
+    @SerializedName("ErrorMessage")
     val error: String,
 
-    @SerializedName("rowData")
+    @SerializedName("RowData")
     val rowData: Map<String, String?>? = null
 )

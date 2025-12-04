@@ -34,6 +34,7 @@ import coil.compose.AsyncImage
 import com.Tom.uceva_dengue.Data.Model.PreventionCategory
 import com.Tom.uceva_dengue.Data.Model.PreventionImage
 import com.Tom.uceva_dengue.Data.Model.PreventionItem
+import com.Tom.uceva_dengue.Data.Model.PreventionItemImage
 import com.Tom.uceva_dengue.ui.viewModel.PreventionViewModel
 import com.Tom.uceva_dengue.ui.viewModel.QuizViewModel
 
@@ -425,41 +426,212 @@ private fun ModernInfoItemCard(item: PreventionItem, accentColor: Color) {
         ),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.Top
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Box(
+            Row(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(accentColor.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.Top
             ) {
-                Text(
-                    text = item.EMOJI_ITEM ?: "💡",
-                    fontSize = 28.sp
-                )
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(accentColor.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = item.EMOJI_ITEM ?: "💡",
+                        fontSize = 28.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.TITULO_ITEM,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (item.ES_ADVERTENCIA) DengueRed else accentColor
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = item.DESCRIPCION_ITEM,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f),
+                        lineHeight = 20.sp
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            // Images carousel for item (if any)
+            if (item.IMAGENES.isNotEmpty()) {
+                ItemImageCarousel(
+                    images = item.IMAGENES,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+        }
+    }
+}
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.TITULO_ITEM,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (item.ES_ADVERTENCIA) DengueRed else accentColor
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = item.DESCRIPCION_ITEM,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f),
-                    lineHeight = 20.sp
-                )
+@Composable
+private fun ItemImageCarousel(
+    images: List<PreventionItemImage>,
+    modifier: Modifier = Modifier
+) {
+    if (images.size == 1) {
+        // Single image - show full
+        SingleItemImageView(image = images.first(), modifier = modifier)
+    } else {
+        // Multiple images - carousel with indicators
+        MultiItemImageCarousel(images = images, modifier = modifier)
+    }
+}
+
+@Composable
+private fun SingleItemImageView(
+    image: PreventionItemImage,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Box {
+            AsyncImage(
+                model = "$BASE_IMAGE_URL${image.ID_IMAGEN_MONGO}",
+                contentDescription = image.TITULO_IMAGEN ?: "Imagen del item",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp),
+                contentScale = ContentScale.Crop
+            )
+
+            // Image title if exists
+            image.TITULO_IMAGEN?.let { titulo ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))
+                            )
+                        )
+                        .padding(10.dp)
+                ) {
+                    Text(
+                        text = titulo,
+                        color = Color.White,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MultiItemImageCarousel(
+    images: List<PreventionItemImage>,
+    modifier: Modifier = Modifier
+) {
+    val pagerState = rememberPagerState(pageCount = { images.size })
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column {
+            // Image pager
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+            ) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    val image = images[page]
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AsyncImage(
+                            model = "$BASE_IMAGE_URL${image.ID_IMAGEN_MONGO}",
+                            contentDescription = image.TITULO_IMAGEN ?: "Imagen ${page + 1}",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        // Image title if exists
+                        image.TITULO_IMAGEN?.let { titulo ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.BottomCenter)
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))
+                                        )
+                                    )
+                                    .padding(10.dp)
+                            ) {
+                                Text(
+                                    text = titulo,
+                                    color = Color.White,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Page counter (e.g., 1/3)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(
+                            Color.Black.copy(alpha = 0.6f),
+                            RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = "${pagerState.currentPage + 1}/${images.size}",
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            // Page indicators (dots)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(images.size) { index ->
+                    val isSelected = pagerState.currentPage == index
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 3.dp)
+                            .size(if (isSelected) 8.dp else 6.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) DengueRed else Color.Gray.copy(alpha = 0.4f)
+                            )
+                    )
+                }
             }
         }
     }
